@@ -32,20 +32,21 @@ func _physics_process(delta: float) -> void:
 			if dist < run_away_distance:
 				_run_away(player)
 
-func _run_away(player: Node2D) -> void:
+func _run_away(_player: Node2D) -> void:
 	is_triggered = true
 	var sm = get_node_or_null("/root/SoundManager")
 	if sm and sm.has_method("play"):
 		sm.play("trap")
 	
-	# O'yinchidan qarama-qarshi tomonga qochib ketish
-	var dir_x := 1.0 if global_position.x > player.global_position.x else -1.0
-	var target_x := global_position.x + dir_x * 120.0
-	
-	var tween := create_tween().set_parallel(true)
-	tween.tween_property(self, "global_position:x", target_x, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(self, "rotation", deg_to_rad(dir_x * 15.0), 0.2)
-	tween.chain().tween_property(self, "rotation", 0.0, 0.15)
+	# Eshik pastga pol ichiga tushib yo'qoladi (Falls down and vanishes)
+	var tween := create_tween()
+	tween.tween_property(self, "position:y", start_pos.y - 3.0, 0.05)
+	tween.tween_property(self, "position:y", start_pos.y + 120.0, 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_callback(func():
+		visible = false
+		if col_shape:
+			col_shape.disabled = true
+	)
 
 func _draw() -> void:
 	# Haqiqiy ExitDoor bilan 100% bir xil vizual ko'rinish
@@ -119,4 +120,7 @@ func reset_trap() -> void:
 	global_position = start_pos
 	rotation = 0.0
 	is_triggered = false
+	visible = true
+	if col_shape:
+		col_shape.disabled = false
 

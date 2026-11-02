@@ -7,7 +7,8 @@
 [ext_resource type="PackedScene" path="res://scenes/traps/moving_saw.tscn" id="5_tr"]
 [ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="6_tr"]
 [ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="7_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="8_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="8_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="9_tr"]
 
 [node name="Level11" type="Node2D"]
 script = ExtResource("1_bl")
@@ -17,7 +18,11 @@ level_number = 11
 
 [node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 380)
-platform_size = Vector2(320, 160)
+platform_size = Vector2(340, 160)
+
+[node name="GroundMid" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(420, 380)
+platform_size = Vector2(60, 160)
 
 [node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(560, 380)
@@ -54,8 +59,8 @@ trigger_distance = 200
 shake_duration = 0.6
 
 [node name="TrapFloorMid" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(420, 380)
-platform_size = Vector2(140, 160)
+position = Vector2(480, 380)
+platform_size = Vector2(80, 160)
 
 [node name="MovingSawBack" parent="Traps" instance=ExtResource("5_tr")]
 position = Vector2(600, 364)
@@ -63,9 +68,16 @@ patrol_distance = 140
 patrol_speed = 140
 patrol_axis = Vector2(1, 0)
 
-[node name="SpikesDoor" parent="Traps" instance=ExtResource("8_tr")]
-position = Vector2(760, 348)
-spike_size = Vector2(48, 32)
+[node name="PopUpSpikesDoor" parent="Traps" instance=ExtResource("8_tr")]
+position = Vector2(730, 380)
+spike_width = 48
+max_spike_height = 32
+trigger_distance = 75
+warning_time = 0.4
+
+[node name="SpikesDoor" parent="Traps" instance=ExtResource("9_tr")]
+position = Vector2(810, 348)
+spike_size = Vector2(40, 32)
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
 position = Vector2(860, 380)

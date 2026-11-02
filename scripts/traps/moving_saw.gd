@@ -5,11 +5,13 @@ class_name MovingSawTrap
 @export var patrol_distance: float = 64.0 # 2x katak
 @export var patrol_speed: float = 120.0
 @export var patrol_axis: Vector2 = Vector2.RIGHT
+@export var trigger_distance: float = 0.0 # Agar > 0 bo'lsa, o'yinchi yaqinlashganda otilib chiqadi
 
 var start_pos: Vector2
 var patrol_t: float = 0.0
 var rotation_angle: float = 0.0
 var moving_forward: bool = true
+var is_triggered: bool = false
 
 @onready var col_shape: CollisionShape2D = $CollisionShape2D
 
@@ -24,6 +26,26 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 
 func _physics_process(delta: float) -> void:
+	if trigger_distance > 0.0 and not is_triggered:
+		if col_shape and not col_shape.disabled:
+			col_shape.disabled = true
+		var player := get_tree().get_first_node_in_group("player") as Node2D
+		if player != null and is_instance_valid(player):
+			if "is_dead" in player and player.is_dead:
+				return
+			var dist: float = absf(player.global_position.x - global_position.x)
+			if dist < trigger_distance:
+				is_triggered = true
+				if col_shape:
+					col_shape.disabled = false
+				var sm = get_node_or_null("/root/SoundManager")
+				if sm and sm.has_method("play"):
+					sm.play("trap")
+		return
+
+	if col_shape and col_shape.disabled:
+		col_shape.disabled = false
+
 	rotation_angle += delta * 14.0
 	
 	if patrol_distance > 0.0:
@@ -41,7 +63,17 @@ func _physics_process(delta: float) -> void:
 		
 	queue_redraw()
 
+func reset_trap() -> void:
+	is_triggered = false
+	patrol_t = 0.0
+	moving_forward = true
+	global_position = start_pos
+	queue_redraw()
+
 func _draw() -> void:
+	if trigger_distance > 0.0 and not is_triggered:
+		return
+
 	var is_winter := false
 	var gm = get_node_or_null("/root/GameManager")
 	if gm and gm.has_method("is_winter_theme"):
@@ -86,8 +118,3 @@ func _on_body_entered(body: Node2D) -> void:
 			return
 		if body.has_method("kill"):
 			body.kill()
-
-func reset_trap() -> void:
-	global_position = start_pos
-	patrol_t = 0.0
-	moving_forward = true

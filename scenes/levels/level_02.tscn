@@ -5,7 +5,9 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
 [ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
 [ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="5_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/moving_saw.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/moving_saw.tscn" id="7_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="8_tr"]
 
 [node name="Level02" type="Node2D"]
 script = ExtResource("1_bl")
@@ -17,6 +19,10 @@ level_number = 2
 position = Vector2(0, 380)
 platform_size = Vector2(960, 160)
 
+[node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(360, 0)
+platform_size = Vector2(160, 60)
+
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
 platform_size = Vector2(32, 540)
@@ -27,25 +33,33 @@ platform_size = Vector2(32, 540)
 
 [node name="Traps" type="Node2D" parent="."]
 
-[node name="SpikesMid" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(260, 348)
-spike_size = Vector2(80, 32)
+[node name="SpikesStart" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(240, 348)
+spike_size = Vector2(64, 32)
 
-[node name="MovingSaw1" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(560, 364)
-patrol_distance = 160
+[node name="StalactiteCeiling" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(420, 60)
+trigger_distance = 260
+shake_duration = 0.5
+
+[node name="MovingSaw1" parent="Traps" instance=ExtResource("7_tr")]
+position = Vector2(540, 364)
+patrol_distance = 150
 patrol_speed = 130
 patrol_axis = Vector2(-1, 0)
 
-[node name="MovingSaw2" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(680, 364)
-patrol_distance = 140
-patrol_speed = 130
+[node name="MovingSaw2" parent="Traps" instance=ExtResource("7_tr")]
+position = Vector2(670, 364)
+patrol_distance = 130
+patrol_speed = 140
 patrol_axis = Vector2(1, 0)
 
-[node name="SpikesDoor" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(780, 348)
-spike_size = Vector2(48, 32)
+[node name="PopUpSpikesDoor" parent="Traps" instance=ExtResource("8_tr")]
+position = Vector2(760, 380)
+spike_width = 48
+max_spike_height = 32
+trigger_distance = 70
+warning_time = 0.35
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
 position = Vector2(860, 380)
