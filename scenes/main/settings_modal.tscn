@@ -1,0 +1,366 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/settings_modal.gd" id="1_sm"]
+[ext_resource type="StyleBox" path="res://resources/themes/panel_obsidian_modal.tres" id="2_card"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white.tres" id="3_w_norm"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white_hover.tres" id="4_w_hov"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white_pressed.tres" id="5_w_press"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass.tres" id="6_g_norm"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass_hover.tres" id="7_g_hov"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass_pressed.tres" id="8_g_press"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_focus_empty.tres" id="9_focus"]
+[ext_resource type="PackedScene" path="res://scenes/ui/control_customizer.tscn" id="10_customizer"]
+[ext_resource type="StyleBox" path="res://resources/themes/slider_track.tres" id="11_track"]
+[ext_resource type="StyleBox" path="res://resources/themes/slider_fill.tres" id="12_fill"]
+
+[node name="SettingsModal" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_sm")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.05, 0.07, 0.72)
+
+[node name="Card" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -225.0
+offset_top = -245.0
+offset_right = 225.0
+offset_bottom = 245.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("2_card")
+
+[node name="TitleRow" type="HBoxContainer" parent="Card"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 12.0
+offset_bottom = 42.0
+grow_horizontal = 2
+mouse_filter = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="TitleIcon" type="TextureRect" parent="Card/TitleRow"]
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="Card/TitleRow"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.96, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_constants/letter_spacing = 3
+text = "SOZLAMALAR"
+
+[node name="Content" type="VBoxContainer" parent="Card"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -195.0
+offset_right = 200.0
+offset_bottom = 230.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="LangRow" type="VBoxContainer" parent="Card/Content"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Header" type="HBoxContainer" parent="Card/Content/LangRow"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LangIcon" type="TextureRect" parent="Card/Content/LangRow/Header"]
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LangLabel" type="Label" parent="Card/Content/LangRow/Header"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "Til (Language):"
+
+[node name="BtnBox" type="HBoxContainer" parent="Card/Content/LangRow"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="BtnUZ" type="Button" parent="Card/Content/LangRow/BtnBox"]
+custom_minimum_size = Vector2(88, 34)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.06, 0.07, 0.1, 1)
+theme_override_colors/font_hover_color = Color(0.02, 0.03, 0.05, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = ExtResource("3_w_norm")
+theme_override_styles/hover = ExtResource("4_w_hov")
+theme_override_styles/pressed = ExtResource("5_w_press")
+theme_override_styles/focus = ExtResource("9_focus")
+text = "O'zbek"
+
+[node name="BtnRU" type="Button" parent="Card/Content/LangRow/BtnBox"]
+custom_minimum_size = Vector2(88, 34)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = ExtResource("6_g_norm")
+theme_override_styles/hover = ExtResource("7_g_hov")
+theme_override_styles/pressed = ExtResource("8_g_press")
+theme_override_styles/focus = ExtResource("9_focus")
+text = "Русский"
+
+[node name="BtnEN" type="Button" parent="Card/Content/LangRow/BtnBox"]
+custom_minimum_size = Vector2(88, 34)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = ExtResource("6_g_norm")
+theme_override_styles/hover = ExtResource("7_g_hov")
+theme_override_styles/pressed = ExtResource("8_g_press")
+theme_override_styles/focus = ExtResource("9_focus")
+text = "English"
+
+[node name="BtnTR" type="Button" parent="Card/Content/LangRow/BtnBox"]
+custom_minimum_size = Vector2(88, 34)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = ExtResource("6_g_norm")
+theme_override_styles/hover = ExtResource("7_g_hov")
+theme_override_styles/pressed = ExtResource("8_g_press")
+theme_override_styles/focus = ExtResource("9_focus")
+text = "Türkçe"
+
+[node name="MusicRow" type="HBoxContainer" parent="Card/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MusicIcon" type="TextureRect" parent="Card/Content/MusicRow"]
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MusicLabel" type="Label" parent="Card/Content/MusicRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "Fon musiqasi (BGM):"
+
+[node name="MusicToggleBtn" type="Button" parent="Card/Content/MusicRow"]
+custom_minimum_size = Vector2(90, 30)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.06, 0.07, 0.1, 1)
+theme_override_colors/font_hover_color = Color(0.02, 0.03, 0.05, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = ExtResource("3_w_norm")
+theme_override_styles/hover = ExtResource("4_w_hov")
+theme_override_styles/pressed = ExtResource("5_w_press")
+theme_override_styles/focus = ExtResource("9_focus")
+text = "YONIQ"
+
+[node name="MusicVolRow" type="HBoxContainer" parent="Card/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MusicVolLabel" type="Label" parent="Card/Content/MusicVolRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.70, 0.82, 1)
+theme_override_font_sizes/font_size = 11
+text = "Musiqa balandligi:"
+
+[node name="MusicVolSlider" type="HSlider" parent="Card/Content/MusicVolRow"]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+focus_mode = 0
+theme_override_styles/slider = ExtResource("11_track")
+theme_override_styles/grabber_area = ExtResource("12_fill")
+theme_override_styles/grabber_area_highlight = ExtResource("12_fill")
+min_value = 0.0
+max_value = 100.0
+step = 1.0
+value = 80.0
+
+[node name="MusicVolPercent" type="Label" parent="Card/Content/MusicVolRow"]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "80%"
+horizontal_alignment = 2
+
+[node name="SoundRow" type="HBoxContainer" parent="Card/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SoundIcon" type="TextureRect" parent="Card/Content/SoundRow"]
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SoundLabel" type="Label" parent="Card/Content/SoundRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "Ovoz effektlari (SFX):"
+
+[node name="SoundToggleBtn" type="Button" parent="Card/Content/SoundRow"]
+custom_minimum_size = Vector2(90, 30)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.06, 0.07, 0.1, 1)
+theme_override_colors/font_hover_color = Color(0.02, 0.03, 0.05, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = ExtResource("3_w_norm")
+theme_override_styles/hover = ExtResource("4_w_hov")
+theme_override_styles/pressed = ExtResource("5_w_press")
+theme_override_styles/focus = ExtResource("9_focus")
+text = "YONIQ"
+
+[node name="SoundVolRow" type="HBoxContainer" parent="Card/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SoundVolLabel" type="Label" parent="Card/Content/SoundVolRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.70, 0.82, 1)
+theme_override_font_sizes/font_size = 11
+text = "Effektlar balandligi:"
+
+[node name="SoundVolSlider" type="HSlider" parent="Card/Content/SoundVolRow"]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+focus_mode = 0
+theme_override_styles/slider = ExtResource("11_track")
+theme_override_styles/grabber_area = ExtResource("12_fill")
+theme_override_styles/grabber_area_highlight = ExtResource("12_fill")
+min_value = 0.0
+max_value = 100.0
+step = 1.0
+value = 100.0
+
+[node name="SoundVolPercent" type="Label" parent="Card/Content/SoundVolRow"]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "100%"
+horizontal_alignment = 2
+
+[node name="ShakeRow" type="HBoxContainer" parent="Card/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ShakeIcon" type="TextureRect" parent="Card/Content/ShakeRow"]
+custom_minimum_size = Vector2(18, 18)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ShakeLabel" type="Label" parent="Card/Content/ShakeRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 13
+text = "Ekran silkinishi:"
+
+[node name="ShakeToggleBtn" type="Button" parent="Card/Content/ShakeRow"]
+custom_minimum_size = Vector2(90, 30)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.06, 0.07, 0.1, 1)
+theme_override_colors/font_hover_color = Color(0.02, 0.03, 0.05, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = ExtResource("3_w_norm")
+theme_override_styles/hover = ExtResource("4_w_hov")
+theme_override_styles/pressed = ExtResource("5_w_press")
+theme_override_styles/focus = ExtResource("9_focus")
+text = "YONIQ"
+
+[node name="ControlsBox" type="VBoxContainer" parent="Card/Content"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ControlsTitle" type="Label" parent="Card/Content/ControlsBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.78, 0.88, 1)
+theme_override_font_sizes/font_size = 12
+text = "Boshqaruv:"
+
+[node name="ControlsDesc" type="Label" parent="Card/Content/ControlsBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.50, 0.55, 0.65, 1)
+theme_override_font_sizes/font_size = 11
+text = "Yurish: A/D yoki Sensor tugmalar\nSakrash: W / Space / SAKRA\nMenyu: Pause yoki Esc"
+
+[node name="CustomizeControlsBtn" type="Button" parent="Card/Content/ControlsBox"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = ExtResource("6_g_norm")
+theme_override_styles/hover = ExtResource("7_g_hov")
+theme_override_styles/pressed = ExtResource("8_g_press")
+theme_override_styles/focus = ExtResource("9_focus")
+text = "Tugmalar joyini sozlash"
+
+[node name="CloseBtn" type="Button" parent="Card"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -46.0
+offset_top = 8.0
+offset_right = -10.0
+offset_bottom = 44.0
+grow_horizontal = 0
+focus_mode = 0
+mouse_filter = 0
+theme_override_styles/normal = ExtResource("9_focus")
+theme_override_styles/hover = ExtResource("9_focus")
+theme_override_styles/pressed = ExtResource("9_focus")
+theme_override_styles/focus = ExtResource("9_focus")
+icon_alignment = 1
+
+[node name="ControlCustomizer" parent="." instance=ExtResource("10_customizer")]
+visible = false
+layout_mode = 1

@@ -1,0 +1,65 @@
+[gd_scene format=3 uid="uid://level12scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="4_tf"]
+[ext_resource type="PackedScene" path="res://scenes/traps/crusher.tscn" id="5_cr"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="6_ed"]
+
+[node name="Level12" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 12
+
+[node name="Platforms" type="Node2D" parent="."]
+[node name="PlatLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(30, 380)
+platform_size = Vector2(200, 160)
+
+[node name="PlatMid" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(370, 380)
+platform_size = Vector2(160, 160)
+
+[node name="PlatEnd" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(740, 380)
+platform_size = Vector2(190, 160)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+[node name="Trap1" parent="Traps" instance=ExtResource("4_tf")]
+position = Vector2(240, 380)
+platform_size = Vector2(120, 160)
+
+[node name="Trap2" parent="Traps" instance=ExtResource("4_tf")]
+position = Vector2(540, 380)
+platform_size = Vector2(90, 160)
+
+[node name="Trap3" parent="Traps" instance=ExtResource("4_tf")]
+position = Vector2(640, 380)
+platform_size = Vector2(90, 160)
+
+[node name="Crusher1" parent="Traps" instance=ExtResource("5_cr")]
+position = Vector2(400, 140)
+crusher_size = Vector2(90, 55)
+target_y = 325.0
+
+[node name="Crusher2" parent="Traps" instance=ExtResource("5_cr")]
+position = Vector2(760, 140)
+crusher_size = Vector2(80, 55)
+target_y = 325.0
+
+[node name="ExitDoor" parent="." instance=ExtResource("6_ed")]
+position = Vector2(850, 380)
+runaway_enabled = true
+runaway_distance = 110.0
+runaway_offset_x = -150.0
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(100, 380)

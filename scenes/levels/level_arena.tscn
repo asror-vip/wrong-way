@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://level_arena_scene"]
+
+[ext_resource type="Script" path="res://scripts/levels/level_arena.gd" id="1_arena"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="3_door"]
+
+[node name="LevelArena" type="Node2D"]
+script = ExtResource("1_arena")
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="Traps" type="Node2D" parent="."]
+
+[node name="ExitDoor" parent="." instance=ExtResource("3_door")]
+position = Vector2(850, 380)
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(120, 380)
+

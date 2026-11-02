@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://level04scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
+
+[node name="Level04" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 4
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="PlatLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(300, 160)
+
+[node name="Island" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(420, 380)
+platform_size = Vector2(120, 40)
+
+[node name="PlatRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(660, 380)
+platform_size = Vector2(300, 160)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+
+[node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
+position = Vector2(850, 380)
+runaway_enabled = true
+runaway_distance = 110.0
+runaway_offset_x = -700.0
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(120, 380)

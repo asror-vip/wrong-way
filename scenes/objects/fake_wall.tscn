@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://fakewallscn"]
+
+[ext_resource type="Script" path="res://scripts/objects/fake_wall.gd" id="1_fw"]
+
+[node name="FakeWall" type="Node2D"]
+script = ExtResource("1_fw")
+

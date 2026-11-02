@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://level05scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/traps/falling_ceiling.tscn" id="4_fc"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="5_ed"]
+
+[node name="Level05" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 5
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="Ground" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(960, 160)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+
+[node name="FallingCeiling" parent="Traps" instance=ExtResource("4_fc")]
+position = Vector2(400, 140)
+ceiling_size = Vector2(160, 40)
+slam_distance_y = 200.0
+trigger_distance_x = 100.0
+
+[node name="ExitDoor" parent="." instance=ExtResource("5_ed")]
+position = Vector2(850, 380)
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(120, 380)

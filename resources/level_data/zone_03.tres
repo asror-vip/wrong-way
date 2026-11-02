@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="LevelData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/level_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+level_id = "zone_03"
+level_name = "Aldamchi Sakrash"
+level_version = 1
+author = "Wrong Way Team"
+par_time_ms = 4500
+target_deaths = 0
+checksum = "ww_zone_03_v1"
+scene_path = "res://scenes/levels/level_3.tscn"

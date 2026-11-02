@@ -1,0 +1,54 @@
+[gd_scene format=3 uid="uid://level08scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="4_tf"]
+[ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="5_fs"]
+[ext_resource type="PackedScene" path="res://scenes/traps/jumping_spikes.tscn" id="6_js"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="6_ed"]
+
+[node name="Level08" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 8
+
+[node name="Platforms" type="Node2D" parent="."]
+[node name="PlatLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(30, 380)
+platform_size = Vector2(250, 160)
+
+[node name="MidPillar" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(430, 370)
+platform_size = Vector2(100, 80)
+
+[node name="PlatRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(680, 380)
+platform_size = Vector2(250, 160)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+[node name="TrapEdge" parent="Traps" instance=ExtResource("4_tf")]
+position = Vector2(280, 380)
+platform_size = Vector2(90, 160)
+
+[node name="FallingSpike" parent="Traps" instance=ExtResource("5_fs")]
+position = Vector2(480, 60)
+trigger_distance = 350.0
+
+[node name="JumpingSpikes" parent="Traps" instance=ExtResource("6_js")]
+position = Vector2(740, 380)
+spike_width = 48.0
+trigger_distance = 90.0
+
+[node name="ExitDoor" parent="." instance=ExtResource("6_ed")]
+position = Vector2(850, 380)
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(100, 380)

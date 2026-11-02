@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://dgdns5hojsqr"]
+
+[ext_resource type="Script" path="res://scripts/traps/sinking_door_floor.gd" id="1_sdf"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sdf"]
+size = Vector2(100, 160)
+
+[node name="SinkingDoorFloor" type="StaticBody2D"]
+collision_mask = 3
+script = ExtResource("1_sdf")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(50, 80)
+shape = SubResource("RectangleShape2D_sdf")
+

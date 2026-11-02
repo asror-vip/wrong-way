@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3 uid="uid://deathpart01"]
+
+[sub_resource type="Curve" id="Curve_dp"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="GDScript" id="GDScript_auto"]
+script/source = "extends CPUParticles2D
+func _ready() -> void:
+	emitting = true
+	await get_tree().create_timer(lifetime + 0.1).timeout
+	queue_free()
+"
+
+[node name="DeathParticles" type="CPUParticles2D"]
+emitting = true
+amount = 22
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+emission_shape = 0
+spread = 180.0
+gravity = Vector2(0, 980)
+initial_velocity_min = 120.0
+initial_velocity_max = 380.0
+scale_amount_min = 4.0
+scale_amount_max = 8.0
+scale_amount_curve = SubResource("Curve_dp")
+color = Color(0.125, 0.117, 0.137, 1)
+script = SubResource("GDScript_auto")

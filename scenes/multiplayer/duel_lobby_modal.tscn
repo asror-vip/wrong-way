@@ -1,0 +1,365 @@
+[gd_scene load_steps=8 format=3 uid="uid://c6v2n8m7q9k4l"]
+
+[ext_resource type="Script" path="res://scripts/multiplayer/duel_lobby_modal.gd" id="1_lobby"]
+[ext_resource type="StyleBox" path="res://resources/themes/panel_obsidian_modal.tres" id="2_obsidian"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white.tres" id="3_white"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass.tres" id="4_glass"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass.tres" id="5_circ"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(0.08, 0.1, 0.15, 0.85)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.35, 0.5, 0.5)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_incoming"]
+bg_color = Color(0.12, 0.16, 0.24, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.22, 0.74, 0.97, 0.8)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+shadow_color = Color(0.22, 0.74, 0.97, 0.25)
+shadow_size = 8
+
+[node name="DuelLobbyModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_lobby")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.05, 0.8)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="Center"]
+custom_minimum_size = Vector2(620, 480)
+layout_mode = 2
+theme_override_styles/panel = ExtResource("2_obsidian")
+
+[node name="TitleLabel" type="Label" parent="Center/Panel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 16.0
+offset_bottom = 42.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.22, 0.74, 0.97, 0.4)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 18
+text = "< ◇ — 1v1 DUEL MULTIPLAYER — ◇ >"
+horizontal_alignment = 1
+
+[node name="CloseBtn" type="Button" parent="Center/Panel"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -48.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = 48.0
+grow_horizontal = 0
+focus_mode = 0
+text = "✕"
+
+[node name="MyIdBar" type="HBoxContainer" parent="Center/Panel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 44.0
+offset_bottom = 68.0
+grow_horizontal = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="MyIdLabel" type="Label" parent="Center/Panel/MyIdBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.82, 0.95, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "Sizning ID: #WW-0000"
+
+[node name="CopyIdBtn" type="Button" parent="Center/Panel/MyIdBar"]
+custom_minimum_size = Vector2(90, 24)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 11
+text = "Nusxa"
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = 76.0
+offset_right = -28.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="SearchBox" type="VBoxContainer" parent="Center/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DirectInviteHBox" type="HBoxContainer" parent="Center/Panel/VBox/SearchBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="TagInput" type="LineEdit" parent="Center/Panel/VBox/SearchBox/DirectInviteHBox"]
+custom_minimum_size = Vector2(360, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+placeholder_text = "Do'stingiz ID si yoki o'yinchi qidirish"
+alignment = 1
+max_length = 20
+
+[node name="InviteBtn" type="Button" parent="Center/Panel/VBox/SearchBox/DirectInviteHBox"]
+custom_minimum_size = Vector2(140, 40)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.08, 0.1, 0.15, 1)
+text = "Duelga chaqirish"
+
+[node name="RandomBtn" type="Button" parent="Center/Panel/VBox/SearchBox"]
+custom_minimum_size = Vector2(300, 38)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+theme_override_colors/font_color = Color(0.92, 0.95, 1, 1)
+text = "Tasodifiy Raqib Qidirish"
+
+[node name="StatusLabel" type="Label" parent="Center/Panel/VBox/SearchBox"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.74, 0.97, 1)
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Center/Panel/VBox/SearchBox"]
+layout_mode = 2
+
+[node name="FriendsHeaderHBox" type="HBoxContainer" parent="Center/Panel/VBox/SearchBox"]
+layout_mode = 2
+
+[node name="FriendsTitle" type="Label" parent="Center/Panel/VBox/SearchBox/FriendsHeaderHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 1, 0.95)
+theme_override_font_sizes/font_size = 13
+text = "Do'stlar va Faol O'yinchilar (Tezkor chaqirish):"
+
+[node name="Spacer" type="Control" parent="Center/Panel/VBox/SearchBox/FriendsHeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RefreshBtn" type="Button" parent="Center/Panel/VBox/SearchBox/FriendsHeaderHBox"]
+custom_minimum_size = Vector2(95, 24)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 11
+text = "Yangilash"
+
+[node name="FriendsScroll" type="ScrollContainer" parent="Center/Panel/VBox/SearchBox"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="FriendsVBox" type="VBoxContainer" parent="Center/Panel/VBox/SearchBox/FriendsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="LobbyBox" type="VBoxContainer" parent="Center/Panel/VBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="PlayersHBox" type="HBoxContainer" parent="Center/Panel/VBox/LobbyBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="PlayerACard" type="PanelContainer" parent="Center/Panel/VBox/LobbyBox/PlayersHBox"]
+custom_minimum_size = Vector2(210, 70)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/VBox/LobbyBox/PlayersHBox/PlayerACard"]
+layout_mode = 2
+alignment = 1
+
+[node name="NameLabel" type="Label" parent="Center/Panel/VBox/LobbyBox/PlayersHBox/PlayerACard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Siz"
+horizontal_alignment = 1
+
+[node name="TagLabel" type="Label" parent="Center/Panel/VBox/LobbyBox/PlayersHBox/PlayerACard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.74, 0.97, 1)
+theme_override_font_sizes/font_size = 11
+text = "WW-0000"
+horizontal_alignment = 1
+
+[node name="VsLabel" type="Label" parent="Center/Panel/VBox/LobbyBox/PlayersHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 20
+text = "VS"
+horizontal_alignment = 1
+
+[node name="PlayerBCard" type="PanelContainer" parent="Center/Panel/VBox/LobbyBox/PlayersHBox"]
+custom_minimum_size = Vector2(210, 70)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/VBox/LobbyBox/PlayersHBox/PlayerBCard"]
+layout_mode = 2
+alignment = 1
+
+[node name="NameLabel" type="Label" parent="Center/Panel/VBox/LobbyBox/PlayersHBox/PlayerBCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "Raqib"
+horizontal_alignment = 1
+
+[node name="TagLabel" type="Label" parent="Center/Panel/VBox/LobbyBox/PlayersHBox/PlayerBCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 11
+text = "Kutilmoqda..."
+horizontal_alignment = 1
+
+[node name="NegotiationPanel" type="PanelContainer" parent="Center/Panel/VBox/LobbyBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+
+[node name="VBox" type="VBoxContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "O'zaro kelishuv: Qaysi zona va darajada o'ynashni taklif qilasiz?"
+horizontal_alignment = 1
+
+[node name="SelectHBox" type="HBoxContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ZoneSelect" type="OptionButton" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/SelectHBox"]
+custom_minimum_size = Vector2(170, 34)
+layout_mode = 2
+focus_mode = 0
+
+[node name="LevelSelect" type="OptionButton" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/SelectHBox"]
+custom_minimum_size = Vector2(120, 34)
+layout_mode = 2
+focus_mode = 0
+
+[node name="ProposeBtn" type="Button" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/SelectHBox"]
+custom_minimum_size = Vector2(120, 34)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.08, 0.1, 0.15, 1)
+text = "Taklif qilish"
+
+[node name="IncomingProposalBox" type="PanelContainer" parent="Center/Panel/VBox/LobbyBox"]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_incoming")
+
+[node name="HBox" type="HBoxContainer" parent="Center/Panel/VBox/LobbyBox/IncomingProposalBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="ProposalLabel" type="Label" parent="Center/Panel/VBox/LobbyBox/IncomingProposalBox/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Raqib taklifi: 1-Bob · 5-Daraja"
+
+[node name="RejectBtn" type="Button" parent="Center/Panel/VBox/LobbyBox/IncomingProposalBox/HBox"]
+custom_minimum_size = Vector2(90, 34)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+text = "Rad etish"
+
+[node name="AcceptBtn" type="Button" parent="Center/Panel/VBox/LobbyBox/IncomingProposalBox/HBox"]
+custom_minimum_size = Vector2(100, 34)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.08, 0.1, 0.15, 1)
+text = "Qabul qilish"
+
+[node name="CountdownLabel" type="Label" parent="Center/Panel"]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -60.0
+offset_right = 100.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(100, 60)
+theme_override_colors/font_color = Color(0.22, 0.74, 0.97, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.9)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 6
+theme_override_constants/shadow_outline_size = 10
+theme_override_font_sizes/font_size = 72
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1

@@ -1,0 +1,3 @@
+@echo off
+echo Starting Wrong Way - Competitive 2D Trap-Platformer...
+start "" "D:\Downloads\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64.exe" --path "%~dp0"

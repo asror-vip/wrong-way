@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://co831jhk5ncdl"]
+
+[ext_resource type="Script" path="res://scripts/traps/crashing_pillar.gd" id="1_cp"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_col"]
+size = Vector2(50, 200)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kill"]
+size = Vector2(46, 16)
+
+[node name="CrashingPillar" type="AnimatableBody2D"]
+collision_mask = 3
+script = ExtResource("1_cp")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(25, 100)
+shape = SubResource("RectangleShape2D_col")
+
+[node name="KillArea" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KillArea"]
+position = Vector2(25, 192)
+shape = SubResource("RectangleShape2D_kill")
+

@@ -1,0 +1,115 @@
+extends Node
+
+# LevelDatabase - Data-driven Level System (Supabase-integrated)
+# 1. Local fallback from res://data/levels.json or user://levels_cache.json
+# 2. Asynchronous background sync from Supabase REST API ('levels' table)
+# 3. Transparent caching: if online, updates with the latest Supabase level data!
+
+signal levels_synced_from_cloud(count: int)
+
+const SUPABASE_URL := "https://wcwjobrrwwjfthpflzhg.supabase.co"
+const SUPABASE_ANON_KEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjd2pvYnJyd3dqZnRocGZsemhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0NzIzNTEsImV4cCI6MjEwOTA0ODM1MX0.16SXhNkvVehgIuNhcGH3l9bDS37mkmbGt12h8F2CyoY"
+const CACHE_FILE_PATH := "user://levels_cache.json"
+
+var _levels_cache: Dictionary = {}
+var is_loaded: bool = false
+var http_sync: HTTPRequest
+
+func _ready() -> void:
+	load_local_levels()
+	_init_supabase_sync()
+
+func load_local_levels() -> void:
+	_levels_cache.clear()
+	
+	# 1. User keshini tekshiramiz (agar avval Supabase'dan yuklangan bo'lsa)
+	var loaded_from_user_cache := false
+	if FileAccess.file_exists(CACHE_FILE_PATH):
+		var u_file := FileAccess.open(CACHE_FILE_PATH, FileAccess.READ)
+		if u_file:
+			var u_text := u_file.get_as_text()
+			u_file.close()
+			var u_parsed = JSON.parse_string(u_text)
+			if u_parsed is Array and u_parsed.size() > 0:
+				_populate_cache(u_parsed)
+				loaded_from_user_cache = true
+				
+	# 2. Agar kesh bo'lmasa, ichki res://data/levels.json dan o'qiymiz
+	if not loaded_from_user_cache:
+		var file_path := "res://data/levels.json"
+		if not FileAccess.file_exists(file_path):
+			push_error("LevelDatabase: %s topilmadi!" % file_path)
+			return
+			
+		var file := FileAccess.open(file_path, FileAccess.READ)
+		if not file:
+			push_error("LevelDatabase: Faylni ochib bo'lmadi: %s" % file_path)
+			return
+			
+		var json_text := file.get_as_text()
+		file.close()
+		
+		var parsed = JSON.parse_string(json_text)
+		if parsed is Array:
+			_populate_cache(parsed)
+			
+	is_loaded = true
+	print("LevelDatabase: %d ta daraja muvaffaqiyatli yuklandi!" % _levels_cache.size())
+
+func _populate_cache(items: Array) -> void:
+	for item in items:
+		if item is Dictionary and item.has("id"):
+			var lvl_id: int = int(item["id"])
+			_levels_cache[lvl_id] = item
+
+func _init_supabase_sync() -> void:
+	http_sync = HTTPRequest.new()
+	http_sync.name = "SupabaseLevelSync"
+	add_child(http_sync)
+	http_sync.request_completed.connect(_on_sync_completed)
+	
+	# Backgroundda Supabase'dan eng so'nggi darajalarni olish
+	fetch_from_supabase()
+
+func fetch_from_supabase() -> void:
+	if not http_sync:
+		return
+	var url := SUPABASE_URL + "/rest/v1/levels?select=*&order=id.asc"
+	var headers := [
+		"apikey: " + SUPABASE_ANON_KEY,
+		"Authorization: Bearer " + SUPABASE_ANON_KEY
+	]
+	var err := http_sync.request(url, headers)
+	if err != OK:
+		print("LevelDatabase: Supabase so'rovida xatolik: ", err)
+
+func _on_sync_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	if response_code == 200:
+		var json_str := body.get_string_from_utf8()
+		var parsed = JSON.parse_string(json_str)
+		if parsed is Array and parsed.size() > 0:
+			_populate_cache(parsed)
+			# Keshga saqlash
+			var save_file := FileAccess.open(CACHE_FILE_PATH, FileAccess.WRITE)
+			if save_file:
+				save_file.store_string(json_str)
+				save_file.close()
+			print("LevelDatabase: Supabase'dan %d ta daraja yangilandi va keshlandi!" % parsed.size())
+			levels_synced_from_cloud.emit(parsed.size())
+	else:
+		print("LevelDatabase: Supabase sinxronizatsiyasi o'tkazib yuborildi (Offline/Status: %d)" % response_code)
+
+func get_level(level_id: int) -> Dictionary:
+	if not is_loaded:
+		load_local_levels()
+	return _levels_cache.get(level_id, {})
+
+func has_level(level_id: int) -> bool:
+	if not is_loaded:
+		load_local_levels()
+	return _levels_cache.has(level_id)
+
+func get_all_levels() -> Array:
+	if not is_loaded:
+		load_local_levels()
+	return _levels_cache.values()

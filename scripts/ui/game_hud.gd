@@ -1,0 +1,116 @@
+extends Control
+
+# Wrong Way - Game HUD Controller
+# Atmospheric Minimalist HUD with Circular Glass Controls & Diamond Header
+
+@onready var pause_btn: Button = get_node_or_null("TopHUD/PauseBtn")
+@onready var level_label: Label = get_node_or_null("TopHUD/CenterHeader/HBox/LevelLabel")
+@onready var time_icon: TextureRect = get_node_or_null("TopHUD/RightBox/TimeChip/HBox/TimeIcon")
+@onready var time_label: Label = get_node_or_null("TopHUD/RightBox/TimeChip/HBox/TimeLabel")
+@onready var skull_icon: TextureRect = get_node_or_null("TopHUD/RightBox/DeathsChip/HBox/SkullIcon")
+@onready var deaths_label: Label = get_node_or_null("TopHUD/RightBox/DeathsChip/HBox/DeathsLabel")
+
+@onready var left_btn: Button = get_node_or_null("TouchControls/LeftBtn")
+@onready var right_btn: Button = get_node_or_null("TouchControls/RightBtn")
+@onready var jump_btn: Button = get_node_or_null("TouchControls/JumpBtn")
+
+var current_deaths: int = 0
+
+func _ready() -> void:
+	LocaleManager.language_changed.connect(_on_language_changed)
+	GameManager.player_died.connect(_on_player_died)
+	GameManager.level_started.connect(_on_level_started)
+	SaveManager.touch_layout_changed.connect(_apply_custom_touch_layout)
+	
+	_apply_custom_touch_layout()
+	_setup_icons()
+	_update_texts()
+	
+	if left_btn: _setup_touch_btn(left_btn, "move_left")
+	if right_btn: _setup_touch_btn(right_btn, "move_right")
+	if jump_btn: _setup_touch_btn(jump_btn, "jump")
+
+func _apply_custom_touch_layout() -> void:
+	var sm = get_node_or_null("/root/SaveManager")
+	var def_left = Vector2(32, 452)
+	var def_right = Vector2(112, 452)
+	var def_jump = Vector2(860, 448)
+	if sm:
+		if left_btn: left_btn.position = sm.get_touch_pos("left", def_left)
+		if right_btn: right_btn.position = sm.get_touch_pos("right", def_right)
+		if jump_btn: jump_btn.position = sm.get_touch_pos("jump", def_jump)
+	else:
+		if left_btn: left_btn.position = def_left
+		if right_btn: right_btn.position = def_right
+		if jump_btn: jump_btn.position = def_jump
+
+func _process(_delta: float) -> void:
+	if time_label:
+		if GameManager.is_level_running:
+			var elapsed_sec: float = (float(Time.get_ticks_msec()) - GameManager.level_start_time) / 1000.0
+			time_label.text = "%ds" % int(maxf(elapsed_sec, 0.0))
+		elif GameManager.level_timer_ms > 0:
+			time_label.text = "%ds" % int(GameManager.level_timer_ms / 1000.0)
+
+func _setup_icons() -> void:
+	if pause_btn:
+		pause_btn.icon = IconFactory.get_icon("circle_btn_pause", 1.0)
+		pause_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		pause_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	if time_icon:
+		time_icon.texture = IconFactory.get_icon("timer_white", 0.8)
+	if skull_icon:
+		skull_icon.texture = IconFactory.get_icon("skull_white", 0.8)
+	if left_btn:
+		left_btn.icon = IconFactory.get_icon("circle_btn_left", 1.0)
+		left_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		left_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	if right_btn:
+		right_btn.icon = IconFactory.get_icon("circle_btn_right", 1.0)
+		right_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		right_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	if jump_btn:
+		jump_btn.icon = IconFactory.get_icon("circle_btn_jump", 1.0)
+		jump_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		jump_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+
+func _on_language_changed(_lang: String) -> void:
+	_update_texts()
+
+func _on_level_started(_level_id: int) -> void:
+	current_deaths = GameManager.level_deaths
+	_update_texts()
+	_update_deaths_display()
+
+func _update_texts() -> void:
+	if level_label:
+		level_label.text = LocaleManager.t("level_header", [GameManager.current_level_id])
+	_update_deaths_display()
+
+func _on_player_died(deaths_count: int) -> void:
+	current_deaths = deaths_count
+	_update_deaths_display()
+
+func _update_deaths_display() -> void:
+	if deaths_label:
+		deaths_label.text = "%d" % current_deaths
+
+func _setup_touch_btn(btn: Button, action: String) -> void:
+	btn.button_down.connect(func(): Input.action_press(action))
+	btn.button_up.connect(func(): Input.action_release(action))
+	btn.mouse_exited.connect(func():
+		if Input.is_action_pressed(action):
+			Input.action_release(action)
+	)
+
+func _on_pause_btn_pressed() -> void:
+	SoundManager.play("click")
+	var parent_canvas = get_parent()
+	if parent_canvas:
+		var pause_modal = parent_canvas.get_node_or_null("PauseModal")
+		if pause_modal and pause_modal.has_method("open_pause"):
+			pause_modal.open_pause()
+			return
+	var pause_node = get_tree().current_scene.find_child("PauseModal", true, false)
+	if pause_node and pause_node.has_method("open_pause"):
+		pause_node.open_pause()

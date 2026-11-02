@@ -1,0 +1,87 @@
+[gd_scene format=3 uid="uid://level20scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="4_tf"]
+[ext_resource type="PackedScene" path="res://scenes/traps/spring.tscn" id="5_spg"]
+[ext_resource type="PackedScene" path="res://scenes/traps/laser_beam.tscn" id="6_lb"]
+[ext_resource type="PackedScene" path="res://scenes/traps/moving_saw.tscn" id="7_ms"]
+[ext_resource type="PackedScene" path="res://scenes/traps/sinking_door_floor.tscn" id="7_sdf"]
+[ext_resource type="PackedScene" path="res://scenes/traps/jumping_spikes.tscn" id="7_js"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="8_ed"]
+
+[node name="Level20" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 20
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="PlatLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(30, 380)
+platform_size = Vector2(170, 160)
+
+[node name="SpringBlock" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(310, 420)
+platform_size = Vector2(90, 120)
+
+[node name="HighLedge" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(460, 260)
+platform_size = Vector2(140, 45)
+
+[node name="StepMid" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(650, 310)
+platform_size = Vector2(120, 45)
+
+[node name="FinalPlat" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(870, 360)
+platform_size = Vector2(60, 180)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+
+[node name="Trap1" parent="Traps" instance=ExtResource("4_tf")]
+position = Vector2(215, 380)
+platform_size = Vector2(80, 40)
+
+[node name="Spring" parent="Traps" instance=ExtResource("5_spg")]
+position = Vector2(339, 388)
+spring_size = Vector2(32, 32)
+launch_velocity = -950.0
+
+[node name="LaserBeam" parent="Traps" instance=ExtResource("6_lb")]
+position = Vector2(530, 100)
+beam_length = 160.0
+active_time = 1.3
+inactive_time = 1.6
+is_vertical = true
+
+[node name="MovingSaw" parent="Traps" instance=ExtResource("7_ms")]
+position = Vector2(665, 290)
+radius = 16.0
+patrol_distance = 60.0
+patrol_speed = 70.0
+
+[node name="SinkingFloor" parent="Traps" instance=ExtResource("7_sdf")]
+position = Vector2(790, 360)
+platform_size = Vector2(80, 180)
+
+[node name="JumpingSpikes" parent="Traps" instance=ExtResource("7_js")]
+position = Vector2(470, 260)
+spike_width = 36.0
+
+[node name="ExitDoor" parent="." instance=ExtResource("8_ed")]
+position = Vector2(890, 360)
+runaway_enabled = true
+runaway_distance = 130.0
+runaway_offset_x = -380.0
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(100, 380)

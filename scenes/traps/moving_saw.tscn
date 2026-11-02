@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/traps/moving_saw.gd" id="1_msaw"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_msaw"]
+radius = 15.0
+
+[node name="MovingSaw" type="Area2D" groups=["traps"]]
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("1_msaw")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_msaw")

@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/traps/falling_spike.gd" id="1_fspk"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fspk"]
+size = Vector2(32, 32)
+
+[node name="FallingSpike" type="Area2D" groups=["traps"]]
+collision_layer = 8
+collision_mask = 3
+script = ExtResource("1_fspk")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 16)
+shape = SubResource("RectangleShape2D_fspk")
+

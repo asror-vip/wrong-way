@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://level07scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="4_tf"]
+[ext_resource type="PackedScene" path="res://scenes/traps/crusher.tscn" id="5_cr"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="6_ed"]
+[ext_resource type="PackedScene" path="res://scenes/traps/falling_ceiling.tscn" id="7_fc"]
+
+[node name="Level07" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 7
+
+[node name="Platforms" type="Node2D" parent="."]
+[node name="Ground" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(30, 380)
+platform_size = Vector2(900, 160)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+[node name="Crusher1" parent="Traps" instance=ExtResource("5_cr")]
+position = Vector2(320, 140)
+crusher_size = Vector2(80, 55)
+target_y = 325.0
+
+[node name="Crusher2" parent="Traps" instance=ExtResource("5_cr")]
+position = Vector2(500, 140)
+crusher_size = Vector2(80, 55)
+target_y = 325.0
+
+[node name="Crusher3" parent="Traps" instance=ExtResource("5_cr")]
+position = Vector2(680, 140)
+crusher_size = Vector2(80, 55)
+target_y = 325.0
+
+[node name="FallingCeiling" parent="Traps" instance=ExtResource("7_fc")]
+position = Vector2(585, 120)
+ceiling_size = Vector2(80, 40)
+slam_distance_y = 220.0
+trigger_distance_x = 90.0
+
+[node name="ExitDoor" parent="." instance=ExtResource("6_ed")]
+position = Vector2(850, 380)
+runaway_enabled = true
+runaway_distance = 110.0
+runaway_offset_x = -130.0
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(100, 380)

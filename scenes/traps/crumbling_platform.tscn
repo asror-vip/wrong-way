@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://dkc08f3twttsb"]
+
+[ext_resource type="Script" path="res://scripts/traps/crumbling_platform.gd" id="1_cp"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_col"]
+size = Vector2(140, 28)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_step"]
+size = Vector2(136, 10)
+
+[node name="CrumblingPlatform" type="StaticBody2D"]
+collision_mask = 3
+script = ExtResource("1_cp")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(70, 14)
+shape = SubResource("RectangleShape2D_col")
+
+[node name="StepArea" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StepArea"]
+position = Vector2(70, -4)
+shape = SubResource("RectangleShape2D_step")
+

@@ -1,0 +1,55 @@
+[gd_scene load_steps=5 format=3 uid="uid://trapfloor01"]
+
+[ext_resource type="Script" path="res://scripts/traps/trap_floor.gd" id="1_tf"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_tf1"]
+size = Vector2(140, 160)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_trig"]
+size = Vector2(230, 90)
+
+[sub_resource type="GDScript" id="GDScript_vis"]
+script/source = "extends Node2D
+func _draw() -> void:
+	var target = get_parent()
+	var w: float = 140.0
+	var h: float = 160.0
+	if target and \"platform_size\" in target:
+		w = target.platform_size.x
+		h = target.platform_size.y
+	var is_winter := false
+	var gm = get_node_or_null(\"/root/GameManager\")
+	if gm and gm.has_method(\"is_winter_theme\"):
+		is_winter = gm.is_winter_theme()
+	var rect := Rect2(0, 0, w, h)
+	var base_col := Color(\"#0c111c\") if is_winter else Color(\"#0a0b10\")
+	draw_rect(rect, base_col, true)
+	if is_winter:
+		var snow_h := 5.5
+		draw_rect(Rect2(0, 0, w, snow_h), Color(\"#f1f5f9\"), true)
+		draw_rect(Rect2(0, 0, w, 2.0), Color(\"#ffffff\"), true)
+		draw_rect(Rect2(0, snow_h - 1.5, w, 1.5), Color(\"#94a3b8\"), true)
+	else:
+		draw_rect(Rect2(0, 0, w, 2.0), Color(\"#262e3e\"), true)
+"
+
+[node name="TrapFloor" type="StaticBody2D" groups=["traps"]]
+collision_layer = 1
+collision_mask = 2
+script = ExtResource("1_tf")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(70, 80)
+shape = SubResource("RectangleShape2D_tf1")
+
+
+[node name="TriggerArea" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 2
+
+[node name="TriggerShape" type="CollisionShape2D" parent="TriggerArea"]
+position = Vector2(25, 25)
+shape = SubResource("RectangleShape2D_trig")
+
+[node name="Visual" type="Node2D" parent="."]
+script = SubResource("GDScript_vis")

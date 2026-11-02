@@ -1,0 +1,199 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/game_hud.gd" id="1_hud"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass.tres" id="2_glass"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_focus_empty.tres" id="3_focus"]
+
+[node name="GameHUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="TopHUD" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 60.0
+grow_horizontal = 2
+
+[node name="PauseBtn" type="Button" parent="TopHUD"]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 1
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 64.0
+offset_bottom = 60.0
+focus_mode = 0
+theme_override_styles/normal = ExtResource("3_focus")
+theme_override_styles/hover = ExtResource("3_focus")
+theme_override_styles/pressed = ExtResource("3_focus")
+theme_override_styles/focus = ExtResource("3_focus")
+
+[node name="CenterHeader" type="Control" parent="TopHUD"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -14.0
+offset_right = 160.0
+offset_bottom = 18.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBox" type="HBoxContainer" parent="TopHUD/CenterHeader"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="LeftDeco" type="Label" parent="TopHUD/CenterHeader/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.46, 0.6, 0.8)
+theme_override_font_sizes/font_size = 14
+text = "< ◇ ──────"
+
+[node name="LevelLabel" type="Label" parent="TopHUD/CenterHeader/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 15
+text = "LEVEL 3"
+
+[node name="RightDeco" type="Label" parent="TopHUD/CenterHeader/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.46, 0.6, 0.8)
+theme_override_font_sizes/font_size = 14
+text = "────── ◇ >"
+
+[node name="RightBox" type="HBoxContainer" parent="TopHUD"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -225.0
+offset_top = 16.0
+offset_right = -20.0
+offset_bottom = 56.0
+grow_horizontal = 0
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="TimeChip" type="Panel" parent="TopHUD/RightBox"]
+custom_minimum_size = Vector2(98, 36)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = ExtResource("2_glass")
+
+[node name="HBox" type="HBoxContainer" parent="TopHUD/RightBox/TimeChip"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="TimeIcon" type="TextureRect" parent="TopHUD/RightBox/TimeChip/HBox"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TimeLabel" type="Label" parent="TopHUD/RightBox/TimeChip/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "0.00s"
+
+[node name="DeathsChip" type="Panel" parent="TopHUD/RightBox"]
+custom_minimum_size = Vector2(72, 36)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = ExtResource("2_glass")
+
+[node name="HBox" type="HBoxContainer" parent="TopHUD/RightBox/DeathsChip"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="SkullIcon" type="TextureRect" parent="TopHUD/RightBox/DeathsChip/HBox"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DeathsLabel" type="Label" parent="TopHUD/RightBox/DeathsChip/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "0"
+
+[node name="TouchControls" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LeftBtn" type="Button" parent="TouchControls"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 32.0
+offset_top = 452.0
+offset_right = 96.0
+offset_bottom = 516.0
+focus_mode = 0
+theme_override_styles/normal = ExtResource("3_focus")
+theme_override_styles/hover = ExtResource("3_focus")
+theme_override_styles/pressed = ExtResource("3_focus")
+theme_override_styles/focus = ExtResource("3_focus")
+action_mode = 0
+
+[node name="RightBtn" type="Button" parent="TouchControls"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 112.0
+offset_top = 452.0
+offset_right = 176.0
+offset_bottom = 516.0
+focus_mode = 0
+theme_override_styles/normal = ExtResource("3_focus")
+theme_override_styles/hover = ExtResource("3_focus")
+theme_override_styles/pressed = ExtResource("3_focus")
+theme_override_styles/focus = ExtResource("3_focus")
+action_mode = 0
+
+[node name="JumpBtn" type="Button" parent="TouchControls"]
+custom_minimum_size = Vector2(68, 68)
+layout_mode = 0
+offset_left = 860.0
+offset_top = 448.0
+offset_right = 928.0
+offset_bottom = 516.0
+focus_mode = 0
+theme_override_styles/normal = ExtResource("3_focus")
+theme_override_styles/hover = ExtResource("3_focus")
+theme_override_styles/pressed = ExtResource("3_focus")
+theme_override_styles/focus = ExtResource("3_focus")
+action_mode = 0
+
+[connection signal="pressed" from="TopHUD/PauseBtn" to="." method="_on_pause_btn_pressed"]

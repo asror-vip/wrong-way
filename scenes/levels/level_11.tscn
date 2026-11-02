@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://level11scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/traps/dodging_platform.tscn" id="3_dp"]
+[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="4_tf"]
+[ext_resource type="PackedScene" path="res://scenes/traps/crusher.tscn" id="5_cr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/crumbling_platform.tscn" id="5_cp"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="6_ed"]
+
+[node name="Level11" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 11
+
+[node name="Platforms" type="Node2D" parent="."]
+[node name="PlatLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(30, 380)
+platform_size = Vector2(200, 160)
+
+[node name="Island1" parent="Platforms" instance=ExtResource("3_dp")]
+position = Vector2(290, 340)
+platform_size = Vector2(90, 40)
+dodge_offset = Vector2(70, 0)
+
+[node name="Island2" parent="Platforms" instance=ExtResource("5_cp")]
+position = Vector2(430, 320)
+platform_size = Vector2(90, 40)
+
+[node name="Island3" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(570, 300)
+platform_size = Vector2(90, 40)
+
+[node name="DoorPlat" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(720, 300)
+platform_size = Vector2(210, 240)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+
+[node name="Crusher" parent="Traps" instance=ExtResource("5_cr")]
+position = Vector2(575, 120)
+crusher_size = Vector2(80, 50)
+target_y = 250.0
+trigger_distance = 120.0
+
+[node name="ExitDoor" parent="." instance=ExtResource("6_ed")]
+position = Vector2(850, 300)
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(100, 380)

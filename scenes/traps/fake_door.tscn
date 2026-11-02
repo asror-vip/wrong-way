@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/traps/fake_door.gd" id="1_fd"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fd"]
+size = Vector2(32, 64)
+
+[node name="FakeDoor" type="Area2D" groups=["traps"]]
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("1_fd")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -32)
+shape = SubResource("RectangleShape2D_fd")
+

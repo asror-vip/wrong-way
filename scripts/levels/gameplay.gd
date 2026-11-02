@@ -1,0 +1,62 @@
+extends Node2D
+
+@onready var level_holder: Node2D = $LevelHolder
+@onready var camera: Camera2D = $Camera2D
+
+var shake_intensity: float = 0.0
+
+func _ready() -> void:
+	var adm = get_node_or_null("/root/AdManager")
+	if adm and adm.has_method("hide_banner"):
+		adm.hide_banner()
+	GameManager.request_screen_shake.connect(_on_screen_shake)
+	GameManager.level_started.connect(_load_level)
+	_load_level(GameManager.current_level_id)
+	
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm and sm.should_restore_result_modal and not sm.pending_result_data.is_empty():
+		sm.should_restore_result_modal = false
+		GameManager.is_level_running = false
+		var win_overlay = get_node_or_null("CanvasLayer/WinOverlay")
+		if win_overlay and win_overlay.has_method("restore_result"):
+			win_overlay.restore_result(sm.pending_result_data)
+		if level_holder:
+			level_holder.process_mode = Node.PROCESS_MODE_DISABLED
+
+func _process(delta: float) -> void:
+	if shake_intensity > 0.0:
+		shake_intensity = maxf(0.0, shake_intensity - delta * 25.0)
+		camera.offset = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * shake_intensity
+	else:
+		camera.offset = Vector2.ZERO
+
+func _on_screen_shake(intensity: float) -> void:
+	shake_intensity = intensity
+
+var level_arena_scene = preload("res://scenes/levels/level_arena.tscn")
+
+func _load_level(lvl: int) -> void:
+	if level_holder:
+		level_holder.process_mode = Node.PROCESS_MODE_INHERIT
+	for child in level_holder.get_children():
+		child.queue_free()
+		
+	# 1-variant: Data-driven Level Devil arena
+	var ldb = get_node_or_null("/root/LevelDatabase")
+	if ldb and ldb.has_method("has_level") and ldb.has_level(lvl):
+		var arena = level_arena_scene.instantiate()
+		level_holder.add_child(arena)
+		arena.load_level_from_data(ldb.get_level(lvl))
+		return
+		
+	# Fallback (agar sahnada maxsus fayl bo'lsa)
+	var path := "res://scenes/levels/level_%02d.tscn" % lvl
+	if not ResourceLoader.exists(path):
+		path = "res://scenes/levels/level_01.tscn"
+		
+	var lvl_res := load(path)
+	if lvl_res:
+		var inst: Node2D = lvl_res.instantiate()
+		level_holder.add_child(inst)
+
+

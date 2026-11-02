@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://djnpncfe4lrqn"]
+
+[ext_resource type="Script" path="res://scripts/traps/falling_ceiling.gd" id="1_fc"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fc"]
+size = Vector2(160, 40)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kill"]
+size = Vector2(156, 12)
+
+[node name="FallingCeiling" type="AnimatableBody2D"]
+collision_mask = 3
+script = ExtResource("1_fc")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(80, 20)
+shape = SubResource("RectangleShape2D_fc")
+
+[node name="KillArea" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KillArea"]
+position = Vector2(80, 34)
+shape = SubResource("RectangleShape2D_kill")
+

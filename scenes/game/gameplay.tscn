@@ -1,0 +1,30 @@
+[gd_scene load_steps=7 format=3 uid="uid://gameplay001"]
+
+[ext_resource type="Script" path="res://scripts/levels/gameplay.gd" id="1_gp"]
+[ext_resource type="PackedScene" path="res://scenes/objects/atmospheric_backdrop.tscn" id="2_bg"]
+[ext_resource type="PackedScene" path="res://scenes/game/game_hud.tscn" id="3_gh"]
+[ext_resource type="PackedScene" path="res://scenes/game/win_overlay.tscn" id="4_wo"]
+[ext_resource type="PackedScene" path="res://scenes/game/pause_modal.tscn" id="5_pm"]
+
+[node name="Gameplay" type="Node2D"]
+script = ExtResource("1_gp")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(480, 270)
+
+[node name="CanvasLayerBG" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="AtmosphericBackdrop" parent="CanvasLayerBG" instance=ExtResource("2_bg")]
+show_menu_cliff = false
+blur_amount = 2.8
+
+[node name="LevelHolder" type="Node2D" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="GameHUD" parent="CanvasLayer" instance=ExtResource("3_gh")]
+
+[node name="WinOverlay" parent="CanvasLayer" instance=ExtResource("4_wo")]
+
+[node name="PauseModal" parent="CanvasLayer" instance=ExtResource("5_pm")]

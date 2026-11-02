@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="TrapConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/trap_config.gd" id="1_cfg"]
+
+[resource]
+script = ExtResource("1_cfg")
+trap_id = "trap_falling_floor"
+trigger_delay = 0.04
+cooldown = 0.0
+speed = 3500.0
+damage = 1
+editor_category = "Floors"
+editor_icon = "res://icon.svg"

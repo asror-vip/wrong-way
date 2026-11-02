@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/traps/rotating_spike_ball.gd" id="1_rsb"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rsb"]
+radius = 16.0
+
+[node name="RotatingSpikeBall" type="Area2D" groups=["traps"]]
+collision_layer = 8
+collision_mask = 2
+script = ExtResource("1_rsb")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_rsb")
+
