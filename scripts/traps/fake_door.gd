@@ -1,7 +1,7 @@
 extends Area2D
 class_name FakeDoorTrap
 
-@export var door_size: Vector2 = Vector2(32, 64)
+@export var door_size: Vector2 = Vector2(44, 58)
 @export var run_away_distance: float = 90.0
 
 var start_pos: Vector2
@@ -48,45 +48,67 @@ func _run_away(player: Node2D) -> void:
 	tween.chain().tween_property(self, "rotation", 0.0, 0.15)
 
 func _draw() -> void:
+	# Haqiqiy ExitDoor bilan 100% bir xil vizual ko'rinish
+	var is_winter := false
+	var gm = get_node_or_null("/root/GameManager")
+	if gm and gm.has_method("is_winter_theme"):
+		is_winter = gm.is_winter_theme()
+
 	var w := door_size.x
 	var h := door_size.y
+	var half_w := w / 2.0
+	var post_w := 5.0
+	var lintel_h := 5.5
+	var frame_col := Color(0.85, 0.95, 1.0, 1.0) if is_winter else Color(1.0, 1.0, 1.0, 1.0)
 	
-	# Poydevor (32px to'rga to'liq tekis mos)
-	draw_rect(Rect2(-w / 2.0, -3.0, w, 3.0), Color("#262230"), true)
-	draw_rect(Rect2(-w / 2.0, -3.0, w, 1.2), Color("#c084fc"), true)
+	var top_y := -h
+	var lintel_bottom := top_y + lintel_h
+	var post_h := -lintel_bottom
 	
-	# Arka ramka
-	var r := w / 2.0
-	var cy := -(h - r)
-	var pts := PackedVector2Array([
-		Vector2(r, 0.0),
-		Vector2(r, cy),
-		Vector2(0, -h),
-		Vector2(-r, cy),
-		Vector2(-r, 0.0)
+	# 1. Ichki qora portal va ustunlar
+	if post_h > 0.0:
+		var inner_rect := Rect2(-half_w + post_w, lintel_bottom, w - post_w * 2.0, post_h)
+		draw_rect(inner_rect, Color("#000000"), true)
+		
+		# Chap va o'ng ustunlar
+		draw_rect(Rect2(-half_w, lintel_bottom, post_w, post_h), frame_col, true)
+		draw_rect(Rect2(half_w - post_w, lintel_bottom, post_w, post_h), frame_col, true)
+		
+		# Ichki burchak faskalari
+		var chamfer_pts_left := PackedVector2Array([
+			Vector2(-half_w + post_w, lintel_bottom),
+			Vector2(-half_w + post_w + 4.0, lintel_bottom),
+			Vector2(-half_w + post_w, lintel_bottom + 4.0)
+		])
+		draw_colored_polygon(chamfer_pts_left, frame_col)
+		var chamfer_pts_right := PackedVector2Array([
+			Vector2(half_w - post_w, lintel_bottom),
+			Vector2(half_w - post_w - 4.0, lintel_bottom),
+			Vector2(half_w - post_w, lintel_bottom + 4.0)
+		])
+		draw_colored_polygon(chamfer_pts_right, frame_col)
+	
+	# 2. Yuqori to'sin (Lintel)
+	var lintel_visible_h := lintel_bottom - top_y
+	if lintel_visible_h > 0.0:
+		draw_rect(Rect2(-half_w, top_y, w, lintel_visible_h), frame_col, true)
+	
+	# 3. Yuqori qopqoq hoshiyasi (Cornice)
+	draw_rect(Rect2(-half_w - 2.0, top_y, w + 4.0, 2.5), frame_col, true)
+	
+	# 4. Pol sathidagi chegara chiziq
+	draw_line(Vector2(-half_w - 2.0, 0.0), Vector2(half_w + 2.0, 0.0), frame_col, 2.0)
+	
+	# 5. Tepada suzib turuvchi oq uchburchak indikator (▼)
+	var tri_y := -(h + 8.0) + sin(pulse_time * 3.5) * 2.5
+	var tri_w := 12.0
+	var tri_h := 8.0
+	var tri_pts := PackedVector2Array([
+		Vector2(-tri_w / 2.0, tri_y),
+		Vector2(tri_w / 2.0, tri_y),
+		Vector2(0.0, tri_y + tri_h)
 	])
-	draw_colored_polygon(pts, Color("#181520"))
-	# Soxta qizil-binafsha hoshiya
-	draw_polyline(pts, Color("#c084fc"), 2.0)
-	
-	# Ichki portal
-	var iw := w - 10.0
-	var ih := h - 8.0
-	var ir := iw / 2.0
-	var icy := -(ih - ir)
-	var inner_pts := PackedVector2Array([
-		Vector2(ir, 0.0),
-		Vector2(ir, icy),
-		Vector2(0, -ih),
-		Vector2(-ir, icy),
-		Vector2(-ir, 0.0)
-	])
-	draw_colored_polygon(inner_pts, Color("#1e112a"))
-	
-	# Qizil shaytonona ko'zlar (tuzoq ekanligini sekin fosh qiluvchi)
-	var eye_alpha := 0.4 + sin(pulse_time * 4.0) * 0.3
-	draw_circle(Vector2(-6, icy), 2.5, Color(0.9, 0.2, 0.2, eye_alpha))
-	draw_circle(Vector2(6, icy), 2.5, Color(0.9, 0.2, 0.2, eye_alpha))
+	draw_colored_polygon(tri_pts, frame_col)
 
 func _on_body_entered(body: Node2D) -> void:
 	if body is PlayerController or body.is_in_group("player"):

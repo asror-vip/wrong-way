@@ -1,0 +1,97 @@
+[gd_scene format=3 uid="uid://level31scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
+[ext_resource type="PackedScene" path="res://scenes/traps/spring.tscn" id="5_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/circular_saw.tscn" id="7_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="8_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/rolling_boulder.tscn" id="9_tr"]
+
+[node name="Level31" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 31
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(180, 160)
+
+[node name="PlatformUpper1" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(210, 230)
+platform_size = Vector2(280, 30)
+
+[node name="GroundMid" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(510, 380)
+platform_size = Vector2(190, 160)
+
+[node name="PlatformFinish" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(720, 230)
+platform_size = Vector2(240, 310)
+
+[node name="CeilingSky" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(230, 0)
+platform_size = Vector2(220, 50)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+
+[node name="Spring1" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(130, 380)
+spring_size = Vector2(32, 32)
+launch_velocity = -750
+
+[node name="Stalactite1" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(250, 50)
+trigger_distance = 250
+shake_duration = 0.4
+
+[node name="Stalactite2" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(315, 50)
+trigger_distance = 240
+shake_duration = 0.5
+
+[node name="Stalactite3" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(380, 50)
+trigger_distance = 230
+shake_duration = 0.6
+
+[node name="CircularSawUpper" parent="Traps" instance=ExtResource("7_tr")]
+position = Vector2(440, 190)
+orbit_radius = 32
+orbit_speed = 2.8
+
+[node name="PopUpSpikesMid" parent="Traps" instance=ExtResource("8_tr")]
+position = Vector2(550, 380)
+spike_width = 48
+max_spike_height = 32
+trigger_distance = 75
+warning_time = 0.45
+
+[node name="Spring2" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(645, 380)
+spring_size = Vector2(32, 32)
+launch_velocity = -750
+
+[node name="BoulderUpper" parent="Traps" instance=ExtResource("9_tr")]
+position = Vector2(875, 200)
+roll_direction = -1
+roll_speed = 320
+trigger_distance = 200
+delay_before_roll = 0.4
+
+[node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
+position = Vector2(885, 230)
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(70, 380)

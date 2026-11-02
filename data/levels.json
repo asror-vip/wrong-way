@@ -2382,5 +2382,2855 @@
         }
       }
     ]
+  },
+  {
+    "id": 21,
+    "chapter": 2,
+    "title": "Behind You",
+    "gimmick": "moving_saw",
+    "player_spawn": [
+      80,
+      380
+    ],
+    "door_pos": [
+      870,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 500,
+        "h": 160
+      },
+      {
+        "name": "GroundEnd",
+        "x": 610,
+        "y": 380,
+        "w": 350,
+        "h": 160
+      },
+      {
+        "name": "Ceiling",
+        "x": 640,
+        "y": 0,
+        "w": 140,
+        "h": 60
+      }
+    ],
+    "traps": [
+      {
+        "name": "SpikesMid",
+        "type": "spikes",
+        "x": 260,
+        "y": 348,
+        "w": 80,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "MovingSawRear",
+        "type": "moving_saw",
+        "x": 70,
+        "y": 364,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "patrol_distance": 380,
+          "patrol_speed": 155,
+          "patrol_axis": [
+            1,
+            0
+          ]
+        }
+      },
+      {
+        "name": "TrapFloorMid",
+        "type": "trap_floor",
+        "x": 500,
+        "y": 380,
+        "w": 110,
+        "h": 160,
+        "params": {}
+      },
+      {
+        "name": "Stalactite1",
+        "type": "falling_spike",
+        "x": 660,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 260,
+          "shake_duration": 0.4
+        }
+      },
+      {
+        "name": "Stalactite2",
+        "type": "falling_spike",
+        "x": 730,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 240,
+          "shake_duration": 0.55
+        }
+      },
+      {
+        "name": "MovingSawFront",
+        "type": "moving_saw",
+        "x": 860,
+        "y": 364,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "patrol_distance": 120,
+          "patrol_speed": 130,
+          "patrol_axis": [
+            -1,
+            0
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "chapter": 2,
+    "title": "Delayed Spikes",
+    "gimmick": "pop_up_spikes",
+    "player_spawn": [
+      80,
+      380
+    ],
+    "door_pos": [
+      880,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 630,
+        "h": 160
+      },
+      {
+        "name": "GroundEnd",
+        "x": 740,
+        "y": 380,
+        "w": 220,
+        "h": 160
+      }
+    ],
+    "traps": [
+      {
+        "name": "PopUpSpike1",
+        "type": "pop_up_spikes",
+        "x": 230,
+        "y": 380,
+        "w": 48,
+        "h": 32,
+        "params": {
+          "trigger_distance": 85,
+          "warning_time": 0.35
+        }
+      },
+      {
+        "name": "PopUpSpike2",
+        "type": "pop_up_spikes",
+        "x": 350,
+        "y": 380,
+        "w": 48,
+        "h": 32,
+        "params": {
+          "trigger_distance": 80,
+          "warning_time": 0.55
+        }
+      },
+      {
+        "name": "PopUpSpike3",
+        "type": "pop_up_spikes",
+        "x": 470,
+        "y": 380,
+        "w": 48,
+        "h": 32,
+        "params": {
+          "trigger_distance": 70,
+          "warning_time": 0.8
+        }
+      },
+      {
+        "name": "SpikesMid",
+        "type": "spikes",
+        "x": 560,
+        "y": 348,
+        "w": 64,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "TrapFloorMid",
+        "type": "trap_floor",
+        "x": 630,
+        "y": 380,
+        "w": 110,
+        "h": 160,
+        "params": {}
+      },
+      {
+        "name": "CircularSawEnd",
+        "type": "circular_saw",
+        "x": 800,
+        "y": 330,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 36,
+          "orbit_speed": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "chapter": 2,
+    "title": "Rolling Death",
+    "gimmick": "rolling_boulder",
+    "player_spawn": [
+      80,
+      380
+    ],
+    "door_pos": [
+      885,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 730,
+        "h": 160
+      },
+      {
+        "name": "GroundEnd",
+        "x": 840,
+        "y": 380,
+        "w": 120,
+        "h": 160
+      }
+    ],
+    "traps": [
+      {
+        "name": "BoulderFront1",
+        "type": "rolling_boulder",
+        "x": 460,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": -1,
+          "roll_speed": 320,
+          "trigger_distance": 260,
+          "delay_before_roll": 0.4
+        }
+      },
+      {
+        "name": "BoulderRear2",
+        "type": "rolling_boulder",
+        "x": 300,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": 1,
+          "roll_speed": 300,
+          "trigger_distance": 180,
+          "delay_before_roll": 0.6
+        }
+      },
+      {
+        "name": "CircularSawMid",
+        "type": "circular_saw",
+        "x": 600,
+        "y": 330,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 36,
+          "orbit_speed": 2.8
+        }
+      },
+      {
+        "name": "BoulderRear3",
+        "type": "rolling_boulder",
+        "x": 500,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": 1,
+          "roll_speed": 340,
+          "trigger_distance": 160,
+          "delay_before_roll": 0.5
+        }
+      },
+      {
+        "name": "TrapFloorFinish",
+        "type": "trap_floor",
+        "x": 730,
+        "y": 380,
+        "w": 110,
+        "h": 160,
+        "params": {}
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "chapter": 2,
+    "title": "Crusher Maze",
+    "gimmick": "crusher",
+    "player_spawn": [
+      80,
+      380
+    ],
+    "door_pos": [
+      895,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundFull",
+        "x": 0,
+        "y": 380,
+        "w": 960,
+        "h": 160
+      },
+      {
+        "name": "Ceiling",
+        "x": 620,
+        "y": 0,
+        "w": 180,
+        "h": 60
+      }
+    ],
+    "traps": [
+      {
+        "name": "Crusher1",
+        "type": "crusher",
+        "x": 220,
+        "y": 140,
+        "w": 64,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "Crusher2",
+        "type": "crusher",
+        "x": 330,
+        "y": 140,
+        "w": 64,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "Crusher3",
+        "type": "crusher",
+        "x": 440,
+        "y": 140,
+        "w": 60,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "Crusher4",
+        "type": "crusher",
+        "x": 510,
+        "y": 140,
+        "w": 60,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "Stalactite1",
+        "type": "falling_spike",
+        "x": 640,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 260,
+          "shake_duration": 0.4
+        }
+      },
+      {
+        "name": "Stalactite2",
+        "type": "falling_spike",
+        "x": 700,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 250,
+          "shake_duration": 0.5
+        }
+      },
+      {
+        "name": "Stalactite3",
+        "type": "falling_spike",
+        "x": 760,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 240,
+          "shake_duration": 0.6
+        }
+      },
+      {
+        "name": "SpikesFinal",
+        "type": "spikes",
+        "x": 810,
+        "y": 348,
+        "w": 48,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "CrusherFinal",
+        "type": "crusher",
+        "x": 820,
+        "y": 140,
+        "w": 64,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "chapter": 2,
+    "title": "The Fake Exit",
+    "gimmick": "fake_door",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      875,
+      440
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundUpperStart",
+        "x": 0,
+        "y": 380,
+        "w": 370,
+        "h": 160
+      },
+      {
+        "name": "GroundUpperMid",
+        "x": 470,
+        "y": 380,
+        "w": 100,
+        "h": 160
+      },
+      {
+        "name": "GroundLowerEnd",
+        "x": 570,
+        "y": 440,
+        "w": 390,
+        "h": 100
+      }
+    ],
+    "traps": [
+      {
+        "name": "LaserBeam1",
+        "type": "laser_beam",
+        "x": 190,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.5,
+          "inactive_time": 1.3
+        }
+      },
+      {
+        "name": "SpikesUpper",
+        "type": "spikes",
+        "x": 310,
+        "y": 348,
+        "w": 50,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "TrapFloorUpper",
+        "type": "trap_floor",
+        "x": 370,
+        "y": 380,
+        "w": 100,
+        "h": 160,
+        "params": {}
+      },
+      {
+        "name": "FakeDoorUpper",
+        "type": "fake_door",
+        "x": 515,
+        "y": 380,
+        "w": 44,
+        "h": 58,
+        "params": {
+          "run_away_distance": 90
+        }
+      },
+      {
+        "name": "CircularSawLower",
+        "type": "circular_saw",
+        "x": 670,
+        "y": 390,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 36,
+          "orbit_speed": 3
+        }
+      },
+      {
+        "name": "PopUpSpikesLower",
+        "type": "pop_up_spikes",
+        "x": 765,
+        "y": 440,
+        "w": 48,
+        "h": 32,
+        "params": {
+          "trigger_distance": 75,
+          "warning_time": 0.45
+        }
+      }
+    ]
+  },
+  {
+    "id": 26,
+    "chapter": 2,
+    "title": "Spring Escape",
+    "gimmick": "spring",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      885,
+      230
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 190,
+        "h": 160
+      },
+      {
+        "name": "PlatformHigh1",
+        "x": 230,
+        "y": 230,
+        "w": 200,
+        "h": 30
+      },
+      {
+        "name": "GroundMid",
+        "x": 440,
+        "y": 380,
+        "w": 230,
+        "h": 160
+      },
+      {
+        "name": "PlatformHigh2",
+        "x": 680,
+        "y": 230,
+        "w": 280,
+        "h": 310
+      },
+      {
+        "name": "CeilingHigh1",
+        "x": 250,
+        "y": 0,
+        "w": 160,
+        "h": 50
+      }
+    ],
+    "traps": [
+      {
+        "name": "SpringStart",
+        "type": "spring",
+        "x": 140,
+        "y": 380,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "launch_velocity": -750
+        }
+      },
+      {
+        "name": "Stalactite1",
+        "type": "falling_spike",
+        "x": 275,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 250,
+          "shake_duration": 0.4
+        }
+      },
+      {
+        "name": "Stalactite2",
+        "type": "falling_spike",
+        "x": 355,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 240,
+          "shake_duration": 0.55
+        }
+      },
+      {
+        "name": "CircularSawMid",
+        "type": "circular_saw",
+        "x": 520,
+        "y": 330,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 36,
+          "orbit_speed": 2.8
+        }
+      },
+      {
+        "name": "SpringMid",
+        "type": "spring",
+        "x": 620,
+        "y": 380,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "launch_velocity": -750
+        }
+      },
+      {
+        "name": "SpikesHigh",
+        "type": "spikes",
+        "x": 720,
+        "y": 198,
+        "w": 48,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "LaserHigh",
+        "type": "laser_beam",
+        "x": 805,
+        "y": 70,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.4,
+          "inactive_time": 1.2
+        }
+      }
+    ]
+  },
+  {
+    "id": 27,
+    "chapter": 2,
+    "title": "Ceiling Is Falling",
+    "gimmick": "falling_spike",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      900,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundFull",
+        "x": 0,
+        "y": 380,
+        "w": 960,
+        "h": 160
+      },
+      {
+        "name": "CeilingFull",
+        "x": 160,
+        "y": 0,
+        "w": 600,
+        "h": 60
+      }
+    ],
+    "traps": [
+      {
+        "name": "Stalactite1",
+        "type": "falling_spike",
+        "x": 200,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 280,
+          "shake_duration": 0.35
+        }
+      },
+      {
+        "name": "Stalactite2",
+        "type": "falling_spike",
+        "x": 280,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 270,
+          "shake_duration": 0.5
+        }
+      },
+      {
+        "name": "Stalactite3",
+        "type": "falling_spike",
+        "x": 360,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 260,
+          "shake_duration": 0.6
+        }
+      },
+      {
+        "name": "CrusherMid",
+        "type": "crusher",
+        "x": 470,
+        "y": 140,
+        "w": 70,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "SpikesUnderStalactite1",
+        "type": "spikes",
+        "x": 590,
+        "y": 348,
+        "w": 48,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "Stalactite4",
+        "type": "falling_spike",
+        "x": 610,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 260,
+          "shake_duration": 0.45
+        }
+      },
+      {
+        "name": "SpikesUnderStalactite2",
+        "type": "spikes",
+        "x": 670,
+        "y": 348,
+        "w": 48,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "Stalactite5",
+        "type": "falling_spike",
+        "x": 690,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 250,
+          "shake_duration": 0.55
+        }
+      },
+      {
+        "name": "CrusherEnd",
+        "type": "crusher",
+        "x": 780,
+        "y": 140,
+        "w": 64,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "CircularSawEnd",
+        "type": "circular_saw",
+        "x": 840,
+        "y": 330,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 36,
+          "orbit_speed": 2.8
+        }
+      }
+    ]
+  },
+  {
+    "id": 28,
+    "chapter": 2,
+    "title": "Twin Saws",
+    "gimmick": "moving_saw",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      895,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundFull",
+        "x": 0,
+        "y": 380,
+        "w": 960,
+        "h": 160
+      }
+    ],
+    "traps": [
+      {
+        "name": "MovingSawFront1",
+        "type": "moving_saw",
+        "x": 330,
+        "y": 364,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "patrol_distance": 140,
+          "patrol_speed": 130,
+          "patrol_axis": [
+            -1,
+            0
+          ]
+        }
+      },
+      {
+        "name": "MovingSawBack",
+        "type": "moving_saw",
+        "x": 90,
+        "y": 364,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "patrol_distance": 180,
+          "patrol_speed": 150,
+          "patrol_axis": [
+            1,
+            0
+          ]
+        }
+      },
+      {
+        "name": "CircularSaw1",
+        "type": "circular_saw",
+        "x": 450,
+        "y": 330,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 36,
+          "orbit_speed": 2.8
+        }
+      },
+      {
+        "name": "CircularSaw2",
+        "type": "circular_saw",
+        "x": 520,
+        "y": 300,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 36,
+          "orbit_speed": 2.8,
+          "clockwise": false
+        }
+      },
+      {
+        "name": "SpikesMid",
+        "type": "spikes",
+        "x": 615,
+        "y": 348,
+        "w": 48,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "PopUpSpikesMid",
+        "type": "pop_up_spikes",
+        "x": 690,
+        "y": 380,
+        "w": 48,
+        "h": 32,
+        "params": {
+          "trigger_distance": 80,
+          "warning_time": 0.5
+        }
+      },
+      {
+        "name": "MovingSawFront2",
+        "type": "moving_saw",
+        "x": 835,
+        "y": 364,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "patrol_distance": 100,
+          "patrol_speed": 120,
+          "patrol_axis": [
+            -1,
+            0
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": 29,
+    "chapter": 2,
+    "title": "Broken Bridge",
+    "gimmick": "trap_floor",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      880,
+      260
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 180,
+        "h": 160
+      },
+      {
+        "name": "Platform1",
+        "x": 220,
+        "y": 380,
+        "w": 90,
+        "h": 160
+      },
+      {
+        "name": "GroundMid",
+        "x": 580,
+        "y": 380,
+        "w": 150,
+        "h": 160
+      },
+      {
+        "name": "PlatformFinish",
+        "x": 770,
+        "y": 260,
+        "w": 190,
+        "h": 280
+      }
+    ],
+    "traps": [
+      {
+        "name": "TrapFloor1",
+        "type": "trap_floor",
+        "x": 340,
+        "y": 380,
+        "w": 90,
+        "h": 160,
+        "params": {}
+      },
+      {
+        "name": "TrapFloor2",
+        "type": "trap_floor",
+        "x": 460,
+        "y": 380,
+        "w": 90,
+        "h": 160,
+        "params": {}
+      },
+      {
+        "name": "PopUpSpikesBridge",
+        "type": "pop_up_spikes",
+        "x": 595,
+        "y": 380,
+        "w": 44,
+        "h": 32,
+        "params": {
+          "trigger_distance": 75,
+          "warning_time": 0.45
+        }
+      },
+      {
+        "name": "SpringFinish",
+        "type": "spring",
+        "x": 670,
+        "y": 380,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "launch_velocity": -750
+        }
+      },
+      {
+        "name": "BoulderBridge",
+        "type": "rolling_boulder",
+        "x": 740,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": -1,
+          "roll_speed": 300,
+          "trigger_distance": 220,
+          "delay_before_roll": 0.5
+        }
+      }
+    ]
+  },
+  {
+    "id": 30,
+    "chapter": 2,
+    "title": "Wrong Direction",
+    "gimmick": "fake_door",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      130,
+      240
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundFull",
+        "x": 0,
+        "y": 380,
+        "w": 960,
+        "h": 160
+      },
+      {
+        "name": "PlatformHighExit",
+        "x": 40,
+        "y": 240,
+        "w": 160,
+        "h": 30
+      },
+      {
+        "name": "CeilingReturn",
+        "x": 200,
+        "y": 0,
+        "w": 120,
+        "h": 60
+      }
+    ],
+    "traps": [
+      {
+        "name": "SpringEscape",
+        "type": "spring",
+        "x": 60,
+        "y": 380,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "launch_velocity": -750
+        }
+      },
+      {
+        "name": "StalactiteReturn",
+        "type": "falling_spike",
+        "x": 240,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 260,
+          "shake_duration": 0.5
+        }
+      },
+      {
+        "name": "PopUpSpikesMid",
+        "type": "pop_up_spikes",
+        "x": 340,
+        "y": 380,
+        "w": 48,
+        "h": 32,
+        "params": {
+          "trigger_distance": 80,
+          "warning_time": 0.5
+        }
+      },
+      {
+        "name": "CrusherReturn",
+        "type": "crusher",
+        "x": 430,
+        "y": 140,
+        "w": 64,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "LaserBeamMid",
+        "type": "laser_beam",
+        "x": 530,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.5,
+          "inactive_time": 1.3
+        }
+      },
+      {
+        "name": "FakeDoorEnd",
+        "type": "fake_door",
+        "x": 780,
+        "y": 380,
+        "w": 44,
+        "h": 58,
+        "params": {
+          "run_away_distance": 90
+        }
+      },
+      {
+        "name": "MovingSawPursuit",
+        "type": "moving_saw",
+        "x": 840,
+        "y": 364,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "patrol_distance": 600,
+          "patrol_speed": 165,
+          "patrol_axis": [
+            -1,
+            0
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": 31,
+    "chapter": 2,
+    "title": "Sky Danger",
+    "gimmick": "spring",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      885,
+      230
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 180,
+        "h": 160
+      },
+      {
+        "name": "PlatformUpper1",
+        "x": 210,
+        "y": 230,
+        "w": 280,
+        "h": 30
+      },
+      {
+        "name": "GroundMid",
+        "x": 510,
+        "y": 380,
+        "w": 190,
+        "h": 160
+      },
+      {
+        "name": "PlatformFinish",
+        "x": 720,
+        "y": 230,
+        "w": 240,
+        "h": 310
+      },
+      {
+        "name": "CeilingSky",
+        "x": 230,
+        "y": 0,
+        "w": 220,
+        "h": 50
+      }
+    ],
+    "traps": [
+      {
+        "name": "Spring1",
+        "type": "spring",
+        "x": 130,
+        "y": 380,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "launch_velocity": -750
+        }
+      },
+      {
+        "name": "Stalactite1",
+        "type": "falling_spike",
+        "x": 250,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 250,
+          "shake_duration": 0.4
+        }
+      },
+      {
+        "name": "Stalactite2",
+        "type": "falling_spike",
+        "x": 315,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 240,
+          "shake_duration": 0.5
+        }
+      },
+      {
+        "name": "Stalactite3",
+        "type": "falling_spike",
+        "x": 380,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 230,
+          "shake_duration": 0.6
+        }
+      },
+      {
+        "name": "CircularSawUpper",
+        "type": "circular_saw",
+        "x": 440,
+        "y": 190,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 32,
+          "orbit_speed": 2.8
+        }
+      },
+      {
+        "name": "PopUpSpikesMid",
+        "type": "pop_up_spikes",
+        "x": 550,
+        "y": 380,
+        "w": 48,
+        "h": 32,
+        "params": {
+          "trigger_distance": 75,
+          "warning_time": 0.45
+        }
+      },
+      {
+        "name": "Spring2",
+        "type": "spring",
+        "x": 645,
+        "y": 380,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "launch_velocity": -750
+        }
+      },
+      {
+        "name": "BoulderUpper",
+        "type": "rolling_boulder",
+        "x": 875,
+        "y": 200,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": -1,
+          "roll_speed": 320,
+          "trigger_distance": 200,
+          "delay_before_roll": 0.4
+        }
+      }
+    ]
+  },
+  {
+    "id": 32,
+    "chapter": 2,
+    "title": "Laser Trap Network",
+    "gimmick": "laser_beam",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      895,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 750,
+        "h": 160
+      },
+      {
+        "name": "GroundEnd",
+        "x": 850,
+        "y": 380,
+        "w": 110,
+        "h": 160
+      }
+    ],
+    "traps": [
+      {
+        "name": "Laser1",
+        "type": "laser_beam",
+        "x": 200,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.2,
+          "inactive_time": 1.4
+        }
+      },
+      {
+        "name": "Laser2",
+        "type": "laser_beam",
+        "x": 330,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.3,
+          "inactive_time": 1.2
+        }
+      },
+      {
+        "name": "Laser3",
+        "type": "laser_beam",
+        "x": 440,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.1,
+          "inactive_time": 1.4
+        }
+      },
+      {
+        "name": "Laser4",
+        "type": "laser_beam",
+        "x": 560,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.5,
+          "inactive_time": 1
+        }
+      },
+      {
+        "name": "Laser5",
+        "type": "laser_beam",
+        "x": 630,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1,
+          "inactive_time": 1.5
+        }
+      },
+      {
+        "name": "Laser6",
+        "type": "laser_beam",
+        "x": 700,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.4,
+          "inactive_time": 1.1
+        }
+      },
+      {
+        "name": "TrapFloorMid",
+        "type": "trap_floor",
+        "x": 750,
+        "y": 380,
+        "w": 100,
+        "h": 160,
+        "params": {}
+      },
+      {
+        "name": "BoulderChaser",
+        "type": "rolling_boulder",
+        "x": 670,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": 1,
+          "roll_speed": 340,
+          "trigger_distance": 140,
+          "delay_before_roll": 0.5
+        }
+      },
+      {
+        "name": "CircularSawEnd",
+        "type": "circular_saw",
+        "x": 805,
+        "y": 330,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 36,
+          "orbit_speed": 2.8
+        }
+      },
+      {
+        "name": "LaserEnd",
+        "type": "laser_beam",
+        "x": 850,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.2,
+          "inactive_time": 1.3
+        }
+      }
+    ]
+  },
+  {
+    "id": 33,
+    "chapter": 2,
+    "title": "Two Rolling Balls",
+    "gimmick": "rolling_boulder",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      895,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundFull",
+        "x": 0,
+        "y": 380,
+        "w": 960,
+        "h": 160
+      },
+      {
+        "name": "CeilingStalactite",
+        "x": 610,
+        "y": 0,
+        "w": 100,
+        "h": 60
+      }
+    ],
+    "traps": [
+      {
+        "name": "BoulderFront1",
+        "type": "rolling_boulder",
+        "x": 420,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": -1,
+          "roll_speed": 320,
+          "trigger_distance": 260,
+          "delay_before_roll": 0.4
+        }
+      },
+      {
+        "name": "BoulderRear",
+        "type": "rolling_boulder",
+        "x": 260,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": 1,
+          "roll_speed": 300,
+          "trigger_distance": 180,
+          "delay_before_roll": 0.7
+        }
+      },
+      {
+        "name": "SpikesNarrow",
+        "type": "spikes",
+        "x": 530,
+        "y": 348,
+        "w": 64,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "StalactiteEnd",
+        "type": "falling_spike",
+        "x": 640,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 260,
+          "shake_duration": 0.45
+        }
+      },
+      {
+        "name": "CircularSawEnd",
+        "type": "circular_saw",
+        "x": 720,
+        "y": 330,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 36,
+          "orbit_speed": 3
+        }
+      },
+      {
+        "name": "BoulderFront2",
+        "type": "rolling_boulder",
+        "x": 870,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": -1,
+          "roll_speed": 340,
+          "trigger_distance": 180,
+          "delay_before_roll": 0.4
+        }
+      }
+    ]
+  },
+  {
+    "id": 34,
+    "chapter": 2,
+    "title": "No Safe Floor",
+    "gimmick": "trap_floor",
+    "player_spawn": [
+      60,
+      380
+    ],
+    "door_pos": [
+      915,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 150,
+        "h": 160
+      },
+      {
+        "name": "GroundMid1",
+        "x": 240,
+        "y": 380,
+        "w": 140,
+        "h": 160
+      },
+      {
+        "name": "GroundMid2",
+        "x": 470,
+        "y": 380,
+        "w": 150,
+        "h": 160
+      },
+      {
+        "name": "PlatformUpper",
+        "x": 550,
+        "y": 240,
+        "w": 180,
+        "h": 30
+      },
+      {
+        "name": "GroundLowerEnd",
+        "x": 650,
+        "y": 380,
+        "w": 170,
+        "h": 160
+      },
+      {
+        "name": "GroundEnd",
+        "x": 890,
+        "y": 380,
+        "w": 70,
+        "h": 160
+      },
+      {
+        "name": "CeilingStalactite",
+        "x": 580,
+        "y": 0,
+        "w": 140,
+        "h": 50
+      }
+    ],
+    "traps": [
+      {
+        "name": "TrapFloor1",
+        "type": "trap_floor",
+        "x": 150,
+        "y": 380,
+        "w": 90,
+        "h": 160,
+        "params": {}
+      },
+      {
+        "name": "Spikes1",
+        "type": "spikes",
+        "x": 270,
+        "y": 348,
+        "w": 64,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "TrapFloor2",
+        "type": "trap_floor",
+        "x": 380,
+        "y": 380,
+        "w": 90,
+        "h": 160,
+        "params": {}
+      },
+      {
+        "name": "PopUpSpikesMid",
+        "type": "pop_up_spikes",
+        "x": 490,
+        "y": 380,
+        "w": 48,
+        "h": 32,
+        "params": {
+          "trigger_distance": 75,
+          "warning_time": 0.45
+        }
+      },
+      {
+        "name": "Stalactite1",
+        "type": "falling_spike",
+        "x": 590,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 250,
+          "shake_duration": 0.4
+        }
+      },
+      {
+        "name": "Stalactite2",
+        "type": "falling_spike",
+        "x": 660,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 240,
+          "shake_duration": 0.5
+        }
+      },
+      {
+        "name": "CrusherFinal",
+        "type": "crusher",
+        "x": 750,
+        "y": 140,
+        "w": 70,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "TrapFloor3",
+        "type": "trap_floor",
+        "x": 820,
+        "y": 380,
+        "w": 70,
+        "h": 160,
+        "params": {}
+      }
+    ]
+  },
+  {
+    "id": 35,
+    "chapter": 2,
+    "title": "Door of Lies",
+    "gimmick": "fake_door",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      895,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 470,
+        "h": 160
+      },
+      {
+        "name": "GroundEnd",
+        "x": 580,
+        "y": 380,
+        "w": 380,
+        "h": 160
+      }
+    ],
+    "traps": [
+      {
+        "name": "FakeDoor1",
+        "type": "fake_door",
+        "x": 270,
+        "y": 380,
+        "w": 44,
+        "h": 58,
+        "params": {
+          "run_away_distance": 85
+        }
+      },
+      {
+        "name": "PopUpSpikes1",
+        "type": "pop_up_spikes",
+        "x": 320,
+        "y": 380,
+        "w": 48,
+        "h": 32,
+        "params": {
+          "trigger_distance": 80,
+          "warning_time": 0.45
+        }
+      },
+      {
+        "name": "FakeDoor2",
+        "type": "fake_door",
+        "x": 440,
+        "y": 380,
+        "w": 44,
+        "h": 58,
+        "params": {
+          "run_away_distance": 85
+        }
+      },
+      {
+        "name": "TrapFloorMid",
+        "type": "trap_floor",
+        "x": 470,
+        "y": 380,
+        "w": 110,
+        "h": 160,
+        "params": {}
+      },
+      {
+        "name": "LaserMid",
+        "type": "laser_beam",
+        "x": 610,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.4,
+          "inactive_time": 1.2
+        }
+      },
+      {
+        "name": "CircularSawMid",
+        "type": "circular_saw",
+        "x": 670,
+        "y": 330,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 36,
+          "orbit_speed": 2.8
+        }
+      },
+      {
+        "name": "BoulderEnd",
+        "type": "rolling_boulder",
+        "x": 760,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": -1,
+          "roll_speed": 320,
+          "trigger_distance": 190,
+          "delay_before_roll": 0.4
+        }
+      },
+      {
+        "name": "FakeDoor3",
+        "type": "fake_door",
+        "x": 825,
+        "y": 380,
+        "w": 44,
+        "h": 58,
+        "params": {
+          "run_away_distance": 75
+        }
+      }
+    ]
+  },
+  {
+    "id": 36,
+    "chapter": 2,
+    "title": "The Waiting Death",
+    "gimmick": "crusher",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      905,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundFull",
+        "x": 0,
+        "y": 380,
+        "w": 960,
+        "h": 160
+      },
+      {
+        "name": "CeilingStalactites",
+        "x": 500,
+        "y": 0,
+        "w": 200,
+        "h": 60
+      }
+    ],
+    "traps": [
+      {
+        "name": "Crusher1",
+        "type": "crusher",
+        "x": 210,
+        "y": 140,
+        "w": 64,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "Crusher2",
+        "type": "crusher",
+        "x": 310,
+        "y": 140,
+        "w": 64,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "Crusher3",
+        "type": "crusher",
+        "x": 410,
+        "y": 140,
+        "w": 64,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "Stalactite1",
+        "type": "falling_spike",
+        "x": 520,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 260,
+          "shake_duration": 0.4
+        }
+      },
+      {
+        "name": "Stalactite2",
+        "type": "falling_spike",
+        "x": 580,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 250,
+          "shake_duration": 0.5
+        }
+      },
+      {
+        "name": "Stalactite3",
+        "type": "falling_spike",
+        "x": 640,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 240,
+          "shake_duration": 0.6
+        }
+      },
+      {
+        "name": "PopUpSpikesEnd",
+        "type": "pop_up_spikes",
+        "x": 700,
+        "y": 380,
+        "w": 48,
+        "h": 32,
+        "params": {
+          "trigger_distance": 75,
+          "warning_time": 0.45
+        }
+      },
+      {
+        "name": "CrusherEnd1",
+        "type": "crusher",
+        "x": 770,
+        "y": 140,
+        "w": 55,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "CircularSawEnd",
+        "type": "circular_saw",
+        "x": 810,
+        "y": 330,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 32,
+          "orbit_speed": 3.2
+        }
+      },
+      {
+        "name": "CrusherEnd2",
+        "type": "crusher",
+        "x": 840,
+        "y": 140,
+        "w": 55,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      }
+    ]
+  },
+  {
+    "id": 37,
+    "chapter": 2,
+    "title": "The Safe Path Is Wrong",
+    "gimmick": "trap_floor",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      890,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 170,
+        "h": 160
+      },
+      {
+        "name": "GroundLower",
+        "x": 170,
+        "y": 380,
+        "w": 460,
+        "h": 160
+      },
+      {
+        "name": "PlatformUpperStart",
+        "x": 170,
+        "y": 230,
+        "w": 100,
+        "h": 30
+      },
+      {
+        "name": "PlatformUpperMid",
+        "x": 360,
+        "y": 230,
+        "w": 110,
+        "h": 30
+      },
+      {
+        "name": "PlatformUpperEnd",
+        "x": 560,
+        "y": 230,
+        "w": 70,
+        "h": 30
+      },
+      {
+        "name": "GroundEnd",
+        "x": 630,
+        "y": 380,
+        "w": 330,
+        "h": 160
+      },
+      {
+        "name": "CeilingUpper",
+        "x": 300,
+        "y": 0,
+        "w": 280,
+        "h": 50
+      }
+    ],
+    "traps": [
+      {
+        "name": "SpringPath",
+        "type": "spring",
+        "x": 125,
+        "y": 380,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "launch_velocity": -750
+        }
+      },
+      {
+        "name": "TrapFloorUpper1",
+        "type": "trap_floor",
+        "x": 270,
+        "y": 230,
+        "w": 90,
+        "h": 30,
+        "params": {}
+      },
+      {
+        "name": "TrapFloorUpper2",
+        "type": "trap_floor",
+        "x": 470,
+        "y": 230,
+        "w": 90,
+        "h": 30,
+        "params": {}
+      },
+      {
+        "name": "SpikesLower1",
+        "type": "spikes",
+        "x": 260,
+        "y": 348,
+        "w": 50,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "MovingSawLower",
+        "type": "moving_saw",
+        "x": 350,
+        "y": 364,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "patrol_distance": 120,
+          "patrol_speed": 120,
+          "patrol_axis": [
+            1,
+            0
+          ]
+        }
+      },
+      {
+        "name": "SpikesLower2",
+        "type": "spikes",
+        "x": 450,
+        "y": 348,
+        "w": 50,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "StalactiteUpper1",
+        "type": "falling_spike",
+        "x": 350,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 250,
+          "shake_duration": 0.45
+        }
+      },
+      {
+        "name": "StalactiteUpper2",
+        "type": "falling_spike",
+        "x": 530,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 240,
+          "shake_duration": 0.5
+        }
+      },
+      {
+        "name": "BoulderEnd",
+        "type": "rolling_boulder",
+        "x": 770,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": -1,
+          "roll_speed": 320,
+          "trigger_distance": 190,
+          "delay_before_roll": 0.4
+        }
+      }
+    ]
+  },
+  {
+    "id": 38,
+    "chapter": 2,
+    "title": "High and Low",
+    "gimmick": "spring",
+    "player_spawn": [
+      70,
+      380
+    ],
+    "door_pos": [
+      895,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 150,
+        "h": 160
+      },
+      {
+        "name": "GroundLower",
+        "x": 150,
+        "y": 380,
+        "w": 520,
+        "h": 160
+      },
+      {
+        "name": "PlatformUpper",
+        "x": 170,
+        "y": 230,
+        "w": 390,
+        "h": 30
+      },
+      {
+        "name": "GroundEnd",
+        "x": 670,
+        "y": 380,
+        "w": 290,
+        "h": 160
+      },
+      {
+        "name": "CeilingUpper",
+        "x": 320,
+        "y": 0,
+        "w": 140,
+        "h": 50
+      }
+    ],
+    "traps": [
+      {
+        "name": "SpringStart",
+        "type": "spring",
+        "x": 110,
+        "y": 380,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "launch_velocity": -750
+        }
+      },
+      {
+        "name": "CircularSawUpper1",
+        "type": "circular_saw",
+        "x": 290,
+        "y": 190,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 32,
+          "orbit_speed": 2.8
+        }
+      },
+      {
+        "name": "StalactiteUpper",
+        "type": "falling_spike",
+        "x": 370,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 250,
+          "shake_duration": 0.45
+        }
+      },
+      {
+        "name": "CircularSawUpper2",
+        "type": "circular_saw",
+        "x": 450,
+        "y": 190,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 32,
+          "orbit_speed": 2.8,
+          "clockwise": false
+        }
+      },
+      {
+        "name": "LaserLower",
+        "type": "laser_beam",
+        "x": 290,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.4,
+          "inactive_time": 1.2
+        }
+      },
+      {
+        "name": "PopUpSpikesLower",
+        "type": "pop_up_spikes",
+        "x": 410,
+        "y": 380,
+        "w": 48,
+        "h": 32,
+        "params": {
+          "trigger_distance": 75,
+          "warning_time": 0.45
+        }
+      },
+      {
+        "name": "SpringLowerEnd",
+        "type": "spring",
+        "x": 545,
+        "y": 380,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "launch_velocity": -750
+        }
+      },
+      {
+        "name": "BoulderEnd",
+        "type": "rolling_boulder",
+        "x": 670,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": -1,
+          "roll_speed": 310,
+          "trigger_distance": 190,
+          "delay_before_roll": 0.45
+        }
+      },
+      {
+        "name": "CrusherFinal",
+        "type": "crusher",
+        "x": 775,
+        "y": 140,
+        "w": 64,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "SpikesFinal",
+        "type": "spikes",
+        "x": 765,
+        "y": 348,
+        "w": 48,
+        "h": 32,
+        "params": {}
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "chapter": 2,
+    "title": "Everything at Once",
+    "gimmick": "crusher",
+    "player_spawn": [
+      60,
+      380
+    ],
+    "door_pos": [
+      905,
+      380
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "GroundStart",
+        "x": 0,
+        "y": 380,
+        "w": 350,
+        "h": 160
+      },
+      {
+        "name": "GroundEnd",
+        "x": 450,
+        "y": 380,
+        "w": 510,
+        "h": 160
+      },
+      {
+        "name": "CeilingStalactites",
+        "x": 320,
+        "y": 0,
+        "w": 150,
+        "h": 60
+      }
+    ],
+    "traps": [
+      {
+        "name": "PopUp1",
+        "type": "pop_up_spikes",
+        "x": 190,
+        "y": 380,
+        "w": 44,
+        "h": 32,
+        "params": {
+          "trigger_distance": 80,
+          "warning_time": 0.4
+        }
+      },
+      {
+        "name": "PopUp2",
+        "type": "pop_up_spikes",
+        "x": 250,
+        "y": 380,
+        "w": 44,
+        "h": 32,
+        "params": {
+          "trigger_distance": 80,
+          "warning_time": 0.5
+        }
+      },
+      {
+        "name": "MovingSawChase",
+        "type": "moving_saw",
+        "x": 70,
+        "y": 364,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "patrol_distance": 400,
+          "patrol_speed": 160,
+          "patrol_axis": [
+            1,
+            0
+          ]
+        }
+      },
+      {
+        "name": "TrapFloorMid",
+        "type": "trap_floor",
+        "x": 350,
+        "y": 380,
+        "w": 100,
+        "h": 160,
+        "params": {}
+      },
+      {
+        "name": "Stalactite1",
+        "type": "falling_spike",
+        "x": 360,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 260,
+          "shake_duration": 0.4
+        }
+      },
+      {
+        "name": "Stalactite2",
+        "type": "falling_spike",
+        "x": 410,
+        "y": 60,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 250,
+          "shake_duration": 0.5
+        }
+      },
+      {
+        "name": "LaserMid",
+        "type": "laser_beam",
+        "x": 490,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.2,
+          "inactive_time": 1.3
+        }
+      },
+      {
+        "name": "BoulderMid",
+        "type": "rolling_boulder",
+        "x": 610,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": -1,
+          "roll_speed": 320,
+          "trigger_distance": 190,
+          "delay_before_roll": 0.4
+        }
+      },
+      {
+        "name": "CircularSawMid",
+        "type": "circular_saw",
+        "x": 690,
+        "y": 330,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 36,
+          "orbit_speed": 3
+        }
+      },
+      {
+        "name": "Crusher1",
+        "type": "crusher",
+        "x": 765,
+        "y": 140,
+        "w": 55,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "Crusher2",
+        "type": "crusher",
+        "x": 825,
+        "y": 140,
+        "w": 55,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      }
+    ]
+  },
+  {
+    "id": 40,
+    "chapter": 2,
+    "title": "THE FINAL WRONG WAY",
+    "gimmick": "fake_door",
+    "player_spawn": [
+      60,
+      380
+    ],
+    "door_pos": [
+      900,
+      200
+    ],
+    "door_config": {
+      "runaway": false,
+      "runaway_offset_x": 0
+    },
+    "platforms": [
+      {
+        "name": "Tier1Spawn",
+        "x": 0,
+        "y": 380,
+        "w": 200,
+        "h": 160
+      },
+      {
+        "name": "Tier2SkyLedge",
+        "x": 230,
+        "y": 230,
+        "w": 220,
+        "h": 30
+      },
+      {
+        "name": "Tier3MidFloor",
+        "x": 450,
+        "y": 380,
+        "w": 220,
+        "h": 160
+      },
+      {
+        "name": "Tier4EndFloor",
+        "x": 740,
+        "y": 380,
+        "w": 220,
+        "h": 160
+      },
+      {
+        "name": "Tier5SkyPortal",
+        "x": 780,
+        "y": 200,
+        "w": 150,
+        "h": 30
+      },
+      {
+        "name": "CeilingSky",
+        "x": 250,
+        "y": 0,
+        "w": 160,
+        "h": 50
+      }
+    ],
+    "traps": [
+      {
+        "name": "PopUpSpikesStart",
+        "type": "pop_up_spikes",
+        "x": 130,
+        "y": 380,
+        "w": 44,
+        "h": 32,
+        "params": {
+          "trigger_distance": 80,
+          "warning_time": 0.4
+        }
+      },
+      {
+        "name": "MovingSawChase1",
+        "type": "moving_saw",
+        "x": 30,
+        "y": 364,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "patrol_distance": 180,
+          "patrol_speed": 160,
+          "patrol_axis": [
+            1,
+            0
+          ]
+        }
+      },
+      {
+        "name": "Spring1",
+        "type": "spring",
+        "x": 175,
+        "y": 380,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "launch_velocity": -750
+        }
+      },
+      {
+        "name": "StalactiteSky1",
+        "type": "falling_spike",
+        "x": 260,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 250,
+          "shake_duration": 0.4
+        }
+      },
+      {
+        "name": "StalactiteSky2",
+        "type": "falling_spike",
+        "x": 310,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 240,
+          "shake_duration": 0.5
+        }
+      },
+      {
+        "name": "StalactiteSky3",
+        "type": "falling_spike",
+        "x": 360,
+        "y": 50,
+        "w": 24,
+        "h": 32,
+        "params": {
+          "trigger_distance": 230,
+          "shake_duration": 0.6
+        }
+      },
+      {
+        "name": "CircularSawSky",
+        "type": "circular_saw",
+        "x": 410,
+        "y": 190,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 32,
+          "orbit_speed": 2.8
+        }
+      },
+      {
+        "name": "Crusher1",
+        "type": "crusher",
+        "x": 470,
+        "y": 140,
+        "w": 50,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "Crusher2",
+        "type": "crusher",
+        "x": 530,
+        "y": 140,
+        "w": 50,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "Crusher3",
+        "type": "crusher",
+        "x": 590,
+        "y": 140,
+        "w": 50,
+        "h": 64,
+        "params": {
+          "target_y": 320
+        }
+      },
+      {
+        "name": "TrapFloorMid",
+        "type": "trap_floor",
+        "x": 670,
+        "y": 380,
+        "w": 70,
+        "h": 160,
+        "params": {}
+      },
+      {
+        "name": "LaserMid1",
+        "type": "laser_beam",
+        "x": 720,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.4,
+          "inactive_time": 1.3
+        }
+      },
+      {
+        "name": "LaserMid2",
+        "type": "laser_beam",
+        "x": 760,
+        "y": 220,
+        "w": 8,
+        "h": 160,
+        "params": {
+          "active_time": 1.2,
+          "inactive_time": 1.5
+        }
+      },
+      {
+        "name": "SpikesMid",
+        "type": "spikes",
+        "x": 780,
+        "y": 348,
+        "w": 48,
+        "h": 32,
+        "params": {}
+      },
+      {
+        "name": "BoulderFront",
+        "type": "rolling_boulder",
+        "x": 870,
+        "y": 350,
+        "w": 56,
+        "h": 56,
+        "params": {
+          "roll_direction": -1,
+          "roll_speed": 340,
+          "trigger_distance": 200,
+          "delay_before_roll": 0.4
+        }
+      },
+      {
+        "name": "FakeDoorGrand",
+        "type": "fake_door",
+        "x": 880,
+        "y": 380,
+        "w": 44,
+        "h": 58,
+        "params": {
+          "run_away_distance": 85
+        }
+      },
+      {
+        "name": "SpringFinal",
+        "type": "spring",
+        "x": 830,
+        "y": 380,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "launch_velocity": -750
+        }
+      },
+      {
+        "name": "CircularSawFinal",
+        "type": "circular_saw",
+        "x": 840,
+        "y": 160,
+        "w": 32,
+        "h": 32,
+        "params": {
+          "orbit_radius": 28,
+          "orbit_speed": 3.2
+        }
+      }
+    ]
   }
 ]

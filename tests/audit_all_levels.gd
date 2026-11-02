@@ -5,10 +5,10 @@ func _init() -> void:
 
 func _run() -> void:
 	print("========================================")
-	print("AUDITING ALL LEVELS (1 to 20)")
+	print("AUDITING ALL LEVELS (1 to 40)")
 	print("========================================")
 	
-	for lvl in range(1, 21):
+	for lvl in range(1, 41):
 		var path := "res://scenes/levels/level_%02d.tscn" % lvl
 		if not ResourceLoader.exists(path):
 			print("Level %02d: FILE NOT FOUND!" % lvl)

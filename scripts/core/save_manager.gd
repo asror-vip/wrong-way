@@ -236,7 +236,7 @@ func get_highest_completed_level() -> int:
 	for k in level_stars:
 		var lvl := int(k)
 		if int(level_stars[k]) > 0 and lvl > highest:
-			if lvl <= 20 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
+			if lvl <= 40 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
 				highest = lvl
 	return highest
 
@@ -245,14 +245,14 @@ func get_completed_level_count() -> int:
 	for k in level_stars:
 		var lvl := int(k)
 		if int(level_stars[k]) > 0:
-			if lvl <= 20 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
+			if lvl <= 40 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
 				count += 1
 	return count
 
 func get_unlocked_count() -> int:
 	var count := 0
 	for lvl in unlocked_levels:
-		if lvl <= 20 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
+		if lvl <= 40 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
 			count += 1
 	return count
 

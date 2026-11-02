@@ -1,0 +1,74 @@
+[gd_scene format=3 uid="uid://level21scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
+[ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="5_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/moving_saw.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="7_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="8_tr"]
+
+[node name="Level21" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 21
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(500, 160)
+
+[node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(610, 380)
+platform_size = Vector2(350, 160)
+
+[node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(640, 0)
+platform_size = Vector2(140, 60)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+
+[node name="SpikesMid" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(260, 348)
+spike_size = Vector2(80, 32)
+
+[node name="MovingSawRear" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(70, 364)
+patrol_distance = 380
+patrol_speed = 155
+patrol_axis = Vector2(1, 0)
+
+[node name="TrapFloorMid" parent="Traps" instance=ExtResource("7_tr")]
+position = Vector2(500, 380)
+platform_size = Vector2(110, 160)
+
+[node name="Stalactite1" parent="Traps" instance=ExtResource("8_tr")]
+position = Vector2(660, 60)
+trigger_distance = 260
+shake_duration = 0.4
+
+[node name="Stalactite2" parent="Traps" instance=ExtResource("8_tr")]
+position = Vector2(730, 60)
+trigger_distance = 240
+shake_duration = 0.55
+
+[node name="MovingSawFront" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(860, 364)
+patrol_distance = 120
+patrol_speed = 130
+patrol_axis = Vector2(-1, 0)
+
+[node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
+position = Vector2(870, 380)
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(80, 380)

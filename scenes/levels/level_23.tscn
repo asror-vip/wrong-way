@@ -1,0 +1,69 @@
+[gd_scene format=3 uid="uid://level23scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
+[ext_resource type="PackedScene" path="res://scenes/traps/rolling_boulder.tscn" id="5_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/circular_saw.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="7_tr"]
+
+[node name="Level23" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 23
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(730, 160)
+
+[node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(840, 380)
+platform_size = Vector2(120, 160)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+
+[node name="BoulderFront1" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(460, 350)
+roll_direction = -1
+roll_speed = 320
+trigger_distance = 260
+delay_before_roll = 0.4
+
+[node name="BoulderRear2" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(300, 350)
+roll_direction = 1
+roll_speed = 300
+trigger_distance = 180
+delay_before_roll = 0.6
+
+[node name="CircularSawMid" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(600, 330)
+orbit_radius = 36
+orbit_speed = 2.8
+
+[node name="BoulderRear3" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(500, 350)
+roll_direction = 1
+roll_speed = 340
+trigger_distance = 160
+delay_before_roll = 0.5
+
+[node name="TrapFloorFinish" parent="Traps" instance=ExtResource("7_tr")]
+position = Vector2(730, 380)
+platform_size = Vector2(110, 160)
+
+[node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
+position = Vector2(885, 380)
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(80, 380)
