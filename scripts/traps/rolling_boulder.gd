@@ -106,16 +106,35 @@ func reset_trap() -> void:
 func _draw() -> void:
 	draw_set_transform(Vector2.ZERO, roll_rotation, Vector2.ONE)
 	
-	# 1. Asosiy obsidian qoya toshi tanasi
+	# 1. Shar atrofidagi o'tkir metall-qizil tikanlar (Spikes around boulder)
+	var num_spikes := 8
+	for i in range(num_spikes):
+		var ang := float(i) * (TAU / float(num_spikes))
+		var dir := Vector2(cos(ang), sin(ang))
+		var norm := Vector2(-dir.y, dir.x)
+		var base1 := dir * (boulder_radius - 2.0) - norm * 6.0
+		var base2 := dir * (boulder_radius - 2.0) + norm * 6.0
+		var tip := dir * (boulder_radius + 12.0)
+		draw_colored_polygon(PackedVector2Array([base1, tip, base2]), Color("#1e1b26"))
+		draw_colored_polygon(PackedVector2Array([base1 + norm * 2.0, tip, base2]), Color("#be123c"))
+		draw_line(base1, tip, Color("#ffffff"), 1.4)
+		draw_line(tip, base2, Color("#fb7185"), 1.2)
+		draw_circle(tip, 1.5, Color.WHITE)
+
+	# 2. Asosiy obsidian qoya toshi tanasi
 	draw_circle(Vector2.ZERO, boulder_radius, Color(0.08, 0.10, 0.15, 1.0))
 	# Qoya xoshiyasi
-	draw_arc(Vector2.ZERO, boulder_radius, -PI, PI, 32, Color(0.28, 0.36, 0.48, 0.85), 2.0)
+	draw_arc(Vector2.ZERO, boulder_radius, -PI, PI, 32, Color(0.35, 0.45, 0.60, 0.9), 2.0)
 	
-	# 2. Ichki tosh qatlamlari va yoriqlari (Limbo silhouette rock cracks)
+	# 3. Ichki tosh qatlamlari va yoriqlari (Limbo silhouette rock cracks)
 	draw_line(Vector2(-16, -10), Vector2(4, -4), Color(0.03, 0.04, 0.07, 0.95), 2.5)
 	draw_line(Vector2(4, -4), Vector2(16, -14), Color(0.03, 0.04, 0.07, 0.95), 2.0)
 	draw_line(Vector2(4, -4), Vector2(0, 15), Color(0.03, 0.04, 0.07, 0.95), 2.2)
 	draw_line(Vector2(0, 15), Vector2(-12, 18), Color(0.03, 0.04, 0.07, 0.95), 1.8)
+	
+	# Markaziy qizil xavf nuri
+	draw_circle(Vector2.ZERO, 6.0, Color("#e11d48"))
+	draw_circle(Vector2.ZERO, 3.0, Color.WHITE)
 	
 	# Nozik tosh yorug'lik aksi
 	draw_arc(Vector2.ZERO, boulder_radius - 4.0, -PI * 0.7, -PI * 0.2, 16, Color(0.40, 0.50, 0.65, 0.40), 1.5)

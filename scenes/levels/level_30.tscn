@@ -28,7 +28,7 @@ platform_size = Vector2(160, 30)
 
 [node name="CeilingReturn" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(200, 0)
-platform_size = Vector2(120, 60)
+platform_size = Vector2(334, 60)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
