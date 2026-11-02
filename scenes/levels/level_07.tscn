@@ -3,19 +3,28 @@
 [ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
 [ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
-[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="4_tf"]
-[ext_resource type="PackedScene" path="res://scenes/traps/crusher.tscn" id="5_cr"]
-[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="6_ed"]
-[ext_resource type="PackedScene" path="res://scenes/traps/falling_ceiling.tscn" id="7_fc"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
+[ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="5_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="7_tr"]
 
 [node name="Level07" type="Node2D"]
 script = ExtResource("1_bl")
 level_number = 7
 
 [node name="Platforms" type="Node2D" parent="."]
-[node name="Ground" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(30, 380)
-platform_size = Vector2(900, 160)
+
+[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(480, 160)
+
+[node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(660, 380)
+platform_size = Vector2(300, 160)
+
+[node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(100, 0)
+platform_size = Vector2(600, 60)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -26,32 +35,37 @@ position = Vector2(928, 0)
 platform_size = Vector2(32, 540)
 
 [node name="Traps" type="Node2D" parent="."]
-[node name="Crusher1" parent="Traps" instance=ExtResource("5_cr")]
-position = Vector2(320, 140)
-crusher_size = Vector2(80, 55)
-target_y = 325.0
 
-[node name="Crusher2" parent="Traps" instance=ExtResource("5_cr")]
-position = Vector2(500, 140)
-crusher_size = Vector2(80, 55)
-target_y = 325.0
+[node name="Stalactite1" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(180, 60)
+trigger_distance = 320
+shake_duration = 0.2
 
-[node name="Crusher3" parent="Traps" instance=ExtResource("5_cr")]
-position = Vector2(680, 140)
-crusher_size = Vector2(80, 55)
-target_y = 325.0
+[node name="Stalactite2" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(290, 60)
+trigger_distance = 240
+shake_duration = 0.5
 
-[node name="FallingCeiling" parent="Traps" instance=ExtResource("7_fc")]
-position = Vector2(585, 120)
-ceiling_size = Vector2(80, 40)
-slam_distance_y = 220.0
-trigger_distance_x = 90.0
+[node name="Stalactite3" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(400, 60)
+trigger_distance = 160
+shake_duration = 0.6
 
-[node name="ExitDoor" parent="." instance=ExtResource("6_ed")]
-position = Vector2(850, 380)
-runaway_enabled = true
-runaway_distance = 110.0
-runaway_offset_x = -130.0
+[node name="SpikesFloor" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(440, 348)
+spike_size = Vector2(40, 32)
+
+[node name="TrapFloorMid" parent="Traps" instance=ExtResource("7_tr")]
+position = Vector2(540, 380)
+platform_size = Vector2(120, 160)
+
+[node name="Stalactite4" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(600, 60)
+trigger_distance = 300
+shake_duration = 0.4
+
+[node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
+position = Vector2(860, 380)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
-position = Vector2(100, 380)
+position = Vector2(80, 380)

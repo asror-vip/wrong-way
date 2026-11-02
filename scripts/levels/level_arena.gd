@@ -18,6 +18,12 @@ const TRAP_SCENE_MAP: Dictionary = {
 	"falling_spike": "res://scenes/traps/falling_spike.tscn",
 	"spring": "res://scenes/traps/spring.tscn",
 	"invisible_block": "res://scenes/traps/invisible_block.tscn",
+	"moving_saw": "res://scenes/traps/moving_saw.tscn",
+	"circular_saw": "res://scenes/traps/circular_saw.tscn",
+	"crusher": "res://scenes/traps/crusher.tscn",
+	"laser_beam": "res://scenes/traps/laser_beam.tscn",
+	"rolling_boulder": "res://scenes/traps/rolling_boulder.tscn",
+	"rotating_spike_ball": "res://scenes/traps/rotating_spike_ball.tscn",
 }
 
 @onready var platforms_container: Node2D = $Platforms
@@ -74,6 +80,16 @@ func load_level_from_data(data: Dictionary) -> void:
 				trap_inst.platform_size = Vector2(trap_w, trap_h)
 			if "ceiling_size" in trap_inst:
 				trap_inst.ceiling_size = Vector2(trap_w, trap_h)
+			if "spike_size" in trap_inst:
+				trap_inst.spike_size = Vector2(trap_w, trap_h)
+			if "spike_width" in trap_inst:
+				trap_inst.spike_width = trap_w
+			if "spring_size" in trap_inst:
+				trap_inst.spring_size = Vector2(trap_w, trap_h)
+			if "crusher_size" in trap_inst:
+				trap_inst.crusher_size = Vector2(trap_w, trap_h)
+			if "beam_length" in trap_inst and trap_h > 0:
+				trap_inst.beam_length = trap_h
 				
 			# Qo'shimcha parametrlar (params)
 			var params = t.get("params", {})

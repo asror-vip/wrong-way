@@ -3,6 +3,7 @@ class_name FallingSpikeTrap
 
 @export var trigger_distance: float = 300.0
 @export var fall_speed: float = 650.0
+@export var shake_duration: float = 0.6
 
 var is_triggered: bool = false
 var is_falling: bool = false
@@ -48,8 +49,10 @@ func _physics_process(delta: float) -> void:
 
 func _trigger() -> void:
 	is_triggered = true
-	shake_timer = 0.22
-	SoundManager.play("trap")
+	shake_timer = shake_duration
+	var sm = get_node_or_null("/root/SoundManager")
+	if sm and sm.has_method("play"):
+		sm.play("trap")
 
 func _draw() -> void:
 	var is_winter := false

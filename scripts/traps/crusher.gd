@@ -46,7 +46,9 @@ func _physics_process(delta: float) -> void:
 				if absf(player_center_x - crusher_center_x) < trigger_distance:
 					state = State.FALLING
 					speed = 0.0
-					SoundManager.play("trap")
+					var sm = get_node_or_null("/root/SoundManager")
+					if sm and sm.has_method("play"):
+						sm.play("trap")
 		
 		State.FALLING:
 			speed += 3600.0 * delta
@@ -55,7 +57,9 @@ func _physics_process(delta: float) -> void:
 				global_position.y = target_y
 				var sm = get_node_or_null("/root/SaveManager")
 				if sm == null or sm.shake_enabled:
-					GameManager.request_screen_shake.emit(8.0)
+					var gm = get_node_or_null("/root/GameManager")
+					if gm and gm.has_signal("request_screen_shake"):
+						gm.request_screen_shake.emit(8.0)
 				if returns_up:
 					state = State.WAITING_BOTTOM
 					timer = wait_at_bottom

@@ -4,6 +4,7 @@ class_name PopUpSpikesTrap
 @export var spike_width: float = 32.0
 @export var max_spike_height: float = 32.0
 @export var trigger_distance: float = 85.0
+@export var warning_time: float = 0.5
 @export var is_timer_mode: bool = false
 @export var cycle_time: float = 2.4
 
@@ -61,7 +62,10 @@ func _physics_process(delta: float) -> void:
 
 func _trigger() -> void:
 	is_triggered = true
-	warning_timer = 0.12
+	warning_timer = warning_time
+	var sm = get_node_or_null("/root/SoundManager")
+	if sm and sm.has_method("play"):
+		sm.play("trap")
 
 func _draw() -> void:
 	# Agar tikanlar hali ko'tarilmagan bo'lsa, hech qanday belgi yoki tirqish chizilmaydi (100% yashirin)

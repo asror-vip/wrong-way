@@ -51,8 +51,10 @@ func _on_trigger_body_entered(body: Node2D) -> void:
 		if "is_invulnerable" in body and body.is_invulnerable:
 			return
 		is_triggered = true
-		shake_timer = 0.14
-		SoundManager.play("trap")
+		shake_timer = 0.4 # GPT timing rule: 0.4s
+		var sm = get_node_or_null("/root/SoundManager")
+		if sm and sm.has_method("play"):
+			sm.play("trap")
 
 func reset_trap() -> void:
 	is_triggered = false

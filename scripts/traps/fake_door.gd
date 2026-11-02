@@ -34,7 +34,9 @@ func _physics_process(delta: float) -> void:
 
 func _run_away(player: Node2D) -> void:
 	is_triggered = true
-	SoundManager.play("trap")
+	var sm = get_node_or_null("/root/SoundManager")
+	if sm and sm.has_method("play"):
+		sm.play("trap")
 	
 	# O'yinchidan qarama-qarshi tomonga qochib ketish
 	var dir_x := 1.0 if global_position.x > player.global_position.x else -1.0

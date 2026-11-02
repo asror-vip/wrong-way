@@ -39,7 +39,7 @@ func _run() -> void:
 				var t_pos = t.position
 				var extra = ""
 				if t is Crusher:
-					extra = "trigger_dist=%.1f, state=%d" % [t.trigger_distance, t.current_state]
+					extra = "trigger_dist=%.1f, state=%d" % [t.trigger_distance, t.state]
 				elif t is TrapFloor:
 					extra = "shake_timer=%.2fs" % [t.shake_timer]
 				trap_info.append("%s@%s(%s)" % [t_type, str(t_pos), extra])

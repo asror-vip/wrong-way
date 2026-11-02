@@ -9,9 +9,12 @@ class_name RollingBoulder
 @export var roll_speed: float = 380.0
 @export var roll_direction: float = 1.0 # 1.0 = o'ngga, -1.0 = chapga
 @export var trigger_distance: float = 260.0 # O'yinchi yaqinlashganda
+@export var delay_before_roll: float = 0.7
 @export var gravity: float = 1200.0
 
 var is_triggered: bool = false
+var is_rolling: bool = false
+var roll_delay_timer: float = 0.0
 var original_pos: Vector2
 var roll_rotation: float = 0.0
 
@@ -32,6 +35,14 @@ func _physics_process(delta: float) -> void:
 	if not is_triggered:
 		_check_player_trigger()
 		return
+
+	if not is_rolling:
+		roll_delay_timer -= delta
+		global_position.x = original_pos.x + randf_range(-1.5, 1.5)
+		if roll_delay_timer <= 0.0:
+			global_position.x = original_pos.x
+			is_rolling = true
+		return
 		
 	# Gravitatsiya va aylanish
 	if not is_on_floor():
@@ -40,7 +51,9 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 		# Harakatlanish paytida vaqti-vaqti bilan yengil silkinish
 		if randf() < 0.1:
-			GameManager.request_screen_shake.emit(3.0)
+			var gm = get_node_or_null("/root/GameManager")
+			if gm and gm.has_signal("request_screen_shake"):
+				gm.request_screen_shake.emit(3.0)
 			
 	velocity.x = roll_direction * roll_speed
 	roll_rotation += roll_direction * (roll_speed / boulder_radius) * delta
@@ -51,6 +64,7 @@ func _physics_process(delta: float) -> void:
 	# Qoyaga tushib ketsa
 	if global_position.y > 650.0:
 		is_triggered = false
+		is_rolling = false
 		velocity = Vector2.ZERO
 
 func _check_player_trigger() -> void:
@@ -66,13 +80,14 @@ func trigger_boulder() -> void:
 	if is_triggered:
 		return
 	is_triggered = true
-	SoundManager.play("trap")
-	GameManager.request_screen_shake.emit(12.0)
-	
-	# Boshlang'ich silkinish
-	var tw := create_tween()
-	tw.tween_property(self, "position:y", position.y - 4.0, 0.06)
-	tw.tween_property(self, "position:y", position.y, 0.06)
+	is_rolling = false
+	roll_delay_timer = delay_before_roll
+	var sm = get_node_or_null("/root/SoundManager")
+	if sm and sm.has_method("play"):
+		sm.play("trap")
+	var gm = get_node_or_null("/root/GameManager")
+	if gm and gm.has_signal("request_screen_shake"):
+		gm.request_screen_shake.emit(10.0)
 
 func _on_kill_entered(body: Node2D) -> void:
 	if is_triggered and (body is PlayerController or body.is_in_group("player")):

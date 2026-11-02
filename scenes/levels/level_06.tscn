@@ -3,32 +3,28 @@
 [ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
 [ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
-[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="4_tf"]
-[ext_resource type="PackedScene" path="res://scenes/traps/crusher.tscn" id="5_cr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="5_pus"]
-[ext_resource type="PackedScene" path="res://scenes/traps/control_inverter.tscn" id="5_ci"]
-[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="6_ed"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
+[ext_resource type="PackedScene" path="res://scenes/traps/laser_beam.tscn" id="5_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="7_tr"]
 
 [node name="Level06" type="Node2D"]
 script = ExtResource("1_bl")
 level_number = 6
 
 [node name="Platforms" type="Node2D" parent="."]
-[node name="PlatLeft" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(30, 400)
-platform_size = Vector2(250, 160)
 
-[node name="Step1" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(320, 350)
-platform_size = Vector2(90, 40)
+[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(260, 160)
 
-[node name="Step3" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(580, 270)
-platform_size = Vector2(90, 40)
+[node name="GroundMid" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(260, 380)
+platform_size = Vector2(280, 160)
 
-[node name="HighLedge" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(720, 270)
-platform_size = Vector2(210, 270)
+[node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(660, 380)
+platform_size = Vector2(300, 160)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -39,21 +35,38 @@ position = Vector2(928, 0)
 platform_size = Vector2(32, 540)
 
 [node name="Traps" type="Node2D" parent="."]
-[node name="StepTrap" parent="Traps" instance=ExtResource("4_tf")]
-position = Vector2(450, 310)
-platform_size = Vector2(90, 40)
 
-[node name="PopUpSpikes" parent="Traps" instance=ExtResource("5_pus")]
-position = Vector2(760, 270)
-spike_width = 36.0
-trigger_distance = 80.0
+[node name="Laser1" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(240, 220)
+beam_length = 160
+active_time = 1.6
+inactive_time = 1.4
 
-[node name="ControlInverter" parent="Traps" instance=ExtResource("5_ci")]
-position = Vector2(340, 286)
-zone_size = Vector2(40, 60)
+[node name="Laser2" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(380, 220)
+beam_length = 160
+active_time = 1.2
+inactive_time = 1.8
 
-[node name="ExitDoor" parent="." instance=ExtResource("6_ed")]
-position = Vector2(850, 270)
+[node name="PopUpSpikesMid" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(470, 380)
+spike_width = 50
+max_spike_height = 32
+trigger_distance = 75
+warning_time = 0.45
+
+[node name="TrapFloorMid" parent="Traps" instance=ExtResource("7_tr")]
+position = Vector2(540, 380)
+platform_size = Vector2(120, 160)
+
+[node name="Laser3" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(780, 220)
+beam_length = 160
+active_time = 1.4
+inactive_time = 1.5
+
+[node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
+position = Vector2(860, 380)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
-position = Vector2(100, 400)
+position = Vector2(80, 380)

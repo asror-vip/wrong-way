@@ -65,7 +65,9 @@ func _physics_process(delta: float) -> void:
 		jump_buffer = 0.0
 		if visual:
 			visual.scale = Vector2(0.75, 1.35)
-		SoundManager.play("jump")
+		var sm = get_node_or_null("/root/SoundManager")
+		if sm and sm.has_method("play"):
+			sm.play("jump")
 
 	# Sakrash tugmasi erta qo'yib yuborilganda pastga tortish
 	if Input.is_action_just_released("jump") and velocity.y < MAX_SHORT_JUMP_FALL:
@@ -89,8 +91,12 @@ func kill() -> void:
 		return
 	is_dead = true
 	velocity = Vector2.ZERO
-	SoundManager.play("die")
-	GameManager.record_death()
+	var sm = get_node_or_null("/root/SoundManager")
+	if sm and sm.has_method("play"):
+		sm.play("die")
+	var gm = get_node_or_null("/root/GameManager")
+	if gm and gm.has_method("record_death"):
+		gm.record_death()
 	died.emit()
 	
 	visible = false

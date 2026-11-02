@@ -42,7 +42,9 @@ func _physics_process(delta: float) -> void:
 		if col_shape:
 			col_shape.set_deferred("disabled", not is_active)
 		if is_active:
-			SoundManager.play("trap")
+			var sm = get_node_or_null("/root/SoundManager")
+			if sm and sm.has_method("play"):
+				sm.play("trap")
 			
 	queue_redraw()
 
