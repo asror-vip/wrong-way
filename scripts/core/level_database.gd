@@ -22,36 +22,26 @@ func _ready() -> void:
 func load_local_levels() -> void:
 	_levels_cache.clear()
 	
-	# 1. User keshini tekshiramiz (agar avval Supabase'dan yuklangan bo'lsa)
-	var loaded_from_user_cache := false
+	# 1. Asosiy manba - loyihadagi res://data/levels.json
+	var file_path := "res://data/levels.json"
+	if FileAccess.file_exists(file_path):
+		var file := FileAccess.open(file_path, FileAccess.READ)
+		if file:
+			var json_text := file.get_as_text()
+			file.close()
+			var parsed = JSON.parse_string(json_text)
+			if parsed is Array:
+				_populate_cache(parsed)
+				
+	# 2. Agar user keshida to'liqroq ma'lumot bo'lsa (faqat kamida shuncha bo'lsa)
 	if FileAccess.file_exists(CACHE_FILE_PATH):
 		var u_file := FileAccess.open(CACHE_FILE_PATH, FileAccess.READ)
 		if u_file:
 			var u_text := u_file.get_as_text()
 			u_file.close()
 			var u_parsed = JSON.parse_string(u_text)
-			if u_parsed is Array and u_parsed.size() > 0:
+			if u_parsed is Array and u_parsed.size() >= _levels_cache.size():
 				_populate_cache(u_parsed)
-				loaded_from_user_cache = true
-				
-	# 2. Agar kesh bo'lmasa, ichki res://data/levels.json dan o'qiymiz
-	if not loaded_from_user_cache:
-		var file_path := "res://data/levels.json"
-		if not FileAccess.file_exists(file_path):
-			push_error("LevelDatabase: %s topilmadi!" % file_path)
-			return
-			
-		var file := FileAccess.open(file_path, FileAccess.READ)
-		if not file:
-			push_error("LevelDatabase: Faylni ochib bo'lmadi: %s" % file_path)
-			return
-			
-		var json_text := file.get_as_text()
-		file.close()
-		
-		var parsed = JSON.parse_string(json_text)
-		if parsed is Array:
-			_populate_cache(parsed)
 			
 	is_loaded = true
 	print("LevelDatabase: %d ta daraja muvaffaqiyatli yuklandi!" % _levels_cache.size())
@@ -87,7 +77,7 @@ func _on_sync_completed(_result: int, response_code: int, _headers: PackedString
 	if response_code == 200:
 		var json_str := body.get_string_from_utf8()
 		var parsed = JSON.parse_string(json_str)
-		if parsed is Array and parsed.size() > 0:
+		if parsed is Array and parsed.size() >= _levels_cache.size():
 			_populate_cache(parsed)
 			# Keshga saqlash
 			var save_file := FileAccess.open(CACHE_FILE_PATH, FileAccess.WRITE)

@@ -5,8 +5,10 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
 [ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
 [ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="5_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="6_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="7_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/moving_saw.tscn" id="7_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/crumbling_platform.tscn" id="8_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="9_tr"]
 
 [node name="Level07" type="Node2D"]
 script = ExtResource("1_bl")
@@ -16,15 +18,19 @@ level_number = 7
 
 [node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 380)
-platform_size = Vector2(480, 160)
+platform_size = Vector2(420, 160)
+
+[node name="GroundMid" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(500, 380)
+platform_size = Vector2(220, 160)
 
 [node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(660, 380)
-platform_size = Vector2(300, 160)
+position = Vector2(800, 380)
+platform_size = Vector2(160, 160)
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(100, 0)
-platform_size = Vector2(600, 60)
+platform_size = Vector2(700, 60)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -38,34 +44,49 @@ platform_size = Vector2(32, 540)
 
 [node name="Stalactite1" parent="Traps" instance=ExtResource("5_tr")]
 position = Vector2(180, 60)
-trigger_distance = 320
-shake_duration = 0.2
+trigger_distance = 280
+shake_duration = 0.35
 
 [node name="Stalactite2" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(290, 60)
-trigger_distance = 240
-shake_duration = 0.5
+position = Vector2(280, 60)
+trigger_distance = 260
+shake_duration = 0.45
+
+[node name="PopUpSpikesEdge" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(380, 380)
+spike_width = 40
+max_spike_height = 32
+trigger_distance = 70
+warning_time = 0.3
+
+[node name="MovingSawInGap" parent="Traps" instance=ExtResource("7_tr")]
+position = Vector2(460, 370)
+radius = 16
+patrol_distance = 40
+patrol_speed = 130
+patrol_axis = Vector2(0, -1)
 
 [node name="Stalactite3" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(400, 60)
-trigger_distance = 160
-shake_duration = 0.6
-
-[node name="SpikesFloor" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(440, 348)
-spike_size = Vector2(40, 32)
-
-[node name="TrapFloorMid" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(540, 380)
-platform_size = Vector2(120, 160)
-
-[node name="Stalactite4" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(600, 60)
-trigger_distance = 300
+position = Vector2(560, 60)
+trigger_distance = 240
 shake_duration = 0.4
 
+[node name="CrumblingLedge" parent="Traps" instance=ExtResource("8_tr")]
+position = Vector2(660, 380)
+platform_size = Vector2(60, 160)
+crumble_delay = 0.5
+
+[node name="Stalactite4" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(680, 60)
+trigger_distance = 220
+shake_duration = 0.3
+
+[node name="SpikesEnd" parent="Traps" instance=ExtResource("9_tr")]
+position = Vector2(820, 348)
+spike_size = Vector2(40, 32)
+
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
-position = Vector2(860, 380)
+position = Vector2(880, 380)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
 position = Vector2(80, 380)

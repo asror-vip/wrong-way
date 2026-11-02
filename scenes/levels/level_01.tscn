@@ -15,11 +15,11 @@ level_number = 1
 
 [node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 380)
-platform_size = Vector2(300, 160)
+platform_size = Vector2(320, 160)
 
 [node name="GroundMid" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(420, 380)
-platform_size = Vector2(140, 160)
+position = Vector2(400, 380)
+platform_size = Vector2(180, 160)
 
 [node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(680, 380)
@@ -37,15 +37,11 @@ platform_size = Vector2(32, 540)
 
 [node name="SpikesStart" parent="Traps" instance=ExtResource("5_tr")]
 position = Vector2(200, 348)
-spike_size = Vector2(64, 32)
+spike_size = Vector2(48, 32)
 
 [node name="TrapFloorMid" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(560, 380)
-platform_size = Vector2(120, 160)
-
-[node name="SpikesEnd" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(760, 348)
-spike_size = Vector2(48, 32)
+position = Vector2(580, 380)
+platform_size = Vector2(100, 160)
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
 position = Vector2(860, 380)

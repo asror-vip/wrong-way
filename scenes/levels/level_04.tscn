@@ -6,7 +6,6 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
 [ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="5_tr"]
 [ext_resource type="PackedScene" path="res://scenes/traps/circular_saw.tscn" id="6_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="7_tr"]
 
 [node name="Level04" type="Node2D"]
 script = ExtResource("1_bl")
@@ -16,19 +15,11 @@ level_number = 4
 
 [node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 380)
-platform_size = Vector2(260, 160)
-
-[node name="GroundMid" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(340, 380)
-platform_size = Vector2(260, 160)
+platform_size = Vector2(420, 160)
 
 [node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(710, 380)
-platform_size = Vector2(250, 160)
-
-[node name="CeilingCorridor" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(720, 240)
-platform_size = Vector2(120, 40)
+position = Vector2(490, 380)
+platform_size = Vector2(470, 160)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -41,22 +32,13 @@ platform_size = Vector2(32, 540)
 [node name="Traps" type="Node2D" parent="."]
 
 [node name="SpikesStart" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(180, 348)
+position = Vector2(220, 348)
 spike_size = Vector2(48, 32)
 
 [node name="CircularSaw1" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(460, 310)
-orbit_radius = 52
-orbit_speed = 2.2
-
-[node name="TrapFloorMid" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(600, 380)
-platform_size = Vector2(110, 160)
-
-[node name="CircularSaw2" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(770, 330)
-orbit_radius = 34
-orbit_speed = 2.8
+position = Vector2(455, 300)
+orbit_radius = 36
+orbit_speed = 1.8
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
 position = Vector2(860, 380)

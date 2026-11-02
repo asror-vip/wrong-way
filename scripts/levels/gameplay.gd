@@ -41,22 +41,20 @@ func _load_level(lvl: int) -> void:
 	for child in level_holder.get_children():
 		child.queue_free()
 		
-	# 1-variant: Data-driven Level Devil arena
+	# 1. Asosiy va eng aniq sozlangan sahna (.tscn) birinchi navbatda yuklanadi
+	var path := "res://scenes/levels/level_%02d.tscn" % lvl
+	if ResourceLoader.exists(path):
+		var lvl_res := load(path)
+		if lvl_res:
+			var inst: Node2D = lvl_res.instantiate()
+			level_holder.add_child(inst)
+			return
+
+	# 2. Agar sahna fayli topilmasa, LevelDatabase dan dinamik arena yuklanadi
 	var ldb = get_node_or_null("/root/LevelDatabase")
 	if ldb and ldb.has_method("has_level") and ldb.has_level(lvl):
 		var arena = level_arena_scene.instantiate()
 		level_holder.add_child(arena)
 		arena.load_level_from_data(ldb.get_level(lvl))
-		return
-		
-	# Fallback (agar sahnada maxsus fayl bo'lsa)
-	var path := "res://scenes/levels/level_%02d.tscn" % lvl
-	if not ResourceLoader.exists(path):
-		path = "res://scenes/levels/level_01.tscn"
-		
-	var lvl_res := load(path)
-	if lvl_res:
-		var inst: Node2D = lvl_res.instantiate()
-		level_holder.add_child(inst)
 
 

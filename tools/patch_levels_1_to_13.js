@@ -149,3 +149,4 @@ updateLevel(13, (lvl) => {
 
 fs.writeFileSync(jsonPath, JSON.stringify(levels, null, 2), 'utf8');
 console.log('Successfully updated data/levels.json!');
+
