@@ -1,23 +1,39 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/profile_modal.gd" id="1_pm"]
 [ext_resource type="StyleBox" path="res://resources/themes/panel_obsidian_modal.tres" id="2_obsidian"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white.tres" id="3_white"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass.tres" id="4_glass"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_avatar_frame"]
+bg_color = Color(0.06, 0.08, 0.13, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.22, 0.74, 0.97, 0.8)
+corner_radius_top_left = 34
+corner_radius_top_right = 34
+corner_radius_bottom_right = 34
+corner_radius_bottom_left = 34
+shadow_color = Color(0.22, 0.74, 0.97, 0.25)
+shadow_size = 6
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_chip"]
-bg_color = Color(0.08, 0.11, 0.16, 0.85)
+bg_color = Color(0.08, 0.12, 0.18, 0.85)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.25, 0.35, 0.5, 0.5)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-content_margin_left = 12.0
-content_margin_right = 12.0
+border_color = Color(0.25, 0.38, 0.55, 0.6)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 10.0
+content_margin_top = 5.0
+content_margin_right = 10.0
+content_margin_bottom = 5.0
 
 [node name="ProfileModal" type="Control"]
 layout_mode = 3
@@ -35,7 +51,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.02, 0.03, 0.05, 0.75)
+color = Color(0.02, 0.03, 0.05, 0.8)
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -46,7 +62,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="Panel" parent="CenterContainer"]
-custom_minimum_size = Vector2(440, 360)
+custom_minimum_size = Vector2(500, 440)
 layout_mode = 2
 theme_override_styles/panel = ExtResource("2_obsidian")
 
@@ -54,93 +70,208 @@ theme_override_styles/panel = ExtResource("2_obsidian")
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 18.0
-offset_bottom = 44.0
+offset_top = 16.0
+offset_bottom = 42.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "< ◇ ── O'YINCHI PROFILI ── ◇ >"
+theme_override_colors/font_shadow_color = Color(0.22, 0.74, 0.97, 0.35)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 17
+text = "< ◇ — O'YINCHI PROFILI — ◇ >"
 horizontal_alignment = 1
 
-[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel"]
+[node name="CloseBtn" type="Button" parent="CenterContainer/Panel"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -48.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = 48.0
+grow_horizontal = 0
+focus_mode = 0
+text = "✕"
+
+[node name="ContentVBox" type="VBoxContainer" parent="CenterContainer/Panel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = 60.0
-offset_right = -32.0
-offset_bottom = -20.0
+offset_left = 28.0
+offset_top = 56.0
+offset_right = -28.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 12
-alignment = 1
+theme_override_constants/separation = 14
 
-[node name="TagBox" type="HBoxContainer" parent="CenterContainer/Panel/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 10
-alignment = 1
-
-[node name="Label" type="Label" parent="CenterContainer/Panel/VBox/TagBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 0.9)
-theme_override_font_sizes/font_size = 13
-text = "Player ID:"
-
-[node name="TagPanel" type="PanelContainer" parent="CenterContainer/Panel/VBox/TagBox"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_chip")
-
-[node name="TagLabel" type="Label" parent="CenterContainer/Panel/VBox/TagBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.38, 0.74, 0.97, 1)
-theme_override_font_sizes/font_size = 15
-text = "WW-0000"
-
-[node name="CopyBtn" type="Button" parent="CenterContainer/Panel/VBox/TagBox"]
-custom_minimum_size = Vector2(80, 28)
-layout_mode = 2
-focus_mode = 0
-theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
-theme_override_font_sizes/font_size = 11
-theme_override_styles/normal = ExtResource("4_glass")
-text = "Nusxalash"
-
-[node name="NameEdit" type="LineEdit" parent="CenterContainer/Panel/VBox"]
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
-theme_override_font_sizes/font_size = 15
-placeholder_text = "Taxallusingizni kiriting"
-alignment = 1
-max_length = 16
-
-[node name="AvatarLabel" type="Label" parent="CenterContainer/Panel/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.65, 0.72, 0.85, 0.9)
-theme_override_font_sizes/font_size = 12
-text = "Avatar belgisini tanlang:"
-horizontal_alignment = 1
-
-[node name="AvatarGrid" type="HBoxContainer" parent="CenterContainer/Panel/VBox"]
-layout_mode = 2
-theme_override_constants/separation = 10
-alignment = 1
-
-[node name="ActionHBox" type="HBoxContainer" parent="CenterContainer/Panel/VBox"]
+[node name="HeroHBox" type="HBoxContainer" parent="CenterContainer/Panel/ContentVBox"]
 layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="CloseBtn" type="Button" parent="CenterContainer/Panel/VBox/ActionHBox"]
-custom_minimum_size = Vector2(120, 36)
+[node name="AvatarFrame" type="PanelContainer" parent="CenterContainer/Panel/ContentVBox/HeroHBox"]
+custom_minimum_size = Vector2(68, 68)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_avatar_frame")
+
+[node name="AvatarPreview" type="TextureRect" parent="CenterContainer/Panel/ContentVBox/HeroHBox/AvatarFrame"]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="InfoVBox" type="VBoxContainer" parent="CenterContainer/Panel/ContentVBox/HeroHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="NameEdit" type="LineEdit" parent="CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+placeholder_text = "Taxallusingizni kiriting"
+max_length = 16
+
+[node name="TagHBox" type="HBoxContainer" parent="CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 0
+
+[node name="TagPanel" type="PanelContainer" parent="CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox/TagHBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_chip")
+
+[node name="TagLabel" type="Label" parent="CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox/TagHBox/TagPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.74, 0.97, 1)
+theme_override_font_sizes/font_size = 12
+text = "WW-0000"
+
+[node name="CopyBtn" type="Button" parent="CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox/TagHBox"]
+custom_minimum_size = Vector2(80, 26)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 11
+text = "Nusxa"
+
+[node name="AuthLabel" type="Label" parent="CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox/TagHBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.62, 0.75, 0.9)
+theme_override_font_sizes/font_size = 11
+text = "• Mehmon"
+
+[node name="StatsHBox" type="HBoxContainer" parent="CenterContainer/Panel/ContentVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="StarsChip" type="PanelContainer" parent="CenterContainer/Panel/ContentVBox/StatsHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_chip")
+
+[node name="HBox" type="HBoxContainer" parent="CenterContainer/Panel/ContentVBox/StatsHBox/StarsChip"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="CenterContainer/Panel/ContentVBox/StatsHBox/StarsChip/HBox"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StarsLabel" type="Label" parent="CenterContainer/Panel/ContentVBox/StatsHBox/StarsChip/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "0 / 60"
+
+[node name="LevelsChip" type="PanelContainer" parent="CenterContainer/Panel/ContentVBox/StatsHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_chip")
+
+[node name="HBox" type="HBoxContainer" parent="CenterContainer/Panel/ContentVBox/StatsHBox/LevelsChip"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="CenterContainer/Panel/ContentVBox/StatsHBox/LevelsChip/HBox"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LevelsLabel" type="Label" parent="CenterContainer/Panel/ContentVBox/StatsHBox/LevelsChip/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "1-Daraja"
+
+[node name="BestChip" type="PanelContainer" parent="CenterContainer/Panel/ContentVBox/StatsHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_chip")
+
+[node name="HBox" type="HBoxContainer" parent="CenterContainer/Panel/ContentVBox/StatsHBox/BestChip"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="CenterContainer/Panel/ContentVBox/StatsHBox/BestChip/HBox"]
+custom_minimum_size = Vector2(16, 16)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BestLabel" type="Label" parent="CenterContainer/Panel/ContentVBox/StatsHBox/BestChip/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 11
+text = "0.00s"
+clip_text = true
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/Panel/ContentVBox"]
+layout_mode = 2
+
+[node name="AvatarSection" type="VBoxContainer" parent="CenterContainer/Panel/ContentVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AvatarTitle" type="Label" parent="CenterContainer/Panel/ContentVBox/AvatarSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.80, 0.92, 0.9)
+theme_override_font_sizes/font_size = 12
+text = "Avatar belgisini tanlang:"
+horizontal_alignment = 1
+
+[node name="AvatarGrid" type="HBoxContainer" parent="CenterContainer/Panel/ContentVBox/AvatarSection"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ActionHBox" type="HBoxContainer" parent="CenterContainer/Panel/ContentVBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="CancelBtn" type="Button" parent="CenterContainer/Panel/ContentVBox/ActionHBox"]
+custom_minimum_size = Vector2(130, 36)
 layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
 theme_override_styles/normal = ExtResource("4_glass")
 text = "Bekor qilish"
 
-[node name="SaveBtn" type="Button" parent="CenterContainer/Panel/VBox/ActionHBox"]
-custom_minimum_size = Vector2(120, 36)
+[node name="SaveBtn" type="Button" parent="CenterContainer/Panel/ContentVBox/ActionHBox"]
+custom_minimum_size = Vector2(130, 36)
 layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(0.08, 0.1, 0.15, 1)
@@ -153,10 +284,10 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -28.0
+offset_top = -24.0
+offset_bottom = -6.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.38, 0.85, 0.45, 1)
 theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
-

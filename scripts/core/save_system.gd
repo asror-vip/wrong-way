@@ -143,3 +143,12 @@ func get_level_stars(level_num: int) -> int:
 
 func get_overall_best_text() -> String:
 	return overall_best_text
+
+func get_total_stars() -> int:
+	var total: int = 0
+	for k in level_stars.keys():
+		total += int(level_stars[k])
+	return total
+
+func get_unlocked_count() -> int:
+	return unlocked_levels.size()
