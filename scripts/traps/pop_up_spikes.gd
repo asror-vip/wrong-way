@@ -71,6 +71,11 @@ func _draw() -> void:
 	# Agar tikanlar hali ko'tarilmagan bo'lsa, hech qanday belgi yoki tirqish chizilmaydi (100% yashirin)
 	if current_height <= 1.0:
 		return
+
+	var is_winter := false
+	var gm = get_node_or_null("/root/GameManager")
+	if gm and gm.has_method("is_winter_theme"):
+		is_winter = gm.is_winter_theme()
 		
 	var w := spike_width
 	var count := int(maxf(1.0, w / 16.0))
@@ -86,9 +91,14 @@ func _draw() -> void:
 			Vector2(sx1, -current_height),
 			Vector2(sx2 - 2.0, 0.0)
 		])
-		draw_colored_polygon(tri, Color("#0a0b10"))
-		draw_line(Vector2(sx0 + 2.0, 0.0), Vector2(sx1, -current_height), Color("#e4e4e7"), 1.2)
-		draw_line(Vector2(sx1, -current_height), Vector2(sx2 - 2.0, 0.0), Color("#475569"), 1.2)
+		if is_winter:
+			draw_colored_polygon(tri, Color(0.22, 0.74, 0.97, 0.90))
+			draw_line(Vector2(sx0 + 2.0, 0.0), Vector2(sx1, -current_height), Color("#ffffff"), 1.2)
+			draw_line(Vector2(sx1, -current_height), Vector2(sx2 - 2.0, 0.0), Color("#7dd3fc"), 1.2)
+		else:
+			draw_colored_polygon(tri, Color("#0c0e14"))
+			draw_line(Vector2(sx0 + 2.0, 0.0), Vector2(sx1, -current_height), Color("#525d73"), 1.2)
+			draw_line(Vector2(sx1, -current_height), Vector2(sx2 - 2.0, 0.0), Color("#1b202c"), 1.2)
 
 func _on_body_entered(body: Node2D) -> void:
 	if is_active and (body is PlayerController or body.is_in_group("player")):

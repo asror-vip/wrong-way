@@ -81,14 +81,17 @@ func _draw() -> void:
 		draw_line(Vector2(-16, 0), Vector2(0, 32), Color("#ffffff"), 1.5)
 		draw_line(Vector2(16, 0), Vector2(0, 32), Color("#0284c7"), 1.2)
 	else:
-		draw_colored_polygon(pts, Color("#e11d48"))
+		# Tosh/stalaktit ko'rinishi (Shift rangiga moslashgan, oldindan sezilmaydi)
+		draw_colored_polygon(pts, Color("#1c1a22"))
 		var inner_pts := PackedVector2Array([
-			Vector2(-8, 2),
-			Vector2(8, 2),
-			Vector2(0, 26)
+			Vector2(-7, 2),
+			Vector2(7, 2),
+			Vector2(0, 24)
 		])
-		draw_colored_polygon(inner_pts, Color("#fb7185"))
-		draw_polyline(pts, Color("#881337"), 2.0)
+		draw_colored_polygon(inner_pts, Color("#252230"))
+		draw_line(Vector2(-16, 0), Vector2(0, 32), Color("#525d73"), 1.2)
+		draw_line(Vector2(16, 0), Vector2(0, 32), Color("#1b202c"), 1.2)
+		draw_line(Vector2(-16, 0), Vector2(16, 0), Color("#342f3a"), 2.0)
 
 func _on_body_entered(body: Node2D) -> void:
 	if body is PlayerController or body.is_in_group("player"):

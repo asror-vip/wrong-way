@@ -41,7 +41,7 @@ func _draw() -> void:
 	if gm and gm.has_method("is_winter_theme"):
 		is_winter = gm.is_winter_theme()
 
-	var base_col := Color("#0c111c") if is_winter else Color("#0a0b10")
+	var base_col := Color("#0d131f") if is_winter else Color("#1c1a22")
 	draw_rect(Rect2(Vector2.ZERO, platform_size), base_col, true)
 	
 	# Har qanday telefon ekranida (hatto ultra-keng 20:9 bo'lsa ham) chetlarda oraliq qolmasligi uchun
@@ -71,6 +71,6 @@ func _draw() -> void:
 		else:
 			draw_rect(Rect2(Vector2.ZERO, Vector2(2.5, platform_size.y)), Color(0.49, 0.86, 0.99, 0.6), true)
 	else:
-		draw_rect(Rect2(Vector2.ZERO, Vector2(platform_size.x, 2.0)), Color("#262e3e"), true)
+		draw_rect(Rect2(Vector2.ZERO, Vector2(platform_size.x, 3.0)), Color("#342f3a"), true)
 
 

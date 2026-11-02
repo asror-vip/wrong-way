@@ -27,6 +27,8 @@ func _ready() -> void:
 		trigger_area.body_entered.connect(_on_trigger_body_entered)
 	elif has_node("AreaTrigger"):
 		$AreaTrigger.body_entered.connect(_on_trigger_body_entered)
+	if visual:
+		visual.queue_redraw()
 
 
 func _physics_process(delta: float) -> void:

@@ -87,10 +87,10 @@ func _draw() -> void:
 	if gm and gm.has_method("is_winter_theme"):
 		is_winter = gm.is_winter_theme()
 
-	var base_col := Color("#0c111c") if is_winter else Color("#0a0b10")
+	var base_col := Color("#0d131f") if is_winter else Color("#1c1a22")
 	var rect := Rect2(0, 0, ceiling_size.x, ceiling_size.y)
 	draw_rect(rect, base_col, true)
 	
-	# SolidPlatform kabi pastki chegaraviy chiziq (shiftning pastki cheti)
-	var edge_col := Color(0.49, 0.86, 0.99, 0.6) if is_winter else Color("#262e3e")
-	draw_line(Vector2(0, ceiling_size.y), Vector2(ceiling_size.x, ceiling_size.y), edge_col, 2.0)
+	# SolidPlatform kabi chegaraviy chiziq
+	var edge_col := Color(0.49, 0.86, 0.99, 0.6) if is_winter else Color("#342f3a")
+	draw_line(Vector2(0, ceiling_size.y), Vector2(ceiling_size.x, ceiling_size.y), edge_col, 3.0)
