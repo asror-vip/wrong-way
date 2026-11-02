@@ -213,14 +213,27 @@ func _update_avatar_preview() -> void:
 
 func _load_stats() -> void:
 	var save_sys = get_node_or_null("/root/SaveSystem")
+	if not save_sys:
+		save_sys = get_node_or_null("/root/SaveManager")
 	if save_sys:
 		if stars_label and save_sys.has_method("get_total_stars"):
-			stars_label.text = "%d / 60" % save_sys.get_total_stars()
-		if levels_label and save_sys.has_method("get_unlocked_count"):
-			levels_label.text = "%d ta ochilgan" % save_sys.get_unlocked_count()
+			stars_label.text = "%d Yulduz" % save_sys.get_total_stars()
+		if levels_label:
+			var cur_lvl: int = 1
+			if save_sys.has_method("get_highest_completed_level"):
+				cur_lvl = save_sys.get_highest_completed_level()
+			elif save_sys.has_method("get_highest_unlocked_level"):
+				cur_lvl = save_sys.get_highest_unlocked_level()
+			if cur_lvl <= 0:
+				cur_lvl = 1
+			levels_label.text = "%d-Daraja" % cur_lvl
 		if best_label and save_sys.has_method("get_overall_best_text"):
 			var best_str: String = save_sys.get_overall_best_text()
-			best_label.text = "Rekord: " + best_str
+			if best_str != "Mavjud emas" and not best_str.is_empty():
+				var time_part := best_str.split(" ")[0]
+				best_label.text = time_part + " Rekord"
+			else:
+				best_label.text = "Rekord: —"
 
 func _on_copy_tag() -> void:
 	DisplayServer.clipboard_set(ProfileManager.player_tag)

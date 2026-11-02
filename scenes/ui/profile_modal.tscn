@@ -30,9 +30,9 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
-content_margin_left = 10.0
+content_margin_left = 8.0
 content_margin_top = 5.0
-content_margin_right = 10.0
+content_margin_right = 8.0
 content_margin_bottom = 5.0
 
 [node name="ProfileModal" type="Control"]
@@ -62,7 +62,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="Panel" parent="CenterContainer"]
-custom_minimum_size = Vector2(500, 440)
+custom_minimum_size = Vector2(510, 440)
 layout_mode = 2
 theme_override_styles/panel = ExtResource("2_obsidian")
 
@@ -191,7 +191,7 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 11
-text = "0 / 60"
+text = "0 Yulduz"
 
 [node name="LevelsChip" type="PanelContainer" parent="CenterContainer/Panel/ContentVBox/StatsHBox"]
 layout_mode = 2
@@ -235,8 +235,7 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
 theme_override_font_sizes/font_size = 11
-text = "0.00s"
-clip_text = true
+text = "Rekord: —"
 
 [node name="HSeparator" type="HSeparator" parent="CenterContainer/Panel/ContentVBox"]
 layout_mode = 2

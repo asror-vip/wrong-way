@@ -231,6 +231,31 @@ func unlock_level_via_ad(lvl: int) -> void:
 func is_level_completed(lvl: int) -> bool:
 	return level_stars.has(str(lvl)) and int(level_stars[str(lvl)]) > 0
 
+func get_highest_completed_level() -> int:
+	var highest := 0
+	for k in level_stars:
+		var lvl := int(k)
+		if int(level_stars[k]) > 0 and lvl > highest:
+			if lvl <= 20 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
+				highest = lvl
+	return highest
+
+func get_completed_level_count() -> int:
+	var count := 0
+	for k in level_stars:
+		var lvl := int(k)
+		if int(level_stars[k]) > 0:
+			if lvl <= 20 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
+				count += 1
+	return count
+
+func get_unlocked_count() -> int:
+	var count := 0
+	for lvl in unlocked_levels:
+		if lvl <= 20 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
+			count += 1
+	return count
+
 func get_level_best_deaths(lvl: int) -> int:
 	var str_lvl := str(lvl)
 	if level_best_deaths.has(str_lvl):
