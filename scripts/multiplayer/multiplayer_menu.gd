@@ -653,3 +653,4 @@ func _style_button(btn: Button, variant: String) -> void:
 	btn.add_theme_stylebox_override("hover", hover)
 	btn.add_theme_stylebox_override("pressed", pressed)
 	btn.add_theme_stylebox_override("focus", normal)
+
