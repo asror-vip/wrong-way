@@ -48,9 +48,9 @@ func _draw() -> void:
 			draw_line(Vector2(x1, 2.0), Vector2(x2 - 1.0, h - 4.0), Color("#7dd3fc"), 1.2)
 			draw_circle(Vector2(x1, 2.5), 1.6, Color.WHITE)
 	else:
-		# 1-bob: Xavfli o'tkir qizil-po'lat tikanlar (Yashirilmaydigan, yaqqol ko'rinadigan)
-		draw_rect(Rect2(0, h - 5.0, w, 5.0), Color("#1c1a22"), true)
-		draw_rect(Rect2(0, h - 5.0, w, 2.5), Color("#e11d48"), true) # Qizil xavf chizig'i
+		# Yashirilmaydigan oddiy tikanlar (Boshqa tikanlar bilan 100% BIR XIL qora-po'lat ko'rinishda)
+		draw_rect(Rect2(0, h - 4.0, w, 4.0), Color("#1c1a22"), true)
+		draw_rect(Rect2(0, h - 4.0, w, 2.0), Color("#342f3a"), true)
 		
 		var count := int(maxf(1.0, w / 16.0))
 		var step := w / float(count)
@@ -64,20 +64,20 @@ func _draw() -> void:
 				Vector2(x1, 2.0),
 				Vector2(x2 - 1.0, h - 4.0)
 			])
-			# To'q po'lat asos
+			# To'q po'lat asos (barcha tikanlar bilan bir xil)
 			draw_colored_polygon(tri, Color("#1e1b26"))
-			# Qizil xavf yuzi (Danger facet)
+			# Ichki qirra (facet)
 			var inner_facet := PackedVector2Array([
 				Vector2(x0 + 2.5, h - 4.0),
 				Vector2(x1, 3.5),
 				Vector2(x1 + 1.0, h - 4.0)
 			])
-			draw_colored_polygon(inner_facet, Color("#be123c"))
+			draw_colored_polygon(inner_facet, Color("#2a2536"))
 			# O'tkir po'lat va oq yaltiroq qirra
-			draw_line(Vector2(x0 + 1.0, h - 4.0), Vector2(x1, 2.0), Color("#ffffff"), 1.6)
-			draw_line(Vector2(x1, 2.0), Vector2(x2 - 1.0, h - 4.0), Color("#fb7185"), 1.2)
+			draw_line(Vector2(x0 + 1.0, h - 4.0), Vector2(x1, 2.0), Color("#ffffff"), 1.4)
+			draw_line(Vector2(x1, 2.0), Vector2(x2 - 1.0, h - 4.0), Color("#5c566a"), 1.2)
 			# Uchi yaltirashi (O'tkir oq uch)
-			draw_circle(Vector2(x1, 2.0), 1.8, Color.WHITE)
+			draw_circle(Vector2(x1, 2.0), 1.4, Color.WHITE)
 
 func _on_body_entered(body: Node2D) -> void:
 	if body is PlayerController or body.is_in_group("player"):

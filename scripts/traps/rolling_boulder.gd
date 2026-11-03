@@ -116,9 +116,9 @@ func _draw() -> void:
 		var base2 := dir * (boulder_radius - 2.0) + norm * 6.0
 		var tip := dir * (boulder_radius + 12.0)
 		draw_colored_polygon(PackedVector2Array([base1, tip, base2]), Color("#1e1b26"))
-		draw_colored_polygon(PackedVector2Array([base1 + norm * 2.0, tip, base2]), Color("#be123c"))
+		draw_colored_polygon(PackedVector2Array([base1 + norm * 2.0, tip, base2]), Color("#2a2536"))
 		draw_line(base1, tip, Color("#ffffff"), 1.4)
-		draw_line(tip, base2, Color("#fb7185"), 1.2)
+		draw_line(tip, base2, Color("#5c566a"), 1.2)
 		draw_circle(tip, 1.5, Color.WHITE)
 
 	# 2. Asosiy obsidian qoya toshi tanasi
@@ -132,8 +132,8 @@ func _draw() -> void:
 	draw_line(Vector2(4, -4), Vector2(0, 15), Color(0.03, 0.04, 0.07, 0.95), 2.2)
 	draw_line(Vector2(0, 15), Vector2(-12, 18), Color(0.03, 0.04, 0.07, 0.95), 1.8)
 	
-	# Markaziy qizil xavf nuri
-	draw_circle(Vector2.ZERO, 6.0, Color("#e11d48"))
+	# Markaziy temir yadrosi
+	draw_circle(Vector2.ZERO, 6.0, Color("#36435c"))
 	draw_circle(Vector2.ZERO, 3.0, Color.WHITE)
 	
 	# Nozik tosh yorug'lik aksi

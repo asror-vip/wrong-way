@@ -29,8 +29,8 @@ position = Vector2(760, 380)
 platform_size = Vector2(200, 160)
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(240, 0)
-platform_size = Vector2(200, 60)
+position = Vector2(0, 0)
+platform_size = Vector2(960, 60)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)

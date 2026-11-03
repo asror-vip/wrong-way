@@ -96,9 +96,17 @@ func _draw() -> void:
 			draw_line(Vector2(sx0 + 2.0, 0.0), Vector2(sx1, -current_height), Color("#ffffff"), 1.2)
 			draw_line(Vector2(sx1, -current_height), Vector2(sx2 - 2.0, 0.0), Color("#7dd3fc"), 1.2)
 		else:
-			draw_colored_polygon(tri, Color("#0c0e14"))
-			draw_line(Vector2(sx0 + 2.0, 0.0), Vector2(sx1, -current_height), Color("#525d73"), 1.2)
-			draw_line(Vector2(sx1, -current_height), Vector2(sx2 - 2.0, 0.0), Color("#1b202c"), 1.2)
+			# Chiqadigan tikanlar ham tashqarida turadigan tikanlar bilan 100% BIR XIL rangda
+			draw_colored_polygon(tri, Color("#1e1b26"))
+			var inner_facet := PackedVector2Array([
+				Vector2(sx0 + 2.5, 0.0),
+				Vector2(sx1, -current_height + 2.0),
+				Vector2(sx1 + 1.0, 0.0)
+			])
+			draw_colored_polygon(inner_facet, Color("#2a2536"))
+			draw_line(Vector2(sx0 + 2.0, 0.0), Vector2(sx1, -current_height), Color("#ffffff"), 1.4)
+			draw_line(Vector2(sx1, -current_height), Vector2(sx2 - 2.0, 0.0), Color("#5c566a"), 1.2)
+			draw_circle(Vector2(sx1, -current_height), 1.4, Color.WHITE)
 
 func _on_body_entered(body: Node2D) -> void:
 	if is_active and (body is PlayerController or body.is_in_group("player")):

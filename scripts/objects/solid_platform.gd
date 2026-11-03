@@ -16,6 +16,12 @@ func _ready() -> void:
 		position.y = 0.0
 		platform_size.x = 32.0
 		platform_size.y = 540.0
+	# Shift (Ceiling - ekranning chapdan o'nggacha to'liq, tekis shifti)
+	elif name.to_lower().contains("ceiling") or name.to_lower().contains("shift") or (position.y <= 15.0 and platform_size.y < 150.0):
+		position.x = 0.0
+		position.y = 0.0
+		platform_size.x = 960.0
+		platform_size.y = maxf(platform_size.y, 50.0)
 	else:
 		# Agar chap platforma/pol bo'lsa, x=0 dan boshlab qoplaymiz
 		if position.x <= 40.0:
@@ -51,6 +57,8 @@ func _draw() -> void:
 		draw_rect(Rect2(Vector2(-400, 0), Vector2(400, platform_size.y + 100)), base_col, true)
 	if (position.y + platform_size.y) >= 530.0:
 		draw_rect(Rect2(Vector2(0, platform_size.y), Vector2(platform_size.x, 200)), base_col, true)
+	if position.y <= 10.0:
+		draw_rect(Rect2(Vector2(-400, -200), Vector2(platform_size.x + 800, 200)), base_col, true)
 		
 	if is_winter:
 		var snow_h := 5.5
@@ -71,6 +79,10 @@ func _draw() -> void:
 		else:
 			draw_rect(Rect2(Vector2.ZERO, Vector2(2.5, platform_size.y)), Color(0.49, 0.86, 0.99, 0.6), true)
 	else:
-		draw_rect(Rect2(Vector2.ZERO, Vector2(platform_size.x, 3.0)), Color("#342f3a"), true)
+		# Shift bo'lsa pastki qirrasi tekis chiziq bilan belgilanadi, pol bo'lsa ustki qirrasi
+		if position.y <= 10.0:
+			draw_rect(Rect2(Vector2(0, platform_size.y - 3.0), Vector2(platform_size.x, 3.0)), Color("#342f3a"), true)
+		else:
+			draw_rect(Rect2(Vector2.ZERO, Vector2(platform_size.x, 3.0)), Color("#342f3a"), true)
 
 

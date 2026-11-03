@@ -37,13 +37,17 @@ platform_size = Vector2(80, 100)
 position = Vector2(520, 240)
 platform_size = Vector2(180, 30)
 
-[node name="Tier5Final" parent="Platforms" instance=ExtResource("3_sp")]
+[node name="Tier5Approach" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(700, 380)
-platform_size = Vector2(260, 160)
+platform_size = Vector2(50, 160)
+
+[node name="Tier5Final" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(820, 380)
+platform_size = Vector2(140, 160)
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(150, 0)
-platform_size = Vector2(300, 60)
+position = Vector2(0, 0)
+platform_size = Vector2(960, 50)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)

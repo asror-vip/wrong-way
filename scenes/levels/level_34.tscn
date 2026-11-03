@@ -40,9 +40,9 @@ platform_size = Vector2(170, 160)
 position = Vector2(890, 380)
 platform_size = Vector2(70, 160)
 
-[node name="CeilingStalactite" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(580, 0)
-platform_size = Vector2(280, 50)
+[node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(960, 50)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)

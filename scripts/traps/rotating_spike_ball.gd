@@ -84,9 +84,9 @@ func _draw_spiked_ball(pos: Vector2) -> void:
 			draw_line(left_pt, tip, Color("#ffffff"), 1.2)
 			draw_line(tip, right_pt, Color("#0284c7"), 1.2)
 		else:
-			draw_colored_polygon(spike_poly, Color("#e11d48"))
-			draw_line(left_pt, tip, Color("#fb7185"), 1.2)
-			draw_line(tip, right_pt, Color("#9f1239"), 1.2)
+			draw_colored_polygon(spike_poly, Color("#1e1b26"))
+			draw_line(left_pt, tip, Color("#ffffff"), 1.2)
+			draw_line(tip, right_pt, Color("#5c566a"), 1.2)
 		
 	# Asosiy shar
 	var base_col := Color("#0f172a") if is_winter else Color("#18181b")
@@ -98,7 +98,7 @@ func _draw_spiked_ball(pos: Vector2) -> void:
 	draw_circle(pos + Vector2(-4.0, -4.0), 2.0, Color("#ffffff") if is_winter else Color("#a1a1aa"))
 	
 	# Zanjir qulfi / o'rnatgich
-	draw_circle(pos, 3.5, Color("#38bdf8") if is_winter else Color("#e11d48"))
+	draw_circle(pos, 3.5, Color("#38bdf8") if is_winter else Color("#3f3f46"))
 
 func _on_body_entered(body: Node2D) -> void:
 	if body is PlayerController or body.is_in_group("player"):

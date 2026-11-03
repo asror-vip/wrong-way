@@ -137,14 +137,13 @@ func _draw() -> void:
 		draw_line(Vector2(1, 1), Vector2(1, h), Color(0.40, 0.70, 0.95, 0.4), 1.0)
 		draw_line(Vector2(w - 1, 1), Vector2(w - 1, h), Color(0.40, 0.70, 0.95, 0.4), 1.0)
 	else:
-		# Korpusning metall va xavfli qizil qirralari
+		# Korpusning metall qirralari
 		draw_line(Vector2(0, 1), Vector2(w, 1), Color("#475569"), 2.0)
 		draw_line(Vector2(1, 1), Vector2(1, h), Color("#334155"), 1.5)
 		draw_line(Vector2(w - 1, 1), Vector2(w - 1, h), Color("#334155"), 1.5)
-		# Qizil xavf chizig'i (Hazard band)
-		draw_rect(Rect2(4.0, h - 8.0, w - 8.0, 3.0), Color("#e11d48"), true)
+		draw_rect(Rect2(4.0, h - 8.0, w - 8.0, 3.0), Color("#2a2536"), true)
 	
-	# Tishlar: qishda o'tkir muz osilmalari (icicles), 1-bobda o'tkir po'lat-qizil tishlar
+	# Tishlar: barcha tikanlar bilan 100% BIR XIL po'lat tishlar
 	var teeth := 4
 	var tw := w / float(teeth)
 	var tooth_len := 13.0
@@ -163,7 +162,7 @@ func _draw() -> void:
 				p2,
 				Vector2((float(i) + 0.55) * tw, h)
 			])
-			draw_colored_polygon(inner_tooth, Color("#be123c"))
+			draw_colored_polygon(inner_tooth, Color("#2a2536"))
 			draw_line(p1, p2, Color("#ffffff"), 1.5)
-			draw_line(p2, p3, Color("#fb7185"), 1.2)
+			draw_line(p2, p3, Color("#5c566a"), 1.2)
 			draw_circle(p2, 1.4, Color.WHITE)

@@ -3,7 +3,7 @@ class_name FallingSpikeTrap
 
 @export var trigger_distance: float = 300.0
 @export var fall_speed: float = 650.0
-@export var shake_duration: float = 0.6
+@export var shake_duration: float = 0.20
 
 var is_triggered: bool = false
 var is_falling: bool = false
@@ -16,6 +16,10 @@ var original_pos: Vector2
 func _ready() -> void:
 	add_to_group("traps")
 	original_pos = global_position
+	# Boshlang'ich holatda shift orqasida 100% yashirin bo'ladi (Shift tekis va toza ko'rinishi uchun)
+	visible = false
+	if col_shape:
+		col_shape.set_deferred("disabled", true)
 	body_entered.connect(_on_body_entered)
 
 func _physics_process(delta: float) -> void:
@@ -50,6 +54,9 @@ func _physics_process(delta: float) -> void:
 func _trigger() -> void:
 	is_triggered = true
 	shake_timer = shake_duration
+	visible = true
+	if col_shape:
+		col_shape.set_deferred("disabled", false)
 	var sm = get_node_or_null("/root/SoundManager")
 	if sm and sm.has_method("play"):
 		sm.play("trap")
@@ -69,9 +76,7 @@ func _draw() -> void:
 	if is_winter:
 		# Muz osilmasi (Falling icicle)
 		draw_colored_polygon(pts, Color(0.22, 0.74, 0.97, 0.92))
-		# Tepasidagi qor qatlami
 		draw_line(Vector2(-16, 1), Vector2(16, 1), Color("#ffffff"), 3.0)
-		# Kristall yaltirash
 		var inner_pts := PackedVector2Array([
 			Vector2(-7, 3),
 			Vector2(7, 3),
@@ -81,17 +86,17 @@ func _draw() -> void:
 		draw_line(Vector2(-16, 0), Vector2(0, 32), Color("#ffffff"), 1.5)
 		draw_line(Vector2(16, 0), Vector2(0, 32), Color("#0284c7"), 1.2)
 	else:
-		# Tosh/stalaktit ko'rinishi (Shift rangiga moslashgan, oldindan sezilmaydi)
-		draw_colored_polygon(pts, Color("#1c1a22"))
+		# Boshqa tikanlar bilan 100% BIR XIL qora-po'lat ko'rinish
+		draw_colored_polygon(pts, Color("#1e1b26"))
 		var inner_pts := PackedVector2Array([
 			Vector2(-7, 2),
 			Vector2(7, 2),
 			Vector2(0, 24)
 		])
-		draw_colored_polygon(inner_pts, Color("#252230"))
-		draw_line(Vector2(-16, 0), Vector2(0, 32), Color("#525d73"), 1.2)
-		draw_line(Vector2(16, 0), Vector2(0, 32), Color("#1b202c"), 1.2)
-		draw_line(Vector2(-16, 0), Vector2(16, 0), Color("#342f3a"), 2.0)
+		draw_colored_polygon(inner_pts, Color("#2a2536"))
+		draw_line(Vector2(-16, 0), Vector2(0, 32), Color("#ffffff"), 1.4)
+		draw_line(Vector2(16, 0), Vector2(0, 32), Color("#5c566a"), 1.2)
+		draw_circle(Vector2(0, 32), 1.4, Color.WHITE)
 
 func _on_body_entered(body: Node2D) -> void:
 	if body is PlayerController or body.is_in_group("player"):
@@ -114,6 +119,6 @@ func reset_trap() -> void:
 	is_falling = false
 	velocity_y = 0.0
 	shake_timer = 0.0
-	visible = true
+	visible = false
 	if col_shape:
-		col_shape.set_deferred("disabled", false)
+		col_shape.set_deferred("disabled", true)

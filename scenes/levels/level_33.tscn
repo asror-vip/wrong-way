@@ -19,9 +19,9 @@ level_number = 33
 position = Vector2(0, 380)
 platform_size = Vector2(960, 160)
 
-[node name="CeilingStalactite" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(610, 0)
-platform_size = Vector2(100, 60)
+[node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(960, 60)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)

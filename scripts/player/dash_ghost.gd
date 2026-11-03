@@ -14,3 +14,4 @@ func _draw() -> void:
 	# Oq/havorang shaffof sharpashimon qoldiq (afterimage ghost)
 	draw_rect(rect, Color(0.75, 0.85, 1.0, 0.38), true)
 	draw_rect(rect, Color(1.0, 1.0, 1.0, 0.55), false, 1.2)
+

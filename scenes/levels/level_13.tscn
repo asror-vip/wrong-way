@@ -21,27 +21,23 @@ level_number = 13
 
 [node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 380)
-platform_size = Vector2(260, 160)
+platform_size = Vector2(270, 160)
 
 [node name="GroundMid1" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(340, 380)
-platform_size = Vector2(200, 160)
+platform_size = Vector2(170, 160)
 
 [node name="GroundMid2" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(620, 380)
-platform_size = Vector2(180, 160)
+position = Vector2(640, 380)
+platform_size = Vector2(160, 160)
 
 [node name="GroundDoor" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(800, 380)
 platform_size = Vector2(160, 160)
 
-[node name="Ceiling1" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(120, 0)
-platform_size = Vector2(160, 60)
-
-[node name="Ceiling2" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(380, 0)
-platform_size = Vector2(160, 60)
+[node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(960, 60)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -54,17 +50,17 @@ platform_size = Vector2(32, 540)
 [node name="Traps" type="Node2D" parent="."]
 
 [node name="Crusher1" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(160, 140)
+position = Vector2(140, 140)
 crusher_size = Vector2(68, 64)
 target_y = 320
 
 [node name="Stalactite1" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(220, 60)
+position = Vector2(190, 60)
 trigger_distance = 240
 shake_duration = 0.35
 
 [node name="MovingSawInGap" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(300, 370)
+position = Vector2(305, 370)
 radius = 16
 patrol_distance = 40
 patrol_speed = 130
@@ -83,8 +79,8 @@ crusher_size = Vector2(68, 64)
 target_y = 320
 
 [node name="TrapFloorEnd" parent="Traps" instance=ExtResource("9_tr")]
-position = Vector2(500, 380)
-platform_size = Vector2(40, 160)
+position = Vector2(510, 380)
+platform_size = Vector2(60, 160)
 
 [node name="LaserBeamGap" parent="Traps" instance=ExtResource("10_tr")]
 position = Vector2(580, 220)

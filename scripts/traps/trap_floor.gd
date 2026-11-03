@@ -2,6 +2,7 @@ extends StaticBody2D
 class_name TrapFloor
 
 @export var platform_size: Vector2 = Vector2(140, 160)
+@export var shake_duration: float = 0.18
 
 var initial_position: Vector2
 var is_triggered: bool = false
@@ -25,6 +26,13 @@ func _ready() -> void:
 		col_shape.position = platform_size / 2.0
 	if trigger_area:
 		trigger_area.body_entered.connect(_on_trigger_body_entered)
+		var trig_col := trigger_area.get_node_or_null("TriggerShape") as CollisionShape2D
+		if trig_col:
+			var trig_rect := RectangleShape2D.new()
+			# Trigger zona pol ustida turgan o'yinchini aniq sezishi uchun
+			trig_rect.size = Vector2(platform_size.x + 10.0, 40.0)
+			trig_col.shape = trig_rect
+			trig_col.position = Vector2(platform_size.x / 2.0, -10.0)
 	elif has_node("AreaTrigger"):
 		$AreaTrigger.body_entered.connect(_on_trigger_body_entered)
 	if visual:
@@ -53,7 +61,7 @@ func _on_trigger_body_entered(body: Node2D) -> void:
 		if "is_invulnerable" in body and body.is_invulnerable:
 			return
 		is_triggered = true
-		shake_timer = 0.4 # GPT timing rule: 0.4s
+		shake_timer = shake_duration
 		var sm = get_node_or_null("/root/SoundManager")
 		if sm and sm.has_method("play"):
 			sm.play("trap")

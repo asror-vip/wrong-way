@@ -19,13 +19,9 @@ level_number = 27
 position = Vector2(0, 380)
 platform_size = Vector2(960, 160)
 
-[node name="CeilingFull" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(160, 0)
-platform_size = Vector2(600, 60)
-
-[node name="Ceiling_CrusherEnd" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(730, 0)
-platform_size = Vector2(164, 60)
+[node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(960, 60)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
