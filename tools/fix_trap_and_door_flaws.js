@@ -6,6 +6,16 @@ const jsonPath = path.join(__dirname, '..', 'data', 'levels.json');
 const levels = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
 
 for (const lvl of levels) {
+  // Fix pre-existing overlaps in Level 7 and Level 8
+  if (lvl.id === 7) {
+    const gm = lvl.platforms.find(p => p.name === 'GroundMid');
+    if (gm) { gm.w = 160; } // 500..660, CrumblingLedge is 660..720
+  }
+  if (lvl.id === 8) {
+    const gm = lvl.platforms.find(p => p.name === 'GroundMid');
+    if (gm) { gm.w = 160; } // 440..600, CrumblingLedge is 600..680
+  }
+
   // 1. Level 11
   if (lvl.id === 11) {
     for (const t of lvl.traps) {
@@ -55,6 +65,11 @@ for (const lvl of levels) {
     lvl.door_pos = [890, 380];
   }
 
+  // Level 30 spawn fix
+  if (lvl.id === 30) {
+    lvl.player_spawn = [120, 380];
+  }
+
   // 6. Level 42
   if (lvl.id === 42) {
     const gs = lvl.platforms.find(p => p.name === 'GroundStart');
@@ -90,3 +105,4 @@ for (const lvl of levels) {
 
 fs.writeFileSync(jsonPath, JSON.stringify(levels, null, 2), 'utf8');
 console.log('Fixed levels.json successfully!');
+

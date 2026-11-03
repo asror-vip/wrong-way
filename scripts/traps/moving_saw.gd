@@ -33,8 +33,24 @@ func _physics_process(delta: float) -> void:
 		if player != null and is_instance_valid(player):
 			if "is_dead" in player and player.is_dead:
 				return
-			var dist: float = absf(player.global_position.x - global_position.x)
-			if dist < trigger_distance:
+			var dx: float = player.global_position.x - global_position.x
+			var should_trigger: bool = false
+			# Agar arra o'ngga (orqadan quvuvchi) bo'lsa (patrol_axis.x > 0):
+			# O'yinchi yetarlicha oldinga (dx >= trigger_distance) o'tganda orqadan chiqadi
+			if patrol_axis.x > 0.1:
+				if dx >= trigger_distance:
+					should_trigger = true
+			# Agar arra chapga (oldindan keluvchi) bo'lsa (patrol_axis.x < -0.1):
+			# O'yinchi unga yetarlicha yaqinlashganda oldindan chiqadi
+			elif patrol_axis.x < -0.1:
+				if dx <= 0.0 and absf(dx) <= trigger_distance:
+					should_trigger = true
+			else:
+				var dist: float = absf(dx)
+				if dist < trigger_distance:
+					should_trigger = true
+
+			if should_trigger:
 				is_triggered = true
 				if col_shape:
 					col_shape.disabled = false

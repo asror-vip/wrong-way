@@ -83,4 +83,4 @@ patrol_axis = Vector2(-1, 0)
 position = Vector2(130, 240)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
-position = Vector2(70, 380)
+position = Vector2(120, 380)

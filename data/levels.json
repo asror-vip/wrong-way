@@ -440,7 +440,7 @@
         "name": "GroundMid",
         "x": 500,
         "y": 380,
-        "w": 220,
+        "w": 160,
         "h": 160
       },
       {
@@ -587,7 +587,7 @@
         "name": "GroundMid",
         "x": 440,
         "y": 380,
-        "w": 240,
+        "w": 160,
         "h": 160
       },
       {
@@ -3525,7 +3525,7 @@
     "title": "Wrong Direction",
     "gimmick": "fake_door",
     "player_spawn": [
-      70,
+      120,
       380
     ],
     "door_pos": [
@@ -7335,7 +7335,7 @@
     "title": "Trapped Between",
     "gimmick": "trapped_between",
     "player_spawn": [
-      70,
+      110,
       380
     ],
     "door_pos": [
@@ -7380,17 +7380,18 @@
       {
         "name": "SawFromLeft",
         "type": "moving_saw",
-        "x": 50,
+        "x": 30,
         "y": 364,
         "w": 32,
         "h": 32,
         "params": {
-          "patrol_distance": 140,
-          "patrol_speed": 160,
+          "patrol_distance": 220,
+          "patrol_speed": 140,
           "patrol_axis": [
             1,
             0
-          ]
+          ],
+          "trigger_distance": 120
         }
       },
       {
@@ -7700,7 +7701,7 @@
       {
         "name": "SpikesStart",
         "type": "spikes",
-        "x": 170,
+        "x": 180,
         "y": 348,
         "w": 48,
         "h": 32,
@@ -7709,7 +7710,7 @@
       {
         "name": "FastChasingSaw",
         "type": "moving_saw",
-        "x": 90,
+        "x": 30,
         "y": 364,
         "w": 32,
         "h": 32,
@@ -7720,7 +7721,7 @@
             1,
             0
           ],
-          "trigger_distance": 190
+          "trigger_distance": 160
         }
       },
       {
@@ -8377,11 +8378,11 @@
     "gimmick": "final_nightmare",
     "player_spawn": [
       60,
-      380
+      420
     ],
     "door_pos": [
       890,
-      380
+      420
     ],
     "door_config": {
       "runaway": false,
@@ -8389,60 +8390,39 @@
     },
     "platforms": [
       {
-        "name": "PlatformPart1",
+        "name": "GroundStart",
         "x": 0,
-        "y": 380,
+        "y": 420,
         "w": 210,
-        "h": 160
+        "h": 120
       },
       {
-        "name": "PlatformPart2",
+        "name": "GroundMain",
         "x": 280,
-        "y": 380,
-        "w": 390,
-        "h": 160
-      },
-      {
-        "name": "PlatformSpring1",
-        "x": 700,
-        "y": 380,
-        "w": 60,
-        "h": 160
+        "y": 420,
+        "w": 680,
+        "h": 120
       },
       {
         "name": "UpperLaserLedge",
-        "x": 710,
+        "x": 550,
         "y": 210,
-        "w": 140,
+        "w": 330,
         "h": 30
       },
       {
-        "name": "PlatformMid5",
-        "x": 570,
-        "y": 380,
-        "w": 280,
-        "h": 160
-      },
-      {
-        "name": "PlatformFinalSpring",
-        "x": 830,
-        "y": 380,
-        "w": 60,
-        "h": 160
+        "name": "MidRunway",
+        "x": 140,
+        "y": 310,
+        "w": 350,
+        "h": 30
       },
       {
         "name": "SkyCrusherLedge",
-        "x": 850,
-        "y": 170,
-        "w": 100,
+        "x": 220,
+        "y": 130,
+        "w": 140,
         "h": 30
-      },
-      {
-        "name": "PlatformDoorRunway",
-        "x": 850,
-        "y": 380,
-        "w": 110,
-        "h": 160
       },
       {
         "name": "Ceiling",
@@ -8470,8 +8450,8 @@
       {
         "name": "Spikes1",
         "type": "spikes",
-        "x": 140,
-        "y": 348,
+        "x": 130,
+        "y": 388,
         "w": 48,
         "h": 32,
         "params": {}
@@ -8480,9 +8460,9 @@
         "name": "TrapFloor1",
         "type": "trap_floor",
         "x": 210,
-        "y": 380,
+        "y": 420,
         "w": 70,
-        "h": 160,
+        "h": 120,
         "params": {
           "shake_duration": 0.18
         }
@@ -8490,25 +8470,25 @@
       {
         "name": "ChasingSaw1",
         "type": "moving_saw",
-        "x": 50,
-        "y": 364,
+        "x": 30,
+        "y": 404,
         "w": 32,
         "h": 32,
         "params": {
-          "patrol_distance": 200,
-          "patrol_speed": 180,
+          "patrol_distance": 220,
+          "patrol_speed": 160,
           "patrol_axis": [
             1,
             0
           ],
-          "trigger_distance": 170
+          "trigger_distance": 120
         }
       },
       {
         "name": "PopUp1",
         "type": "pop_up_spikes",
         "x": 290,
-        "y": 380,
+        "y": 420,
         "w": 48,
         "h": 32,
         "params": {
@@ -8531,7 +8511,7 @@
       {
         "name": "Stalactite2",
         "type": "falling_spike",
-        "x": 390,
+        "x": 400,
         "y": 50,
         "w": 24,
         "h": 32,
@@ -8543,7 +8523,7 @@
       {
         "name": "Stalactite3",
         "type": "falling_spike",
-        "x": 430,
+        "x": 450,
         "y": 50,
         "w": 24,
         "h": 32,
@@ -8555,32 +8535,32 @@
       {
         "name": "Crusher1",
         "type": "crusher",
-        "x": 470,
+        "x": 490,
         "y": 140,
         "w": 68,
         "h": 64,
         "params": {
-          "target_y": 320,
+          "target_y": 360,
           "wait_at_bottom": 0.6
         }
       },
       {
         "name": "Crusher2",
         "type": "crusher",
-        "x": 560,
+        "x": 580,
         "y": 140,
         "w": 68,
         "h": 64,
         "params": {
-          "target_y": 320,
+          "target_y": 360,
           "wait_at_bottom": 0.6
         }
       },
       {
         "name": "FrontBoulder",
         "type": "rolling_boulder",
-        "x": 630,
-        "y": 350,
+        "x": 780,
+        "y": 390,
         "w": 56,
         "h": 56,
         "params": {
@@ -8592,21 +8572,21 @@
       {
         "name": "RearBoulder",
         "type": "rolling_boulder",
-        "x": 420,
-        "y": 350,
+        "x": 580,
+        "y": 390,
         "w": 56,
         "h": 56,
         "params": {
           "roll_direction": 1,
-          "roll_speed": 290,
-          "trigger_distance": 190
+          "roll_speed": 280,
+          "trigger_distance": 180
         }
       },
       {
         "name": "CircularSawPart3",
         "type": "circular_saw",
-        "x": 660,
-        "y": 330,
+        "x": 700,
+        "y": 370,
         "w": 32,
         "h": 32,
         "params": {
@@ -8617,21 +8597,22 @@
       {
         "name": "SpringPart3",
         "type": "spring",
-        "x": 710,
-        "y": 380,
+        "x": 830,
+        "y": 420,
         "w": 40,
         "h": 16,
         "params": {
-          "bounce_force": 600
+          "bounce_force": 660,
+          "launch_velocity": -920
         }
       },
       {
         "name": "Laser1",
         "type": "laser_beam",
-        "x": 740,
-        "y": 60,
+        "x": 760,
+        "y": 70,
         "w": 8,
-        "h": 150,
+        "h": 140,
         "params": {
           "active_time": 1.1,
           "inactive_time": 1.2
@@ -8640,10 +8621,10 @@
       {
         "name": "Laser2",
         "type": "laser_beam",
-        "x": 780,
-        "y": 60,
+        "x": 700,
+        "y": 70,
         "w": 8,
-        "h": 150,
+        "h": 140,
         "params": {
           "active_time": 1.3,
           "inactive_time": 1
@@ -8652,10 +8633,10 @@
       {
         "name": "Laser3",
         "type": "laser_beam",
-        "x": 820,
-        "y": 60,
+        "x": 640,
+        "y": 70,
         "w": 8,
-        "h": 150,
+        "h": 140,
         "params": {
           "active_time": 1,
           "inactive_time": 1.3
@@ -8664,7 +8645,7 @@
       {
         "name": "StalactiteLaser",
         "type": "falling_spike",
-        "x": 840,
+        "x": 590,
         "y": 50,
         "w": 24,
         "h": 32,
@@ -8676,7 +8657,7 @@
       {
         "name": "TrapFloorUpperLedge",
         "type": "trap_floor",
-        "x": 850,
+        "x": 490,
         "y": 210,
         "w": 60,
         "h": 30,
@@ -8687,8 +8668,8 @@
       {
         "name": "FakeDoorGrand",
         "type": "fake_door",
-        "x": 610,
-        "y": 380,
+        "x": 380,
+        "y": 310,
         "w": 32,
         "h": 64,
         "params": {
@@ -8698,39 +8679,39 @@
       {
         "name": "CircularSaw5A",
         "type": "circular_saw",
-        "x": 670,
-        "y": 330,
+        "x": 340,
+        "y": 260,
         "w": 32,
         "h": 32,
         "params": {
-          "orbit_radius": 36,
+          "orbit_radius": 32,
           "orbit_speed": 2.2
         }
       },
       {
         "name": "CircularSaw5B",
         "type": "circular_saw",
-        "x": 720,
-        "y": 330,
+        "x": 280,
+        "y": 260,
         "w": 32,
         "h": 32,
         "params": {
-          "orbit_radius": 36,
+          "orbit_radius": 32,
           "orbit_speed": -2.2
         }
       },
       {
         "name": "FastSawChase5",
         "type": "moving_saw",
-        "x": 550,
-        "y": 364,
+        "x": 440,
+        "y": 294,
         "w": 32,
         "h": 32,
         "params": {
-          "patrol_distance": 260,
+          "patrol_distance": 250,
           "patrol_speed": 200,
           "patrol_axis": [
-            1,
+            -1,
             0
           ],
           "trigger_distance": 180
@@ -8739,8 +8720,8 @@
       {
         "name": "PopUpSpikes5A",
         "type": "pop_up_spikes",
-        "x": 750,
-        "y": 380,
+        "x": 250,
+        "y": 310,
         "w": 32,
         "h": 32,
         "params": {
@@ -8751,8 +8732,8 @@
       {
         "name": "PopUpSpikes5B",
         "type": "pop_up_spikes",
-        "x": 785,
-        "y": 380,
+        "x": 215,
+        "y": 310,
         "w": 32,
         "h": 32,
         "params": {
@@ -8763,8 +8744,8 @@
       {
         "name": "PopUpSpikes5C",
         "type": "pop_up_spikes",
-        "x": 820,
-        "y": 380,
+        "x": 180,
+        "y": 310,
         "w": 32,
         "h": 32,
         "params": {
@@ -8775,36 +8756,38 @@
       {
         "name": "FinalSpring",
         "type": "spring",
-        "x": 840,
-        "y": 380,
+        "x": 150,
+        "y": 310,
         "w": 40,
         "h": 16,
         "params": {
-          "bounce_force": 620
+          "bounce_force": 660,
+          "launch_velocity": -920
         }
       },
       {
         "name": "GiantCrusher",
         "type": "crusher",
-        "x": 880,
-        "y": 70,
+        "x": 280,
+        "y": 50,
         "w": 68,
         "h": 64,
         "params": {
-          "target_y": 160
+          "target_y": 130,
+          "wait_at_bottom": 0.5
         }
       },
       {
         "name": "FinalRollingBoulder",
         "type": "rolling_boulder",
-        "x": 800,
-        "y": 350,
+        "x": 720,
+        "y": 390,
         "w": 56,
         "h": 56,
         "params": {
           "roll_direction": -1,
           "roll_speed": 340,
-          "trigger_distance": 220
+          "trigger_distance": 240
         }
       }
     ]

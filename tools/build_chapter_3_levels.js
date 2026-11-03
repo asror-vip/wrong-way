@@ -363,7 +363,7 @@ const CHAPTER_3_LEVELS = [
     chapter: 3,
     title: "Trapped Between",
     gimmick: "trapped_between",
-    player_spawn: [70, 380],
+    player_spawn: [110, 380],
     door_pos: [890, 380],
     door_config: { runaway: false, runaway_offset_x: 0 },
     platforms: [
@@ -373,7 +373,7 @@ const CHAPTER_3_LEVELS = [
       { name: "WallRight", x: 928, y: 0, w: 32, h: 540 }
     ],
     traps: [
-      { name: "SawFromLeft", type: "moving_saw", x: 50, y: 364, w: 32, h: 32, params: { patrol_distance: 140, patrol_speed: 160, patrol_axis: [1, 0] } },
+      { name: "SawFromLeft", type: "moving_saw", x: 30, y: 364, w: 32, h: 32, params: { patrol_distance: 220, patrol_speed: 140, patrol_axis: [1, 0], trigger_distance: 120 } },
       { name: "CrusherFromRight", type: "crusher", x: 240, y: 140, w: 68, h: 64, params: { target_y: 320, trigger_distance: 70 } },
       { name: "BoulderBehind", type: "rolling_boulder", x: 180, y: 350, w: 56, h: 56, params: { roll_direction: 1, roll_speed: 290, trigger_distance: 190 } },
       { name: "LaserAhead", type: "laser_beam", x: 450, y: 220, w: 8, h: 160, params: { active_time: 1.2, inactive_time: 1.2 } },
@@ -429,8 +429,8 @@ const CHAPTER_3_LEVELS = [
       { name: "WallRight", x: 928, y: 0, w: 32, h: 540 }
     ],
     traps: [
-      { name: "SpikesStart", type: "spikes", x: 170, y: 348, w: 48, h: 32, params: {} },
-      { name: "FastChasingSaw", type: "moving_saw", x: 90, y: 364, w: 32, h: 32, params: { patrol_distance: 260, patrol_speed: 210, patrol_axis: [1, 0], trigger_distance: 190 } },
+      { name: "SpikesStart", type: "spikes", x: 180, y: 348, w: 48, h: 32, params: {} },
+      { name: "FastChasingSaw", type: "moving_saw", x: 30, y: 364, w: 32, h: 32, params: { patrol_distance: 260, patrol_speed: 210, patrol_axis: [1, 0], trigger_distance: 160 } },
       { name: "TrapFloorMid", type: "trap_floor", x: 270, y: 380, w: 80, h: 160, params: { shake_duration: 0.18 } },
       { name: "StalactiteDrop", type: "falling_spike", x: 310, y: 60, w: 24, h: 32, params: { trigger_distance: 240, shake_duration: 0.35 } },
       { name: "RollingBoulderPit", type: "rolling_boulder", x: 440, y: 350, w: 56, h: 56, params: { roll_direction: -1, roll_speed: 340, trigger_distance: 220 } },
@@ -533,60 +533,54 @@ const CHAPTER_3_LEVELS = [
     chapter: 3,
     title: "THE FINAL NIGHTMARE",
     gimmick: "final_nightmare",
-    player_spawn: [60, 380],
-    door_pos: [910, 380],
+    player_spawn: [60, 420],
+    door_pos: [890, 420],
     door_config: { runaway: false, runaway_offset_x: 0 },
     platforms: [
-      // 1-qism va 2-qism: Pol va tuzoqlar
-      { name: "PlatformPart1", x: 0, y: 380, w: 210, h: 160 },
-      { name: "PlatformPart2", x: 280, y: 380, w: 390, h: 160 },
-      { name: "PlatformSpring1", x: 700, y: 380, w: 60, h: 160 },
-      // 4-qism: Yuqori lazer platformasi
-      { name: "UpperLaserLedge", x: 710, y: 210, w: 140, h: 30 },
-      // 5-qism: O'rta pol va 6-qism: yakuniy pol
-      { name: "PlatformMid5", x: 570, y: 380, w: 280, h: 160 },
-      { name: "PlatformFinalSpring", x: 830, y: 380, w: 60, h: 160 },
-      { name: "SkyCrusherLedge", x: 850, y: 170, w: 100, h: 30 },
-      { name: "PlatformDoorRunway", x: 870, y: 380, w: 90, h: 160 },
+      { name: "GroundStart", x: 0, y: 420, w: 210, h: 120 },
+      { name: "GroundMain", x: 280, y: 420, w: 680, h: 120 },
+      { name: "UpperLaserLedge", x: 550, y: 210, w: 330, h: 30 },
+      { name: "MidRunway", x: 140, y: 310, w: 350, h: 30 },
+      { name: "SkyCrusherLedge", x: 220, y: 130, w: 140, h: 30 },
       { name: "Ceiling", x: 0, y: 0, w: 960, h: 50 },
       { name: "WallLeft", x: 0, y: 0, w: 32, h: 540 },
       { name: "WallRight", x: 928, y: 0, w: 32, h: 540 }
     ],
     traps: [
       // 1-qism — The Beginning
-      { name: "Spikes1", type: "spikes", x: 140, y: 348, w: 48, h: 32, params: {} },
-      { name: "TrapFloor1", type: "trap_floor", x: 210, y: 380, w: 70, h: 160, params: { shake_duration: 0.18 } },
-      { name: "ChasingSaw1", type: "moving_saw", x: 50, y: 364, w: 32, h: 32, params: { patrol_distance: 200, patrol_speed: 180, patrol_axis: [1, 0], trigger_distance: 170 } },
-      { name: "PopUp1", type: "pop_up_spikes", x: 290, y: 380, w: 48, h: 32, params: { trigger_distance: 75, warning_time: 0.3 } },
+      { name: "Spikes1", type: "spikes", x: 130, y: 388, w: 48, h: 32, params: {} },
+      { name: "TrapFloor1", type: "trap_floor", x: 210, y: 420, w: 70, h: 120, params: { shake_duration: 0.18 } },
+      { name: "ChasingSaw1", type: "moving_saw", x: 30, y: 404, w: 32, h: 32, params: { patrol_distance: 220, patrol_speed: 160, patrol_axis: [1, 0], trigger_distance: 120 } },
+      { name: "PopUp1", type: "pop_up_spikes", x: 290, y: 420, w: 48, h: 32, params: { trigger_distance: 75, warning_time: 0.3 } },
       // 2-qism — The Ceiling
       { name: "Stalactite1", type: "falling_spike", x: 350, y: 50, w: 24, h: 32, params: { trigger_distance: 240, shake_duration: 0.35 } },
-      { name: "Stalactite2", type: "falling_spike", x: 390, y: 50, w: 24, h: 32, params: { trigger_distance: 240, shake_duration: 0.35 } },
-      { name: "Stalactite3", type: "falling_spike", x: 430, y: 50, w: 24, h: 32, params: { trigger_distance: 240, shake_duration: 0.35 } },
-      { name: "Crusher1", type: "crusher", x: 470, y: 140, w: 68, h: 64, params: { target_y: 320, wait_at_bottom: 0.6 } },
-      { name: "Crusher2", type: "crusher", x: 560, y: 140, w: 68, h: 64, params: { target_y: 320, wait_at_bottom: 0.6 } },
+      { name: "Stalactite2", type: "falling_spike", x: 400, y: 50, w: 24, h: 32, params: { trigger_distance: 240, shake_duration: 0.35 } },
+      { name: "Stalactite3", type: "falling_spike", x: 450, y: 50, w: 24, h: 32, params: { trigger_distance: 240, shake_duration: 0.35 } },
+      { name: "Crusher1", type: "crusher", x: 490, y: 140, w: 68, h: 64, params: { target_y: 360, wait_at_bottom: 0.6 } },
+      { name: "Crusher2", type: "crusher", x: 580, y: 140, w: 68, h: 64, params: { target_y: 360, wait_at_bottom: 0.6 } },
       // 3-qism — The Rolling Death
-      { name: "FrontBoulder", type: "rolling_boulder", x: 630, y: 350, w: 56, h: 56, params: { roll_direction: -1, roll_speed: 320, trigger_distance: 220 } },
-      { name: "RearBoulder", type: "rolling_boulder", x: 420, y: 350, w: 56, h: 56, params: { roll_direction: 1, roll_speed: 290, trigger_distance: 190 } },
-      { name: "CircularSawPart3", type: "circular_saw", x: 660, y: 330, w: 32, h: 32, params: { orbit_radius: 36, orbit_speed: 2.2 } },
-      { name: "SpringPart3", type: "spring", x: 710, y: 380, w: 40, h: 16, params: { bounce_force: 600 } },
+      { name: "FrontBoulder", type: "rolling_boulder", x: 780, y: 390, w: 56, h: 56, params: { roll_direction: -1, roll_speed: 320, trigger_distance: 220 } },
+      { name: "RearBoulder", type: "rolling_boulder", x: 580, y: 390, w: 56, h: 56, params: { roll_direction: 1, roll_speed: 280, trigger_distance: 180 } },
+      { name: "CircularSawPart3", type: "circular_saw", x: 700, y: 370, w: 32, h: 32, params: { orbit_radius: 36, orbit_speed: 2.2 } },
+      { name: "SpringPart3", type: "spring", x: 830, y: 420, w: 40, h: 16, params: { bounce_force: 660, launch_velocity: -920 } },
       // 4-qism — The Laser Hall
-      { name: "Laser1", type: "laser_beam", x: 740, y: 60, w: 8, h: 150, params: { active_time: 1.1, inactive_time: 1.2 } },
-      { name: "Laser2", type: "laser_beam", x: 780, y: 60, w: 8, h: 150, params: { active_time: 1.3, inactive_time: 1.0 } },
-      { name: "Laser3", type: "laser_beam", x: 820, y: 60, w: 8, h: 150, params: { active_time: 1.0, inactive_time: 1.3 } },
-      { name: "StalactiteLaser", type: "falling_spike", x: 840, y: 50, w: 24, h: 32, params: { trigger_distance: 240, shake_duration: 0.35 } },
-      { name: "TrapFloorUpperLedge", type: "trap_floor", x: 850, y: 210, w: 60, h: 30, params: { shake_duration: 0.18 } },
+      { name: "Laser1", type: "laser_beam", x: 760, y: 70, w: 8, h: 140, params: { active_time: 1.1, inactive_time: 1.2 } },
+      { name: "Laser2", type: "laser_beam", x: 700, y: 70, w: 8, h: 140, params: { active_time: 1.3, inactive_time: 1.0 } },
+      { name: "Laser3", type: "laser_beam", x: 640, y: 70, w: 8, h: 140, params: { active_time: 1.0, inactive_time: 1.3 } },
+      { name: "StalactiteLaser", type: "falling_spike", x: 590, y: 50, w: 24, h: 32, params: { trigger_distance: 240, shake_duration: 0.35 } },
+      { name: "TrapFloorUpperLedge", type: "trap_floor", x: 490, y: 210, w: 60, h: 30, params: { shake_duration: 0.18 } },
       // 5-qism — The Wrong Exit
-      { name: "FakeDoorGrand", type: "fake_door", x: 610, y: 380, w: 32, h: 64, params: { run_away_distance: 85 } },
-      { name: "CircularSaw5A", type: "circular_saw", x: 670, y: 330, w: 32, h: 32, params: { orbit_radius: 36, orbit_speed: 2.2 } },
-      { name: "CircularSaw5B", type: "circular_saw", x: 720, y: 330, w: 32, h: 32, params: { orbit_radius: 36, orbit_speed: -2.2 } },
-      { name: "FastSawChase5", type: "moving_saw", x: 550, y: 364, w: 32, h: 32, params: { patrol_distance: 260, patrol_speed: 200, patrol_axis: [1, 0], trigger_distance: 180 } },
-      { name: "PopUpSpikes5A", type: "pop_up_spikes", x: 750, y: 380, w: 32, h: 32, params: { trigger_distance: 75, warning_time: 0.25 } },
-      { name: "PopUpSpikes5B", type: "pop_up_spikes", x: 785, y: 380, w: 32, h: 32, params: { trigger_distance: 75, warning_time: 0.3 } },
-      { name: "PopUpSpikes5C", type: "pop_up_spikes", x: 820, y: 380, w: 32, h: 32, params: { trigger_distance: 75, warning_time: 0.35 } },
+      { name: "FakeDoorGrand", type: "fake_door", x: 380, y: 310, w: 32, h: 64, params: { run_away_distance: 85 } },
+      { name: "CircularSaw5A", type: "circular_saw", x: 340, y: 260, w: 32, h: 32, params: { orbit_radius: 32, orbit_speed: 2.2 } },
+      { name: "CircularSaw5B", type: "circular_saw", x: 280, y: 260, w: 32, h: 32, params: { orbit_radius: 32, orbit_speed: -2.2 } },
+      { name: "FastSawChase5", type: "moving_saw", x: 440, y: 294, w: 32, h: 32, params: { patrol_distance: 250, patrol_speed: 200, patrol_axis: [-1, 0], trigger_distance: 180 } },
+      { name: "PopUpSpikes5A", type: "pop_up_spikes", x: 250, y: 310, w: 32, h: 32, params: { trigger_distance: 75, warning_time: 0.25 } },
+      { name: "PopUpSpikes5B", type: "pop_up_spikes", x: 215, y: 310, w: 32, h: 32, params: { trigger_distance: 75, warning_time: 0.3 } },
+      { name: "PopUpSpikes5C", type: "pop_up_spikes", x: 180, y: 310, w: 32, h: 32, params: { trigger_distance: 75, warning_time: 0.35 } },
       // 6-qism — Final Escape
-      { name: "FinalSpring", type: "spring", x: 840, y: 380, w: 40, h: 16, params: { bounce_force: 620 } },
-      { name: "GiantCrusher", type: "crusher", x: 880, y: 70, w: 68, h: 64, params: { target_y: 160 } },
-      { name: "FinalRollingBoulder", type: "rolling_boulder", x: 800, y: 350, w: 56, h: 56, params: { roll_direction: -1, roll_speed: 340, trigger_distance: 220 } }
+      { name: "FinalSpring", type: "spring", x: 150, y: 310, w: 40, h: 16, params: { bounce_force: 660, launch_velocity: -920 } },
+      { name: "GiantCrusher", type: "crusher", x: 280, y: 50, w: 68, h: 64, params: { target_y: 130, wait_at_bottom: 0.5 } },
+      { name: "FinalRollingBoulder", type: "rolling_boulder", x: 720, y: 390, w: 56, h: 56, params: { roll_direction: -1, roll_speed: 340, trigger_distance: 240 } }
     ]
   }
 ];

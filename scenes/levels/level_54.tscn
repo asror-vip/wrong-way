@@ -37,10 +37,11 @@ platform_size = Vector2(32, 540)
 [node name="Traps" type="Node2D" parent="."]
 
 [node name="SawFromLeft" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(50, 364)
-patrol_distance = 140
-patrol_speed = 160
+position = Vector2(30, 364)
+patrol_distance = 220
+patrol_speed = 140
 patrol_axis = Vector2(1, 0)
+trigger_distance = 120
 
 [node name="CrusherFromRight" parent="Traps" instance=ExtResource("6_tr")]
 position = Vector2(240, 140)
@@ -81,4 +82,4 @@ orbit_speed = 2.4
 position = Vector2(890, 380)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
-position = Vector2(70, 380)
+position = Vector2(110, 380)

@@ -22,7 +22,7 @@ platform_size = Vector2(360, 160)
 
 [node name="GroundMid" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(440, 380)
-platform_size = Vector2(240, 160)
+platform_size = Vector2(160, 160)
 
 [node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(760, 380)
