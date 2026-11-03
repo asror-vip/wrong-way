@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" path="res://assets/images/maps-images/1.jpg" id="3_bg1"]
 [ext_resource type="Texture2D" path="res://assets/images/maps-images/2.jpg" id="4_bg2"]
 [ext_resource type="Texture2D" path="res://assets/images/maps-images/3.jpg" id="12_bg3"]
+[ext_resource type="Script" path="res://scripts/ui/biome_transition_pass.gd" id="13_pass"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass.tres" id="5_c_norm"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass_hover.tres" id="6_c_hov"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_focus_empty.tres" id="7_focus"]
@@ -61,6 +62,18 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 
+[node name="UnderlayBackdrop" type="ColorRect" parent="ChapterSlider"]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = 0.0
+offset_right = 3600.0
+offset_bottom = 0.0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.05, 0.07, 0.12, 1)
+
 [node name="Chapter1View" type="Control" parent="ChapterSlider"]
 layout_mode = 1
 anchors_preset = 15
@@ -93,6 +106,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="NodeLayer1" type="Control" parent="ChapterSlider/Chapter1View"]
+z_index = 10
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -101,25 +115,27 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 
-[node name="BoundaryWall" type="Control" parent="ChapterSlider"]
-z_index = 6
+[node name="MountainPass1" type="Control" parent="ChapterSlider"]
+z_index = 1
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_left = 959.0
+offset_left = 960.0
 offset_top = 0.0
-offset_right = 961.0
+offset_right = 1200.0
 offset_bottom = 0.0
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("13_pass")
+pass_index = 1
 
 [node name="Chapter2View" type="Control" parent="ChapterSlider"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 960.0
-offset_right = 960.0
+offset_left = 1200.0
+offset_right = 1200.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
@@ -147,6 +163,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="NodeLayer2" type="Control" parent="ChapterSlider/Chapter2View"]
+z_index = 10
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -155,25 +172,27 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 
-[node name="BoundaryWall2" type="Control" parent="ChapterSlider"]
-z_index = 6
+[node name="MountainPass2" type="Control" parent="ChapterSlider"]
+z_index = 1
 layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
-offset_left = 1919.0
+offset_left = 2160.0
 offset_top = 0.0
-offset_right = 1921.0
+offset_right = 2400.0
 offset_bottom = 0.0
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("13_pass")
+pass_index = 2
 
 [node name="Chapter3View" type="Control" parent="ChapterSlider"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 1920.0
-offset_right = 1920.0
+offset_left = 2400.0
+offset_right = 2400.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
@@ -201,6 +220,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="NodeLayer3" type="Control" parent="ChapterSlider/Chapter3View"]
+z_index = 10
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

@@ -43,14 +43,14 @@ const CHAPTER_3_POS: Array[Vector2] = UNIFIED_ROAD_POS
 @onready var map_draw1: Control = $ChapterSlider/Chapter1View/MapDraw1
 @onready var node_layer1: Control = $ChapterSlider/Chapter1View/NodeLayer1
 
-@onready var boundary_wall: Control = $ChapterSlider/BoundaryWall
+@onready var pass1: Control = get_node_or_null("ChapterSlider/MountainPass1")
 
 @onready var ch2_view: Control = $ChapterSlider/Chapter2View
 @onready var backdrop_ch2: TextureRect = $ChapterSlider/Chapter2View/BackdropCh2
 @onready var map_draw2: Control = $ChapterSlider/Chapter2View/MapDraw2
 @onready var node_layer2: Control = $ChapterSlider/Chapter2View/NodeLayer2
 
-@onready var boundary_wall2: Control = get_node_or_null("ChapterSlider/BoundaryWall2")
+@onready var pass2: Control = get_node_or_null("ChapterSlider/MountainPass2")
 @onready var ch3_view: Control = get_node_or_null("ChapterSlider/Chapter3View")
 @onready var backdrop_ch3: TextureRect = get_node_or_null("ChapterSlider/Chapter3View/BackdropCh3")
 @onready var map_draw3: Control = get_node_or_null("ChapterSlider/Chapter3View/MapDraw3")
@@ -94,11 +94,7 @@ func _ready() -> void:
 	
 	_setup_top_bar()
 	_setup_nav_connections()
-	
-	if boundary_wall:
-		boundary_wall.draw.connect(_on_boundary_wall_draw)
-	if boundary_wall2:
-		boundary_wall2.draw.connect(_on_boundary_wall2_draw)
+	_setup_seamless_backdrop_materials()
 		
 	# Boshlang'ich holatda 1, 2 va 3-bob doiralarini yaratish
 	_create_nodes_for_chapter(1)
@@ -109,6 +105,33 @@ func _ready() -> void:
 	
 	# Boshlang'ich bobni animatsiyasiz ko'rsatish
 	switch_to_chapter(1, false)
+
+func _setup_seamless_backdrop_materials() -> void:
+	var blur_shader = preload("res://shaders/bokeh_blur.gdshader")
+	
+	if backdrop_ch1:
+		var m1 := ShaderMaterial.new()
+		m1.shader = blur_shader
+		m1.set_shader_parameter("blur_amount", 0.0)
+		m1.set_shader_parameter("fade_left", 0.0)
+		m1.set_shader_parameter("fade_right", 0.12)
+		backdrop_ch1.material = m1
+		
+	if backdrop_ch2:
+		var m2 := ShaderMaterial.new()
+		m2.shader = blur_shader
+		m2.set_shader_parameter("blur_amount", 0.0)
+		m2.set_shader_parameter("fade_left", 0.12)
+		m2.set_shader_parameter("fade_right", 0.12)
+		backdrop_ch2.material = m2
+		
+	if backdrop_ch3:
+		var m3 := ShaderMaterial.new()
+		m3.shader = blur_shader
+		m3.set_shader_parameter("blur_amount", 0.0)
+		m3.set_shader_parameter("fade_left", 0.12)
+		m3.set_shader_parameter("fade_right", 0.0)
+		backdrop_ch3.material = m3
 
 func _setup_top_bar() -> void:
 	if back_btn:
@@ -202,7 +225,7 @@ func _input(event: InputEvent) -> void:
 			
 		if has_dragged:
 			var target_x: float = slider_start_x + dx
-			target_x = clampf(target_x, -1920.0 - 50.0, 50.0)
+			target_x = clampf(target_x, -2400.0 - 50.0, 50.0)
 			chapter_slider.position.x = target_x
 			_update_realtime_drag_feedback(target_x)
 			get_viewport().set_input_as_handled()
@@ -231,16 +254,16 @@ func _input(event: InputEvent) -> void:
 			
 		if has_dragged:
 			var target_x: float = slider_start_x + dx
-			target_x = clampf(target_x, -1920.0 - 50.0, 50.0)
+			target_x = clampf(target_x, -2400.0 - 50.0, 50.0)
 			chapter_slider.position.x = target_x
 			_update_realtime_drag_feedback(target_x)
 			get_viewport().set_input_as_handled()
 
 func _update_realtime_drag_feedback(slider_x: float) -> void:
 	var target_ch: int = 1
-	if slider_x <= -1440.0:
+	if slider_x <= -1800.0:
 		target_ch = 3
-	elif slider_x <= -480.0:
+	elif slider_x <= -600.0:
 		target_ch = 2
 	else:
 		target_ch = 1
@@ -253,12 +276,16 @@ func _update_realtime_drag_feedback(slider_x: float) -> void:
 		if target_ch == 2: title_key = "chapter_2_title"
 		elif target_ch == 3: title_key = "chapter_3_title"
 		title_label.text = "< ◇ ── " + LocaleManager.t(title_key).to_upper() + " ── ◇ >"
+	if lock_card_ch2:
+		lock_card_ch2.visible = (!SaveManager.is_chapter_unlocked(2) and slider_x <= -900.0 and slider_x >= -1500.0)
+	if lock_card_ch3:
+		lock_card_ch3.visible = (!SaveManager.is_chapter_unlocked(3) and slider_x <= -2100.0)
 
 func _finish_drag() -> void:
 	var slider_x := chapter_slider.position.x
-	if slider_x <= -1440.0:
+	if slider_x <= -1800.0:
 		switch_to_chapter(3, true)
-	elif slider_x <= -480.0:
+	elif slider_x <= -600.0:
 		switch_to_chapter(2, true)
 	else:
 		switch_to_chapter(1, true)
@@ -267,9 +294,9 @@ func switch_to_chapter(target_chapter: int, animated: bool = true) -> void:
 	current_chapter = target_chapter
 	var target_x: float = 0.0
 	if current_chapter == 2:
-		target_x = -960.0
+		target_x = -1200.0
 	elif current_chapter == 3:
-		target_x = -1920.0
+		target_x = -2400.0
 	
 	_update_top_bar_data()
 	_update_nav_buttons()
@@ -277,8 +304,6 @@ func switch_to_chapter(target_chapter: int, animated: bool = true) -> void:
 	
 	if not animated:
 		chapter_slider.position.x = target_x
-		if boundary_wall: boundary_wall.queue_redraw()
-		if boundary_wall2: boundary_wall2.queue_redraw()
 		return
 		
 	# Silliq kinematik animatsiya: 60fps cubic tween
@@ -289,8 +314,6 @@ func switch_to_chapter(target_chapter: int, animated: bool = true) -> void:
 	tw.tween_property(chapter_slider, "position:x", target_x, 0.38)
 	tw.finished.connect(func():
 		is_animating = false
-		if boundary_wall: boundary_wall.queue_redraw()
-		if boundary_wall2: boundary_wall2.queue_redraw()
 	)
 
 func _update_top_bar_data() -> void:
@@ -528,16 +551,21 @@ func _update_chapter_locks() -> void:
 	var ch3_unlocked: bool = SaveManager.is_chapter_unlocked(3)
 	
 	if backdrop_ch2:
-		backdrop_ch2.modulate = Color(1.0, 1.0, 1.0, 1.0) if ch2_unlocked else Color(0.42, 0.45, 0.55, 1.0)
+		backdrop_ch2.modulate = Color(1.0, 1.0, 1.0, 1.0) if ch2_unlocked else Color(0.55, 0.58, 0.68, 1.0)
 	if backdrop_ch3:
-		backdrop_ch3.modulate = Color(1.0, 1.0, 1.0, 1.0) if ch3_unlocked else Color(0.42, 0.45, 0.55, 1.0)
+		backdrop_ch3.modulate = Color(1.0, 1.0, 1.0, 1.0) if ch3_unlocked else Color(0.55, 0.58, 0.68, 1.0)
+		
+	if pass1 and pass1.has_method("update_state"):
+		pass1.update_state()
+	if pass2 and pass2.has_method("update_state"):
+		pass2.update_state()
 		
 	if not ch2_unlocked:
 		if not lock_card_ch2 and ch2_view:
 			lock_card_ch2 = _create_chapter_lock_card(2)
 			ch2_view.add_child(lock_card_ch2)
 		if lock_card_ch2:
-			lock_card_ch2.visible = true
+			lock_card_ch2.visible = (current_chapter == 2)
 			_refresh_lock_card_texts(lock_card_ch2, 2)
 	else:
 		if lock_card_ch2:
@@ -548,7 +576,7 @@ func _update_chapter_locks() -> void:
 			lock_card_ch3 = _create_chapter_lock_card(3)
 			ch3_view.add_child(lock_card_ch3)
 		if lock_card_ch3:
-			lock_card_ch3.visible = true
+			lock_card_ch3.visible = (current_chapter == 3)
 			_refresh_lock_card_texts(lock_card_ch3, 3)
 	else:
 		if lock_card_ch3:
@@ -624,21 +652,6 @@ func _refresh_lock_card_texts(card: Control, chapter: int) -> void:
 		lbl_title.text = LocaleManager.t(t_key)
 	if lbl_sub:
 		lbl_sub.text = LocaleManager.t(r_key)
-
-# -------------------------------------------------------------
-# Boblararo Nozik Chegara Chiziqlari (Subtle Divider Lines)
-# -------------------------------------------------------------
-func _on_boundary_wall_draw() -> void:
-	if not boundary_wall:
-		return
-	var h: float = boundary_wall.size.y
-	boundary_wall.draw_line(Vector2(1, 0), Vector2(1, h), Color(0.25, 0.35, 0.50, 0.35), 1.0)
-
-func _on_boundary_wall2_draw() -> void:
-	if not boundary_wall2:
-		return
-	var h: float = boundary_wall2.size.y
-	boundary_wall2.draw_line(Vector2(1, 0), Vector2(1, h), Color(0.25, 0.35, 0.50, 0.35), 1.0)
 
 func _on_back_pressed() -> void:
 	SoundManager.play("click")
