@@ -1,9 +1,10 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/level_select.gd" id="1_level_select"]
 [ext_resource type="Shader" path="res://shaders/bokeh_blur.gdshader" id="2_blur"]
 [ext_resource type="Texture2D" path="res://assets/images/maps-images/1.jpg" id="3_bg1"]
 [ext_resource type="Texture2D" path="res://assets/images/maps-images/2.jpg" id="4_bg2"]
+[ext_resource type="Texture2D" path="res://assets/images/maps-images/3.jpg" id="12_bg3"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass.tres" id="5_c_norm"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass_hover.tres" id="6_c_hov"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_focus_empty.tres" id="7_focus"]
@@ -154,6 +155,60 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 
+[node name="BoundaryWall2" type="Control" parent="ChapterSlider"]
+z_index = 6
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 2040.0
+offset_top = 0.0
+offset_right = 2160.0
+offset_bottom = 0.0
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Chapter3View" type="Control" parent="ChapterSlider"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2160.0
+offset_right = 2160.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="BackdropCh3" type="TextureRect" parent="ChapterSlider/Chapter3View"]
+material = SubResource("ShaderMaterial_map")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_bg3")
+expand_mode = 1
+stretch_mode = 0
+
+[node name="MapDraw3" type="Control" parent="ChapterSlider/Chapter3View"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="NodeLayer3" type="Control" parent="ChapterSlider/Chapter3View"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
 [node name="TopBar" type="Panel" parent="."]
 z_index = 10
 layout_mode = 1
@@ -269,9 +324,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -105.0
+offset_left = -145.0
 offset_top = -46.0
-offset_right = 105.0
+offset_right = 145.0
 offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 0
@@ -282,7 +337,7 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="BtnCh1" type="Button" parent="BottomBar/HBox"]
-custom_minimum_size = Vector2(92, 28)
+custom_minimum_size = Vector2(86, 28)
 layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 12
@@ -290,12 +345,20 @@ theme_override_styles/focus = ExtResource("7_focus")
 text = "1-BOB"
 
 [node name="BtnCh2" type="Button" parent="BottomBar/HBox"]
-custom_minimum_size = Vector2(92, 28)
+custom_minimum_size = Vector2(86, 28)
 layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 12
 theme_override_styles/focus = ExtResource("7_focus")
 text = "2-BOB"
+
+[node name="BtnCh3" type="Button" parent="BottomBar/HBox"]
+custom_minimum_size = Vector2(86, 28)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 12
+theme_override_styles/focus = ExtResource("7_focus")
+text = "3-BOB"
 
 [node name="NoticeModal" type="AcceptDialog" parent="."]
 title = "Xabarnoma"

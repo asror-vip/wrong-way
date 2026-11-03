@@ -35,6 +35,7 @@ const UNIFIED_ROAD_POS: Array[Vector2] = [
 
 const CHAPTER_1_POS: Array[Vector2] = UNIFIED_ROAD_POS
 const CHAPTER_2_POS: Array[Vector2] = UNIFIED_ROAD_POS
+const CHAPTER_3_POS: Array[Vector2] = UNIFIED_ROAD_POS
 
 @onready var chapter_slider: Control = $ChapterSlider
 @onready var ch1_view: Control = $ChapterSlider/Chapter1View
@@ -49,6 +50,12 @@ const CHAPTER_2_POS: Array[Vector2] = UNIFIED_ROAD_POS
 @onready var map_draw2: Control = $ChapterSlider/Chapter2View/MapDraw2
 @onready var node_layer2: Control = $ChapterSlider/Chapter2View/NodeLayer2
 
+@onready var boundary_wall2: Control = get_node_or_null("ChapterSlider/BoundaryWall2")
+@onready var ch3_view: Control = get_node_or_null("ChapterSlider/Chapter3View")
+@onready var backdrop_ch3: TextureRect = get_node_or_null("ChapterSlider/Chapter3View/BackdropCh3")
+@onready var map_draw3: Control = get_node_or_null("ChapterSlider/Chapter3View/MapDraw3")
+@onready var node_layer3: Control = get_node_or_null("ChapterSlider/Chapter3View/NodeLayer3")
+
 @onready var back_btn: Button = $TopBar/BackButton
 @onready var title_label: Label = $TopBar/TitleLabel
 @onready var total_stars_chip: Label = $TopBar/TotalStarsChip
@@ -57,6 +64,7 @@ const CHAPTER_2_POS: Array[Vector2] = UNIFIED_ROAD_POS
 @onready var side_nav_left: Button = $SideNavLeft
 @onready var btn_ch1: Button = $BottomBar/HBox/BtnCh1
 @onready var btn_ch2: Button = $BottomBar/HBox/BtnCh2
+@onready var btn_ch3: Button = get_node_or_null("BottomBar/HBox/BtnCh3")
 @onready var notice_modal: Node = $NoticeModal
 
 var style_white = preload("res://resources/themes/btn_capsule_white.tres")
@@ -91,12 +99,17 @@ func _ready() -> void:
 		map_draw1.draw.connect(_on_map_draw_ch1)
 	if map_draw2:
 		map_draw2.draw.connect(_on_map_draw_ch2)
+	if map_draw3:
+		map_draw3.draw.connect(_on_map_draw_ch3)
 	if boundary_wall:
 		boundary_wall.draw.connect(_on_boundary_wall_draw)
+	if boundary_wall2:
+		boundary_wall2.draw.connect(_on_boundary_wall2_draw)
 		
-	# Boshlang'ich holatda 1-bob va 2-bob doiralarini yaratish
+	# Boshlang'ich holatda 1, 2 va 3-bob doiralarini yaratish
 	_create_nodes_for_chapter(1)
 	_create_nodes_for_chapter(2)
+	_create_nodes_for_chapter(3)
 	
 	# Boshlang'ich bobni animatsiyasiz ko'rsatish
 	switch_to_chapter(1, false)
@@ -133,11 +146,18 @@ func _setup_nav_connections() -> void:
 		side_nav_left.add_theme_stylebox_override("normal", solid_box)
 		side_nav_left.add_theme_stylebox_override("hover", solid_box)
 		side_nav_left.add_theme_stylebox_override("pressed", solid_box)
-		side_nav_left.pressed.connect(func(): switch_to_chapter(1, true))
+		side_nav_left.pressed.connect(func():
+			if current_chapter == 3:
+				switch_to_chapter(2, true)
+			elif current_chapter == 2:
+				switch_to_chapter(1, true)
+		)
 	if btn_ch1:
 		btn_ch1.pressed.connect(func(): switch_to_chapter(1, true))
 	if btn_ch2:
 		btn_ch2.pressed.connect(func(): switch_to_chapter(2, true))
+	if btn_ch3:
+		btn_ch3.pressed.connect(func(): switch_to_chapter(3, true))
 
 func _show_notice(title_text: String, message_text: String) -> void:
 	if not notice_modal:
@@ -154,8 +174,8 @@ func _show_notice(title_text: String, message_text: String) -> void:
 func _on_side_nav_right_pressed() -> void:
 	if current_chapter == 1:
 		switch_to_chapter(2, true)
-	else:
-		_show_notice("Tez Kunda", "3-bob tez orada taqdim etiladi!")
+	elif current_chapter == 2:
+		switch_to_chapter(3, true)
 
 func _input(event: InputEvent) -> void:
 	if is_animating:
@@ -186,7 +206,7 @@ func _input(event: InputEvent) -> void:
 			
 		if has_dragged:
 			var target_x: float = slider_start_x + dx
-			target_x = clampf(target_x, -1080.0 - 50.0, 50.0)
+			target_x = clampf(target_x, -2160.0 - 50.0, 50.0)
 			chapter_slider.position.x = target_x
 			_update_realtime_drag_feedback(target_x)
 			get_viewport().set_input_as_handled()
@@ -215,43 +235,45 @@ func _input(event: InputEvent) -> void:
 			
 		if has_dragged:
 			var target_x: float = slider_start_x + dx
-			target_x = clampf(target_x, -1080.0 - 50.0, 50.0)
+			target_x = clampf(target_x, -2160.0 - 50.0, 50.0)
 			chapter_slider.position.x = target_x
 			_update_realtime_drag_feedback(target_x)
 			get_viewport().set_input_as_handled()
 
 func _update_realtime_drag_feedback(slider_x: float) -> void:
-	# Devor markazi: 960 (Ch1 kengligi) + 60 (devor yarmi) = 1020 px
-	var wall_screen_x := 1020.0 + slider_x
-	var target_ch := 2 if wall_screen_x <= 480.0 else 1
+	var target_ch: int = 1
+	if slider_x <= -1620.0:
+		target_ch = 3
+	elif slider_x <= -540.0:
+		target_ch = 2
+	else:
+		target_ch = 1
 	if btn_ch1 and btn_ch2:
 		_set_btn_active(btn_ch1, target_ch == 1)
 		_set_btn_active(btn_ch2, target_ch == 2)
+		if btn_ch3: _set_btn_active(btn_ch3, target_ch == 3)
 	if title_label:
-		var title_key := "chapter_1_title" if target_ch == 1 else "chapter_2_title"
+		var title_key := "chapter_1_title"
+		if target_ch == 2: title_key = "chapter_2_title"
+		elif target_ch == 3: title_key = "chapter_3_title"
 		title_label.text = "< ◇ ── " + LocaleManager.t(title_key).to_upper() + " ── ◇ >"
 
 func _finish_drag() -> void:
-	# Foydalanuvchi talabi:
-	# Agar chapterlarni ajratuvchi devor telefonning o'rtasigacha (480px) surilib kelsa,
-	# o'sha chapterga o'tib ketadi. Aks holda asl bobga qaytadi.
-	var wall_screen_x := 1020.0 + chapter_slider.position.x
-	var screen_center_x := 480.0
-	
-	if current_chapter == 1:
-		if wall_screen_x <= screen_center_x:
-			switch_to_chapter(2, true)
-		else:
-			switch_to_chapter(1, true)
+	var slider_x := chapter_slider.position.x
+	if slider_x <= -1620.0:
+		switch_to_chapter(3, true)
+	elif slider_x <= -540.0:
+		switch_to_chapter(2, true)
 	else:
-		if wall_screen_x >= screen_center_x:
-			switch_to_chapter(1, true)
-		else:
-			switch_to_chapter(2, true)
+		switch_to_chapter(1, true)
 
 func switch_to_chapter(target_chapter: int, animated: bool = true) -> void:
 	current_chapter = target_chapter
-	var target_x: float = 0.0 if current_chapter == 1 else -1080.0
+	var target_x: float = 0.0
+	if current_chapter == 2:
+		target_x = -1080.0
+	elif current_chapter == 3:
+		target_x = -2160.0
 	
 	_update_top_bar_data()
 	_update_nav_buttons()
@@ -259,8 +281,10 @@ func switch_to_chapter(target_chapter: int, animated: bool = true) -> void:
 	if not animated:
 		chapter_slider.position.x = target_x
 		if boundary_wall: boundary_wall.queue_redraw()
+		if boundary_wall2: boundary_wall2.queue_redraw()
 		if map_draw1: map_draw1.queue_redraw()
 		if map_draw2: map_draw2.queue_redraw()
+		if map_draw3: map_draw3.queue_redraw()
 		return
 		
 	# Silliq kinematik animatsiya: 60fps cubic tween
@@ -272,41 +296,44 @@ func switch_to_chapter(target_chapter: int, animated: bool = true) -> void:
 	tw.finished.connect(func():
 		is_animating = false
 		if boundary_wall: boundary_wall.queue_redraw()
+		if boundary_wall2: boundary_wall2.queue_redraw()
 		if map_draw1: map_draw1.queue_redraw()
 		if map_draw2: map_draw2.queue_redraw()
+		if map_draw3: map_draw3.queue_redraw()
 	)
 
 func _update_top_bar_data() -> void:
 	if title_label:
-		var title_key := "chapter_1_title" if current_chapter == 1 else "chapter_2_title"
+		var title_key := "chapter_1_title"
+		if current_chapter == 2:
+			title_key = "chapter_2_title"
+		elif current_chapter == 3:
+			title_key = "chapter_3_title"
 		title_label.text = "< ◇ ── " + LocaleManager.t(title_key).to_upper() + " ── ◇ >"
 		
 	if total_stars_chip:
 		var ch_stars := SaveManager.get_chapter_stars(current_chapter)
-		if current_chapter == 1:
-			total_stars_chip.text = "     %d / 60" % ch_stars
-		else:
-			# 2-bob talabi: yulduzlar 0 / 55
-			total_stars_chip.text = "     %d / 55" % ch_stars
+		total_stars_chip.text = "     %d / 60" % ch_stars
 
 func _update_nav_buttons() -> void:
 	if side_nav_right:
-		side_nav_right.visible = true
+		side_nav_right.visible = (current_chapter < 3)
 		if current_chapter == 1:
 			side_nav_right.text = "2-BOB ▶"
-		else:
-			# 2-bobda ham Gemini belgisini to'sib turish uchun 3-bob tugmasi
+		elif current_chapter == 2:
 			side_nav_right.text = "3-BOB ▶"
 	if side_nav_left:
-		side_nav_left.visible = (current_chapter == 2)
+		side_nav_left.visible = (current_chapter > 1)
+		if current_chapter == 2:
+			side_nav_left.text = "◀ 1-BOB"
+		elif current_chapter == 3:
+			side_nav_left.text = "◀ 2-BOB"
 		
 	if btn_ch1 and btn_ch2:
-		if current_chapter == 1:
-			_set_btn_active(btn_ch1, true)
-			_set_btn_active(btn_ch2, false)
-		else:
-			_set_btn_active(btn_ch1, false)
-			_set_btn_active(btn_ch2, true)
+		_set_btn_active(btn_ch1, current_chapter == 1)
+		_set_btn_active(btn_ch2, current_chapter == 2)
+		if btn_ch3:
+			_set_btn_active(btn_ch3, current_chapter == 3)
 
 func _set_btn_active(btn: Button, active: bool) -> void:
 	if active:
@@ -322,17 +349,34 @@ func _on_language_changed(_lang: String) -> void:
 	_update_top_bar_data()
 	_create_nodes_for_chapter(1)
 	_create_nodes_for_chapter(2)
+	_create_nodes_for_chapter(3)
 
 func _create_nodes_for_chapter(chapter: int) -> void:
-	var container := node_layer1 if chapter == 1 else node_layer2
+	var container: Control = null
+	if chapter == 1:
+		container = node_layer1
+	elif chapter == 2:
+		container = node_layer2
+	elif chapter == 3:
+		container = node_layer3
+		
 	if not container:
 		return
 		
 	for child in container.get_children():
 		child.queue_free()
 
-	var positions := CHAPTER_1_POS if chapter == 1 else CHAPTER_2_POS
-	var start_lvl := 1 if chapter == 1 else 21
+	var positions := CHAPTER_1_POS
+	if chapter == 2:
+		positions = CHAPTER_2_POS
+	elif chapter == 3:
+		positions = CHAPTER_3_POS
+
+	var start_lvl := 1
+	if chapter == 2:
+		start_lvl = 21
+	elif chapter == 3:
+		start_lvl = 41
 
 	var max_unlocked: int = 1
 	for lvl in SaveManager.unlocked_levels:
@@ -461,9 +505,9 @@ func _on_level_btn_pressed(lvl: int) -> void:
 	SaveManager.should_restore_result_modal = false
 	SaveManager.navigation_source = "home_menu"
 	
-	var level_scene_path := "res://scenes/levels/level_%d.tscn" % lvl
-	if lvl > 20 and not ResourceLoader.exists(level_scene_path):
-		_show_notice("2-BOB: %d-DARAJA" % lvl, "2-bob darajalari tez kunda navbatdagi katta yangilanishda taqdim etiladi!\n\nHozirda 1-bobning 1-20 darajalari to'liq faol.")
+	var level_scene_path := "res://scenes/levels/level_%02d.tscn" % lvl
+	if lvl > 60 and not ResourceLoader.exists(level_scene_path):
+		_show_notice("DARJA: %d" % lvl, "Yangi darajalar tez kunda navbatdagi katta yangilanishda taqdim etiladi!")
 		return
 		
 	var already_beaten := SaveManager.is_level_completed(lvl)
@@ -479,17 +523,25 @@ func _on_level_btn_pressed(lvl: int) -> void:
 		GameManager.start_game(lvl)
 
 # -------------------------------------------------------------
-# 1-Bob va 2-Bob Bulutlari (Ochilmaganda ko'rinadi, ochilganda yo'qoladi)
+# Boblar Bulutlari (Ochilmaganda ko'rinadi, ochilganda yo'qoladi)
 # -------------------------------------------------------------
 func _on_map_draw_ch1() -> void:
 	var ch2_unlocked: bool = SaveManager.is_chapter_unlocked(2)
 	if not ch2_unlocked:
-		_draw_clouds_right()
+		_draw_clouds_right_canvas(map_draw1)
 
 func _on_map_draw_ch2() -> void:
 	var ch2_unlocked: bool = SaveManager.is_chapter_unlocked(2)
 	if not ch2_unlocked:
-		_draw_clouds_left()
+		_draw_clouds_left_canvas(map_draw2)
+	var ch3_unlocked: bool = SaveManager.is_chapter_unlocked(3)
+	if not ch3_unlocked:
+		_draw_clouds_right_canvas(map_draw2)
+
+func _on_map_draw_ch3() -> void:
+	var ch3_unlocked: bool = SaveManager.is_chapter_unlocked(3)
+	if not ch3_unlocked:
+		_draw_clouds_left_canvas(map_draw3)
 
 # -------------------------------------------------------------
 # Boblararo Tumanli Chegara / Bo'shliq (Mystic Fog & Void Boundary)
@@ -497,40 +549,48 @@ func _on_map_draw_ch2() -> void:
 func _on_boundary_wall_draw() -> void:
 	if not boundary_wall:
 		return
-		
-	var w: float = boundary_wall.size.x # 120 px
-	var h: float = boundary_wall.size.y # 540 px
-	var seam_x: float = w * 0.5         # 60 px (markaziy chegaraviy chiziq)
 	var ch2_unlocked: bool = SaveManager.is_chapter_unlocked(2)
+	_draw_boundary_canvas(boundary_wall, ch2_unlocked)
+
+func _on_boundary_wall2_draw() -> void:
+	if not boundary_wall2:
+		return
+	var ch3_unlocked: bool = SaveManager.is_chapter_unlocked(3)
+	_draw_boundary_canvas(boundary_wall2, ch3_unlocked)
+
+func _draw_boundary_canvas(canvas: Control, next_unlocked: bool) -> void:
+	var w: float = canvas.size.x # 120 px
+	var h: float = canvas.size.y # 540 px
+	var seam_x: float = w * 0.5   # 60 px (markaziy chegaraviy chiziq)
 	
 	# 1. Chegaradagi qorong'i bo'shliq / chasm foni
-	boundary_wall.draw_rect(Rect2(0, 0, w, h), Color(0.04, 0.05, 0.08, 0.98))
+	canvas.draw_rect(Rect2(0, 0, w, h), Color(0.04, 0.05, 0.08, 0.98))
 	
-	# 2. 1-bobning uzilgan yo'l cheti (Left edge x=0..38, y=255 atrofida toshli sinish)
-	var ch1_broken_asphalt := PackedVector2Array([
+	# 2. Uzilgan yo'l cheti (Left edge x=0..38)
+	var broken_left := PackedVector2Array([
 		Vector2(0, 235), Vector2(28, 238), Vector2(38, 252),
 		Vector2(25, 270), Vector2(0, 275)
 	])
-	boundary_wall.draw_colored_polygon(ch1_broken_asphalt, Color(0.08, 0.10, 0.14, 0.95))
-	boundary_wall.draw_line(Vector2(28, 238), Vector2(38, 252), Color(0.25, 0.32, 0.45, 0.8), 2.0)
-	boundary_wall.draw_line(Vector2(38, 252), Vector2(25, 270), Color(0.25, 0.32, 0.45, 0.8), 2.0)
-	boundary_wall.draw_circle(Vector2(45, 250), 3.0, Color(0.18, 0.22, 0.30, 0.8))
-	boundary_wall.draw_circle(Vector2(48, 260), 2.0, Color(0.15, 0.18, 0.25, 0.7))
+	canvas.draw_colored_polygon(broken_left, Color(0.08, 0.10, 0.14, 0.95))
+	canvas.draw_line(Vector2(28, 238), Vector2(38, 252), Color(0.25, 0.32, 0.45, 0.8), 2.0)
+	canvas.draw_line(Vector2(38, 252), Vector2(25, 270), Color(0.25, 0.32, 0.45, 0.8), 2.0)
+	canvas.draw_circle(Vector2(45, 250), 3.0, Color(0.18, 0.22, 0.30, 0.8))
+	canvas.draw_circle(Vector2(48, 260), 2.0, Color(0.15, 0.18, 0.25, 0.7))
 	
-	# 3. 2-bobning qorli qoyali boshlanishi (Right edge x=82..120, y=205 atrofida)
-	var ch2_snow_ledge := PackedVector2Array([
+	# 3. Keyingi bobning boshlanish qirrasi (Right edge x=82..120)
+	var next_ledge := PackedVector2Array([
 		Vector2(120, 185), Vector2(92, 192), Vector2(82, 208),
 		Vector2(95, 222), Vector2(120, 225)
 	])
-	boundary_wall.draw_colored_polygon(ch2_snow_ledge, Color(0.12, 0.16, 0.22, 0.95))
-	boundary_wall.draw_line(Vector2(92, 192), Vector2(82, 208), Color(0.70, 0.82, 0.92, 0.7), 2.0)
-	boundary_wall.draw_line(Vector2(82, 208), Vector2(95, 222), Color(0.70, 0.82, 0.92, 0.7), 2.0)
+	canvas.draw_colored_polygon(next_ledge, Color(0.12, 0.16, 0.22, 0.95))
+	canvas.draw_line(Vector2(92, 192), Vector2(82, 208), Color(0.70, 0.82, 0.92, 0.7), 2.0)
+	canvas.draw_line(Vector2(82, 208), Vector2(95, 222), Color(0.70, 0.82, 0.92, 0.7), 2.0)
 	
-	# 4. Qatlamli quyuq tabiiy tuman va bulutlar (Natural Atmospheric Mist & Fog Chasm)
+	# 4. Qatlamli quyuq tabiiy tuman va bulutlar
 	for step in range(12):
 		var alpha: float = 0.07 * (step + 1)
-		boundary_wall.draw_rect(Rect2(step * 5.0, 0, 5.0, h), Color(0.04, 0.06, 0.10, alpha))
-		boundary_wall.draw_rect(Rect2(w - (step + 1) * 5.0, 0, 5.0, h), Color(0.05, 0.08, 0.13, alpha))
+		canvas.draw_rect(Rect2(step * 5.0, 0, 5.0, h), Color(0.04, 0.06, 0.10, alpha))
+		canvas.draw_rect(Rect2(w - (step + 1) * 5.0, 0, 5.0, h), Color(0.05, 0.08, 0.13, alpha))
 		
 	var fog_centers: Array[Vector2] = [
 		Vector2(50, 40), Vector2(70, 90), Vector2(40, 150),
@@ -538,73 +598,75 @@ func _on_boundary_wall_draw() -> void:
 		Vector2(50, 390), Vector2(70, 450), Vector2(55, 510)
 	]
 	for fc in fog_centers:
-		boundary_wall.draw_circle(fc, 65.0, Color(0.05, 0.07, 0.11, 0.65))
-		boundary_wall.draw_circle(fc + Vector2(-8, 6), 50.0, Color(0.06, 0.09, 0.15, 0.50))
-		boundary_wall.draw_circle(fc + Vector2(10, -7), 38.0, Color(0.08, 0.12, 0.19, 0.35))
+		canvas.draw_circle(fc, 65.0, Color(0.05, 0.07, 0.11, 0.65))
+		canvas.draw_circle(fc + Vector2(-8, 6), 50.0, Color(0.06, 0.09, 0.15, 0.50))
+		canvas.draw_circle(fc + Vector2(10, -7), 38.0, Color(0.08, 0.12, 0.19, 0.35))
 
-	# 5. Agar 2-bob qulflangan bo'lsa: Tuman orasida sokin qulf belgisi
-	if not ch2_unlocked:
+	# 5. Agar keyingi bob qulflangan bo'lsa: Tuman orasida sokin qulf belgisi
+	if not next_unlocked:
 		var lock_y: float = 270.0
-		boundary_wall.draw_circle(Vector2(seam_x, lock_y), 20.0, Color(0.03, 0.04, 0.06, 0.70))
-		boundary_wall.draw_rect(Rect2(seam_x - 8, lock_y - 4, 16, 14), Color(0.75, 0.60, 0.20, 0.85))
-		boundary_wall.draw_arc(Vector2(seam_x, lock_y - 6), 6.0, -PI, 0, 16, Color(0.85, 0.72, 0.30, 0.90), 2.5)
-		boundary_wall.draw_circle(Vector2(seam_x, lock_y + 3), 2.0, Color(0.1, 0.1, 0.1, 0.9))
+		canvas.draw_circle(Vector2(seam_x, lock_y), 20.0, Color(0.03, 0.04, 0.06, 0.70))
+		canvas.draw_rect(Rect2(seam_x - 8, lock_y - 4, 16, 14), Color(0.75, 0.60, 0.20, 0.85))
+		canvas.draw_arc(Vector2(seam_x, lock_y - 6), 6.0, -PI, 0, 16, Color(0.85, 0.72, 0.30, 0.90), 2.5)
+		canvas.draw_circle(Vector2(seam_x, lock_y + 3), 2.0, Color(0.1, 0.1, 0.1, 0.9))
 
-func _draw_clouds_right() -> void:
+func _draw_clouds_right_canvas(canvas: Control) -> void:
+	if not canvas: return
 	for x_step in range(10):
 		var alpha: float = 0.08 * (x_step + 1)
 		var rx: float = 830.0 + x_step * 13.0
-		map_draw1.draw_rect(Rect2(rx, 0, 13, 540), Color(0.04, 0.06, 0.10, alpha))
+		canvas.draw_rect(Rect2(rx, 0, 13, 540), Color(0.04, 0.06, 0.10, alpha))
 		
 	var cloud_centers_back: Array[Vector2] = [
 		Vector2(875, 40), Vector2(905, 120), Vector2(870, 200),
 		Vector2(915, 280), Vector2(875, 360), Vector2(925, 440), Vector2(885, 520)
 	]
 	for c in cloud_centers_back:
-		map_draw1.draw_circle(c, 70.0, Color(0.05, 0.07, 0.12, 0.88))
+		canvas.draw_circle(c, 70.0, Color(0.05, 0.07, 0.12, 0.88))
 		
 	var cloud_centers_mid: Array[Vector2] = [
 		Vector2(900, 20), Vector2(940, 95), Vector2(895, 175),
 		Vector2(950, 255), Vector2(905, 335), Vector2(955, 415), Vector2(920, 495)
 	]
 	for c in cloud_centers_mid:
-		map_draw1.draw_circle(c, 58.0, Color(0.07, 0.10, 0.18, 0.94))
+		canvas.draw_circle(c, 58.0, Color(0.07, 0.10, 0.18, 0.94))
 		
 	var cloud_centers_front: Array[Vector2] = [
 		Vector2(935, 60), Vector2(965, 140), Vector2(930, 220),
 		Vector2(970, 300), Vector2(940, 380), Vector2(975, 460)
 	]
 	for c in cloud_centers_front:
-		map_draw1.draw_circle(c, 50.0, Color(0.10, 0.15, 0.24, 0.98))
-		map_draw1.draw_arc(c, 50.0, -PI, PI, 32, Color(0.28, 0.40, 0.58, 0.35), 1.5)
+		canvas.draw_circle(c, 50.0, Color(0.10, 0.15, 0.24, 0.98))
+		canvas.draw_arc(c, 50.0, -PI, PI, 32, Color(0.28, 0.40, 0.58, 0.35), 1.5)
 
-func _draw_clouds_left() -> void:
+func _draw_clouds_left_canvas(canvas: Control) -> void:
+	if not canvas: return
 	for x_step in range(10):
 		var alpha: float = 0.08 * (10 - x_step)
 		var rx: float = x_step * 13.0
-		map_draw2.draw_rect(Rect2(rx, 0, 13, 540), Color(0.04, 0.06, 0.10, alpha))
+		canvas.draw_rect(Rect2(rx, 0, 13, 540), Color(0.04, 0.06, 0.10, alpha))
 		
 	var cloud_centers_back: Array[Vector2] = [
 		Vector2(85, 40), Vector2(55, 120), Vector2(90, 200),
 		Vector2(45, 280), Vector2(85, 360), Vector2(35, 440), Vector2(75, 520)
 	]
 	for c in cloud_centers_back:
-		map_draw2.draw_circle(c, 70.0, Color(0.05, 0.07, 0.12, 0.88))
+		canvas.draw_circle(c, 70.0, Color(0.05, 0.07, 0.12, 0.88))
 		
 	var cloud_centers_mid: Array[Vector2] = [
 		Vector2(60, 20), Vector2(20, 95), Vector2(65, 175),
 		Vector2(10, 255), Vector2(55, 335), Vector2(5, 415), Vector2(40, 495)
 	]
 	for c in cloud_centers_mid:
-		map_draw2.draw_circle(c, 58.0, Color(0.07, 0.10, 0.18, 0.94))
+		canvas.draw_circle(c, 58.0, Color(0.07, 0.10, 0.18, 0.94))
 		
 	var cloud_centers_front: Array[Vector2] = [
 		Vector2(25, 60), Vector2(-5, 140), Vector2(30, 220),
 		Vector2(-10, 300), Vector2(20, 380), Vector2(-15, 460)
 	]
 	for c in cloud_centers_front:
-		map_draw2.draw_circle(c, 50.0, Color(0.10, 0.15, 0.24, 0.98))
-		map_draw2.draw_arc(c, 50.0, -PI, PI, 32, Color(0.28, 0.40, 0.58, 0.35), 1.5)
+		canvas.draw_circle(c, 50.0, Color(0.10, 0.15, 0.24, 0.98))
+		canvas.draw_arc(c, 50.0, -PI, PI, 32, Color(0.28, 0.40, 0.58, 0.35), 1.5)
 
 func _on_back_pressed() -> void:
 	SoundManager.play("click")

@@ -1,0 +1,84 @@
+[gd_scene format=3 uid="uid://level54scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
+[ext_resource type="PackedScene" path="res://scenes/traps/moving_saw.tscn" id="5_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/crusher.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/rolling_boulder.tscn" id="7_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/laser_beam.tscn" id="8_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="9_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="10_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/circular_saw.tscn" id="11_tr"]
+
+[node name="Level54" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 54
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="GroundFull" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(960, 160)
+
+[node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(960, 60)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+
+[node name="SawFromLeft" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(50, 364)
+patrol_distance = 140
+patrol_speed = 160
+patrol_axis = Vector2(1, 0)
+
+[node name="CrusherFromRight" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(240, 140)
+crusher_size = Vector2(68, 64)
+target_y = 320
+trigger_distance = 70
+
+[node name="BoulderBehind" parent="Traps" instance=ExtResource("7_tr")]
+position = Vector2(180, 350)
+roll_direction = 1
+roll_speed = 290
+trigger_distance = 190
+
+[node name="LaserAhead" parent="Traps" instance=ExtResource("8_tr")]
+position = Vector2(450, 220)
+beam_length = 160
+active_time = 1.2
+inactive_time = 1.2
+
+[node name="PopUpSpikesLaser" parent="Traps" instance=ExtResource("9_tr")]
+position = Vector2(510, 380)
+spike_width = 48
+max_spike_height = 32
+trigger_distance = 75
+warning_time = 0.35
+
+[node name="StalactiteJump" parent="Traps" instance=ExtResource("10_tr")]
+position = Vector2(580, 60)
+trigger_distance = 240
+shake_duration = 0.35
+
+[node name="CircularSawFinal" parent="Traps" instance=ExtResource("11_tr")]
+position = Vector2(780, 330)
+orbit_radius = 36
+orbit_speed = 2.4
+
+[node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
+position = Vector2(890, 380)
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(70, 380)

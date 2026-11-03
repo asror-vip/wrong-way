@@ -86,7 +86,7 @@ crusher_size = Vector2(55, 64)
 target_y = 320
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
-position = Vector2(905, 380)
+position = Vector2(890, 380)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
 position = Vector2(70, 380)

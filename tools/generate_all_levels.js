@@ -82,13 +82,20 @@ function main() {
     }
 
     // Boundary walls
-    tscn += `[node name="WallLeft" parent="Platforms" instance=ExtResource("${platId}")]\n`;
-    tscn += `position = Vector2(0, 0)\n`;
-    tscn += `platform_size = Vector2(32, 540)\n\n`;
+    const hasWallLeft = lvl.platforms.some(p => p.name === 'WallLeft');
+    const hasWallRight = lvl.platforms.some(p => p.name === 'WallRight');
 
-    tscn += `[node name="WallRight" parent="Platforms" instance=ExtResource("${platId}")]\n`;
-    tscn += `position = Vector2(928, 0)\n`;
-    tscn += `platform_size = Vector2(32, 540)\n\n`;
+    if (!hasWallLeft) {
+      tscn += `[node name="WallLeft" parent="Platforms" instance=ExtResource("${platId}")]\n`;
+      tscn += `position = Vector2(0, 0)\n`;
+      tscn += `platform_size = Vector2(32, 540)\n\n`;
+    }
+
+    if (!hasWallRight) {
+      tscn += `[node name="WallRight" parent="Platforms" instance=ExtResource("${platId}")]\n`;
+      tscn += `position = Vector2(928, 0)\n`;
+      tscn += `platform_size = Vector2(32, 540)\n\n`;
+    }
 
     // Traps
     tscn += `[node name="Traps" type="Node2D" parent="."]\n\n`;

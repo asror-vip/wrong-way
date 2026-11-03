@@ -34,11 +34,11 @@ platform_size = Vector2(180, 30)
 
 [node name="GroundLowerEnd" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(650, 380)
-platform_size = Vector2(170, 160)
+platform_size = Vector2(120, 160)
 
 [node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(890, 380)
-platform_size = Vector2(70, 160)
+position = Vector2(850, 380)
+platform_size = Vector2(110, 160)
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -89,11 +89,11 @@ crusher_size = Vector2(70, 64)
 target_y = 320
 
 [node name="TrapFloor3" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(820, 380)
-platform_size = Vector2(70, 160)
+position = Vector2(770, 380)
+platform_size = Vector2(80, 160)
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
-position = Vector2(915, 380)
+position = Vector2(890, 380)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
 position = Vector2(60, 380)

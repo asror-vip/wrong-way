@@ -33,17 +33,17 @@ func load_local_levels() -> void:
 			if parsed is Array:
 				_populate_cache(parsed)
 				
-	# 2. Agar user keshida to'liqroq ma'lumot bo'lsa (faqat kamida 40 ta bo'lsa)
+	# 2. Agar user keshida to'liqroq ma'lumot bo'lsa (faqat kamida 60 ta bo'lsa)
 	if FileAccess.file_exists(CACHE_FILE_PATH):
 		var u_file := FileAccess.open(CACHE_FILE_PATH, FileAccess.READ)
 		if u_file:
 			var u_text := u_file.get_as_text()
 			u_file.close()
 			var u_parsed = JSON.parse_string(u_text)
-			if u_parsed is Array and u_parsed.size() >= 40:
+			if u_parsed is Array and u_parsed.size() >= 60:
 				_populate_cache(u_parsed)
 			else:
-				# Eski 20 talik keshni butunlay tozalab tashlaymiz
+				# Eski keshni butunlay tozalab tashlaymiz
 				DirAccess.remove_absolute(CACHE_FILE_PATH)
 			
 	is_loaded = true
@@ -80,8 +80,8 @@ func _on_sync_completed(_result: int, response_code: int, _headers: PackedString
 	if response_code == 200:
 		var json_str := body.get_string_from_utf8()
 		var parsed = JSON.parse_string(json_str)
-		# Faqatgina Supabase'da kamida 40 ta to'liq daraja bo'lgandagina keshlaymiz
-		if parsed is Array and parsed.size() >= 40:
+		# Faqatgina Supabase'da kamida 60 ta to'liq daraja bo'lgandagina keshlaymiz
+		if parsed is Array and parsed.size() >= 60:
 			_populate_cache(parsed)
 			# Keshga saqlash
 			var save_file := FileAccess.open(CACHE_FILE_PATH, FileAccess.WRITE)
@@ -91,7 +91,7 @@ func _on_sync_completed(_result: int, response_code: int, _headers: PackedString
 			print("LevelDatabase: Supabase'dan %d ta daraja yangilandi va keshlandi!" % parsed.size())
 			levels_synced_from_cloud.emit(parsed.size())
 		else:
-			print("LevelDatabase: Supabase'dagi darajalar soni kam (%d < 40), lokal 40 ta daraja saqlab qolindi." % (parsed.size() if parsed is Array else 0))
+			print("LevelDatabase: Supabase'dagi darajalar soni kam (%d < 60), lokal 60 ta daraja saqlab qolindi." % (parsed.size() if parsed is Array else 0))
 	else:
 		print("LevelDatabase: Supabase sinxronizatsiyasi o'tkazib yuborildi (Offline/Status: %d)" % response_code)
 

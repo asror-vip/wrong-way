@@ -26,8 +26,8 @@ position = Vector2(420, 380)
 platform_size = Vector2(260, 160)
 
 [node name="GroundDoor" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(860, 380)
-platform_size = Vector2(100, 160)
+position = Vector2(830, 380)
+platform_size = Vector2(130, 160)
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -80,8 +80,8 @@ roll_speed = 340
 trigger_distance = 240
 
 [node name="TrapFloorBeforeDoor" parent="Traps" instance=ExtResource("10_tr")]
-position = Vector2(760, 380)
-platform_size = Vector2(100, 160)
+position = Vector2(740, 380)
+platform_size = Vector2(90, 160)
 shake_duration = 0.18
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]

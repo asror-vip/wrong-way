@@ -287,7 +287,7 @@ func get_level_best_time_sec(lvl: int) -> int:
 
 func get_total_beaten_time_sec() -> int:
 	var total_sec: int = 0
-	for lvl in range(1, 41):
+	for lvl in range(1, 61):
 		var sec := get_level_best_time_sec(lvl)
 		if sec > 0:
 			total_sec += sec
@@ -295,16 +295,28 @@ func get_total_beaten_time_sec() -> int:
 
 func get_chapter_stars(chapter: int) -> int:
 	var total: int = 0
-	var start_lvl := 1 if chapter == 1 else 21
-	var end_lvl := 20 if chapter == 1 else 40
+	var start_lvl := 1
+	var end_lvl := 20
+	if chapter == 2:
+		start_lvl = 21
+		end_lvl = 40
+	elif chapter == 3:
+		start_lvl = 41
+		end_lvl = 60
 	for l in range(start_lvl, end_lvl + 1):
 		total += int(level_stars.get(str(l), 0))
 	return total
 
 func get_chapter_total_time_sec(chapter: int) -> int:
 	var total_sec: int = 0
-	var start_lvl := 1 if chapter == 1 else 21
-	var end_lvl := 20 if chapter == 1 else 40
+	var start_lvl := 1
+	var end_lvl := 20
+	if chapter == 2:
+		start_lvl = 21
+		end_lvl = 40
+	elif chapter == 3:
+		start_lvl = 41
+		end_lvl = 60
 	for l in range(start_lvl, end_lvl + 1):
 		var sec := get_level_best_time_sec(l)
 		if sec > 0:
@@ -314,7 +326,11 @@ func get_chapter_total_time_sec(chapter: int) -> int:
 func is_chapter_unlocked(chapter: int) -> bool:
 	if chapter == 1:
 		return true
-	return is_level_completed(20) or unlocked_levels.has(21) or ad_unlocked_levels.has(21)
+	elif chapter == 2:
+		return is_level_completed(20) or unlocked_levels.has(21) or ad_unlocked_levels.has(21)
+	elif chapter == 3:
+		return is_level_completed(40) or unlocked_levels.has(41) or ad_unlocked_levels.has(41)
+	return false
 
 func get_level_time_text(lvl: int) -> String:
 	var sec := get_level_best_time_sec(lvl)

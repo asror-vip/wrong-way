@@ -1,0 +1,88 @@
+[gd_scene format=3 uid="uid://level53scn"]
+
+[ext_resource type="Script" path="res://scripts/levels/base_level.gd" id="1_bl"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
+[ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
+[ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
+[ext_resource type="PackedScene" path="res://scenes/traps/rolling_boulder.tscn" id="5_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/circular_saw.tscn" id="7_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="8_tr"]
+
+[node name="Level53" type="Node2D"]
+script = ExtResource("1_bl")
+level_number = 53
+
+[node name="Platforms" type="Node2D" parent="."]
+
+[node name="GroundFull" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(960, 160)
+
+[node name="UpperDropLedge" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(440, 240)
+platform_size = Vector2(100, 30)
+
+[node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(960, 60)
+
+[node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 0)
+platform_size = Vector2(32, 540)
+
+[node name="WallRight" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(928, 0)
+platform_size = Vector2(32, 540)
+
+[node name="Traps" type="Node2D" parent="."]
+
+[node name="BoulderFront1" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(330, 350)
+roll_direction = -1
+roll_speed = 300
+trigger_distance = 220
+
+[node name="BoulderBack2" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(120, 350)
+roll_direction = 1
+roll_speed = 280
+trigger_distance = 200
+
+[node name="BoulderDropLedge" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(470, 210)
+roll_direction = -1
+roll_speed = 320
+trigger_distance = 200
+
+[node name="SpikesBetween" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(410, 348)
+spike_size = Vector2(48, 32)
+
+[node name="CircularSawMid" parent="Traps" instance=ExtResource("7_tr")]
+position = Vector2(570, 330)
+orbit_radius = 36
+orbit_speed = 2.2
+
+[node name="StalactiteMid" parent="Traps" instance=ExtResource("8_tr")]
+position = Vector2(660, 60)
+trigger_distance = 240
+shake_duration = 0.35
+
+[node name="OpposingBoulder1" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(740, 350)
+roll_direction = 1
+roll_speed = 320
+trigger_distance = 220
+
+[node name="OpposingBoulder2" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(860, 350)
+roll_direction = -1
+roll_speed = 320
+trigger_distance = 220
+
+[node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
+position = Vector2(890, 380)
+
+[node name="Player" parent="." instance=ExtResource("2_pl")]
+position = Vector2(70, 380)

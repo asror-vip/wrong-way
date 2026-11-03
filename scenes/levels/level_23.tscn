@@ -19,8 +19,8 @@ position = Vector2(0, 380)
 platform_size = Vector2(730, 160)
 
 [node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(840, 380)
-platform_size = Vector2(120, 160)
+position = Vector2(830, 380)
+platform_size = Vector2(130, 160)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -60,7 +60,7 @@ delay_before_roll = 0.5
 
 [node name="TrapFloorFinish" parent="Traps" instance=ExtResource("7_tr")]
 position = Vector2(730, 380)
-platform_size = Vector2(110, 160)
+platform_size = Vector2(100, 160)
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
 position = Vector2(885, 380)

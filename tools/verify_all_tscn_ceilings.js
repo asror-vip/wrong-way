@@ -2,7 +2,7 @@ const fs = require('fs');
 
 let issues = [];
 
-for (let i = 1; i <= 40; i++) {
+for (let i = 1; i <= 60; i++) {
   const numStr = String(i).padStart(2, '0');
   const tscnPath = `scenes/levels/level_${numStr}.tscn`;
   if (!fs.existsSync(tscnPath)) {
