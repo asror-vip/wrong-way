@@ -216,6 +216,19 @@ func _on_next_pressed() -> void:
 func _on_replay_pressed() -> void:
 	SoundManager.play("click")
 	visible = false
+	if GameManager.is_duel_mode:
+		get_tree().paused = false
+		if DuelService.is_bot_duel:
+			var ch: int = 1 if last_lvl <= 20 else (2 if last_lvl <= 40 else 3)
+			var lvl_in_ch: int = ((last_lvl - 1) % 20) + 1
+			DuelService.setup_bot_duel(ch, lvl_in_ch)
+			DuelService.start_bot_match_timer()
+			GameManager.start_duel_game(last_lvl, randi())
+			return
+		else:
+			GameManager.is_duel_mode = false
+			get_tree().change_scene_to_file("res://scenes/main/main_menu.tscn")
+			return
 	GameManager.start_game(last_lvl)
 
 func _on_map_pressed() -> void:

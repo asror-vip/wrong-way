@@ -196,8 +196,9 @@ func _on_multiplayer_pressed() -> void:
 		duel_lobby_modal.open()
 
 func _on_duel_started(zone_id: int, level_id: int, random_seed: int) -> void:
-	print("MainMenu: 1v1 Duel boshlanmoqda! Zona: ", zone_id, " Daraja: ", level_id, " Seed: ", random_seed)
-	GameManager.start_duel_game(level_id, random_seed)
+	var actual_level := (zone_id - 1) * 20 + level_id
+	print("MainMenu: 1v1 Duel boshlanmoqda! Bob: ", zone_id, " Daraja: ", level_id, " (Asl daraja: ", actual_level, ") Seed: ", random_seed)
+	GameManager.start_duel_game(actual_level, random_seed)
 
 func _on_invitation_received(duel_data: Dictionary, sender_tag: String, sender_name: String) -> void:
 	pending_invite_duel_id = str(duel_data.get("id", ""))

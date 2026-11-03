@@ -93,7 +93,10 @@ func _on_level_started(_level_id: int) -> void:
 
 func _update_texts() -> void:
 	if level_label:
-		level_label.text = LocaleManager.t("level_header", [GameManager.current_level_id])
+		if GameManager.is_duel_mode:
+			level_label.text = "⚔️ DUEL · %d" % GameManager.current_level_id
+		else:
+			level_label.text = LocaleManager.t("level_header", [GameManager.current_level_id])
 	_update_deaths_display()
 
 func _on_player_died(deaths_count: int) -> void:

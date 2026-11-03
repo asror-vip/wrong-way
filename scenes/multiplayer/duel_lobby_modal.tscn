@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://c6v2n8m7q9k4l"]
+[gd_scene load_steps=9 format=3 uid="uid://c6v2n8m7q9k4l"]
 
 [ext_resource type="Script" path="res://scripts/multiplayer/duel_lobby_modal.gd" id="1_lobby"]
 [ext_resource type="StyleBox" path="res://resources/themes/panel_obsidian_modal.tres" id="2_obsidian"]
@@ -17,10 +17,10 @@ corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
-content_margin_left = 16.0
-content_margin_top = 10.0
-content_margin_right = 16.0
-content_margin_bottom = 10.0
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_incoming"]
 bg_color = Color(0.12, 0.16, 0.24, 0.95)
@@ -29,16 +29,48 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 border_color = Color(0.22, 0.74, 0.97, 0.8)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 16.0
+content_margin_top = 8.0
+content_margin_right = 16.0
+content_margin_bottom = 8.0
+shadow_color = Color(0.22, 0.74, 0.97, 0.25)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_level_panel"]
+bg_color = Color(0.06, 0.08, 0.13, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.32, 0.48, 0.6)
 corner_radius_top_left = 14
 corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
-content_margin_left = 16.0
+content_margin_left = 14.0
 content_margin_top = 10.0
-content_margin_right = 16.0
+content_margin_right = 14.0
 content_margin_bottom = 10.0
-shadow_color = Color(0.22, 0.74, 0.97, 0.25)
-shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_selected_card"]
+bg_color = Color(0.09, 0.13, 0.2, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.22, 0.74, 0.97, 0.65)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
 
 [node name="DuelLobbyModal" type="Control"]
 layout_mode = 3
@@ -67,7 +99,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="Panel" parent="Center"]
-custom_minimum_size = Vector2(620, 480)
+custom_minimum_size = Vector2(760, 500)
 layout_mode = 2
 theme_override_styles/panel = ExtResource("2_obsidian")
 
@@ -75,8 +107,8 @@ theme_override_styles/panel = ExtResource("2_obsidian")
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 16.0
-offset_bottom = 42.0
+offset_top = 14.0
+offset_bottom = 38.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
 theme_override_colors/font_shadow_color = Color(0.22, 0.74, 0.97, 0.4)
@@ -86,15 +118,15 @@ text = "< ◇ — 1v1 DUEL MULTIPLAYER — ◇ >"
 horizontal_alignment = 1
 
 [node name="CloseBtn" type="Button" parent="Center/Panel"]
-custom_minimum_size = Vector2(36, 36)
+custom_minimum_size = Vector2(34, 34)
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -48.0
-offset_top = 12.0
+offset_left = -46.0
+offset_top = 10.0
 offset_right = -12.0
-offset_bottom = 48.0
+offset_bottom = 44.0
 grow_horizontal = 0
 focus_mode = 0
 text = "✕"
@@ -103,8 +135,8 @@ text = "✕"
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 44.0
-offset_bottom = 68.0
+offset_top = 40.0
+offset_bottom = 64.0
 grow_horizontal = 2
 theme_override_constants/separation = 10
 alignment = 1
@@ -127,13 +159,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 28.0
-offset_top = 76.0
-offset_right = -28.0
-offset_bottom = -20.0
+offset_left = 22.0
+offset_top = 68.0
+offset_right = -22.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 10
 
 [node name="SearchBox" type="VBoxContainer" parent="Center/Panel/VBox"]
 layout_mode = 2
@@ -145,30 +177,41 @@ theme_override_constants/separation = 10
 alignment = 1
 
 [node name="TagInput" type="LineEdit" parent="Center/Panel/VBox/SearchBox/DirectInviteHBox"]
-custom_minimum_size = Vector2(360, 40)
+custom_minimum_size = Vector2(400, 38)
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-placeholder_text = "Do'stingiz ID si yoki o'yinchi qidirish"
+theme_override_font_sizes/font_size = 13
+placeholder_text = "Do'stingiz ID si (masalan WW-1234)"
 alignment = 1
 max_length = 20
 
 [node name="InviteBtn" type="Button" parent="Center/Panel/VBox/SearchBox/DirectInviteHBox"]
-custom_minimum_size = Vector2(140, 40)
+custom_minimum_size = Vector2(160, 38)
 layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(0.08, 0.1, 0.15, 1)
 text = "Duelga chaqirish"
 
-[node name="RandomBtn" type="Button" parent="Center/Panel/VBox/SearchBox"]
-custom_minimum_size = Vector2(300, 38)
+[node name="ActionRowHBox" type="HBoxContainer" parent="Center/Panel/VBox/SearchBox"]
 layout_mode = 2
-size_flags_horizontal = 4
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="RandomBtn" type="Button" parent="Center/Panel/VBox/SearchBox/ActionRowHBox"]
+custom_minimum_size = Vector2(270, 36)
+layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(0.92, 0.95, 1, 1)
 text = "Tasodifiy Raqib Qidirish"
 
+[node name="PracticeBotBtn" type="Button" parent="Center/Panel/VBox/SearchBox/ActionRowHBox"]
+custom_minimum_size = Vector2(270, 36)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.92, 0.95, 1, 1)
+text = "Mashg'ulot (AI Ghost)"
+
 [node name="StatusLabel" type="Label" parent="Center/Panel/VBox/SearchBox"]
-custom_minimum_size = Vector2(0, 20)
+custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.38, 0.74, 0.97, 1)
 theme_override_font_sizes/font_size = 12
@@ -199,7 +242,7 @@ theme_override_font_sizes/font_size = 11
 text = "Yangilash"
 
 [node name="FriendsScroll" type="ScrollContainer" parent="Center/Panel/VBox/SearchBox"]
-custom_minimum_size = Vector2(0, 150)
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 horizontal_scroll_mode = 0
 
@@ -211,15 +254,15 @@ theme_override_constants/separation = 6
 [node name="LobbyBox" type="VBoxContainer" parent="Center/Panel/VBox"]
 visible = false
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 10
 
 [node name="PlayersHBox" type="HBoxContainer" parent="Center/Panel/VBox/LobbyBox"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 16
 alignment = 1
 
 [node name="PlayerACard" type="PanelContainer" parent="Center/Panel/VBox/LobbyBox/PlayersHBox"]
-custom_minimum_size = Vector2(210, 70)
+custom_minimum_size = Vector2(230, 56)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
@@ -230,7 +273,7 @@ alignment = 1
 [node name="NameLabel" type="Label" parent="Center/Panel/VBox/LobbyBox/PlayersHBox/PlayerACard/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 13
 text = "Siz"
 horizontal_alignment = 1
 
@@ -243,13 +286,13 @@ horizontal_alignment = 1
 
 [node name="VsLabel" type="Label" parent="Center/Panel/VBox/LobbyBox/PlayersHBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.3, 0.3, 1)
+theme_override_colors/font_color = Color(0.95, 0.35, 0.35, 1)
 theme_override_font_sizes/font_size = 20
 text = "VS"
 horizontal_alignment = 1
 
 [node name="PlayerBCard" type="PanelContainer" parent="Center/Panel/VBox/LobbyBox/PlayersHBox"]
-custom_minimum_size = Vector2(210, 70)
+custom_minimum_size = Vector2(230, 56)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_card")
 
@@ -260,7 +303,7 @@ alignment = 1
 [node name="NameLabel" type="Label" parent="Center/Panel/VBox/LobbyBox/PlayersHBox/PlayerBCard/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 13
 text = "Raqib"
 horizontal_alignment = 1
 
@@ -273,40 +316,99 @@ horizontal_alignment = 1
 
 [node name="NegotiationPanel" type="PanelContainer" parent="Center/Panel/VBox/LobbyBox"]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+theme_override_styles/panel = SubResource("StyleBoxFlat_level_panel")
 
 [node name="VBox" type="VBoxContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Label" type="Label" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox"]
+[node name="ChapterTabsHBox" type="HBoxContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 0.9)
-theme_override_font_sizes/font_size = 12
-text = "O'zaro kelishuv: Qaysi zona va darajada o'ynashni taklif qilasiz?"
-horizontal_alignment = 1
+theme_override_constants/separation = 8
+alignment = 1
 
-[node name="SelectHBox" type="HBoxContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox"]
+[node name="BtnCh1" type="Button" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/ChapterTabsHBox"]
+custom_minimum_size = Vector2(195, 32)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 12
+text = "🌲 1-Bob (1-20)"
+
+[node name="BtnCh2" type="Button" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/ChapterTabsHBox"]
+custom_minimum_size = Vector2(195, 32)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 12
+text = "❄️ 2-Bob (21-40)"
+
+[node name="BtnCh3" type="Button" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/ChapterTabsHBox"]
+custom_minimum_size = Vector2(195, 32)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 12
+text = "🔥 3-Bob (41-60)"
+
+[node name="LevelGridCenter" type="CenterContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox"]
+layout_mode = 2
+
+[node name="LevelGrid" type="GridContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/LevelGridCenter"]
+layout_mode = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 10
+
+[node name="SelectedLevelCard" type="PanelContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_selected_card")
+
+[node name="HBox" type="HBoxContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/SelectedLevelCard"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SelectedBadge" type="Label" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/SelectedLevelCard/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.74, 0.97, 1)
+theme_override_font_sizes/font_size = 12
+text = "1-BOB · DARAJA 1"
+
+[node name="SelectedTitle" type="Label" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/SelectedLevelCard/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.95, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "Nomi: Birinchi tuzoq"
+
+[node name="SelectedGimmick" type="Label" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/SelectedLevelCard/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.73, 0.2, 1)
+theme_override_font_sizes/font_size = 11
+text = "⚡ 1v1 Sprint"
+
+[node name="ActionsHBox" type="HBoxContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="ZoneSelect" type="OptionButton" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/SelectHBox"]
-custom_minimum_size = Vector2(170, 34)
-layout_mode = 2
-focus_mode = 0
-
-[node name="LevelSelect" type="OptionButton" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/SelectHBox"]
-custom_minimum_size = Vector2(120, 34)
-layout_mode = 2
-focus_mode = 0
-
-[node name="ProposeBtn" type="Button" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/SelectHBox"]
-custom_minimum_size = Vector2(120, 34)
+[node name="ProposeBtn" type="Button" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/ActionsHBox"]
+custom_minimum_size = Vector2(190, 34)
 layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(0.08, 0.1, 0.15, 1)
-text = "Taklif qilish"
+text = "Raqibga Taklif Qilish"
+
+[node name="PlayBotBtn" type="Button" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/ActionsHBox"]
+custom_minimum_size = Vector2(210, 34)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.92, 0.95, 1, 1)
+text = "AI Ghost Bilan O'ynash"
+
+[node name="LeaveLobbyBtn" type="Button" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/ActionsHBox"]
+custom_minimum_size = Vector2(110, 34)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.85, 0.9, 1, 1)
+text = "Tark etish"
 
 [node name="IncomingProposalBox" type="PanelContainer" parent="Center/Panel/VBox/LobbyBox"]
 visible = false
@@ -326,14 +428,14 @@ theme_override_font_sizes/font_size = 13
 text = "Raqib taklifi: 1-Bob · 5-Daraja"
 
 [node name="RejectBtn" type="Button" parent="Center/Panel/VBox/LobbyBox/IncomingProposalBox/HBox"]
-custom_minimum_size = Vector2(90, 34)
+custom_minimum_size = Vector2(90, 32)
 layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
 text = "Rad etish"
 
 [node name="AcceptBtn" type="Button" parent="Center/Panel/VBox/LobbyBox/IncomingProposalBox/HBox"]
-custom_minimum_size = Vector2(100, 34)
+custom_minimum_size = Vector2(100, 32)
 layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(0.08, 0.1, 0.15, 1)

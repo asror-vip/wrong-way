@@ -29,6 +29,12 @@ var last_status: String = ""
 var is_opponent_disconnected: bool = false
 var disconnect_countdown: float = 10.0
 
+# AI Ghost / Practice Bot Duel tizimi
+var is_bot_duel: bool = false
+var bot_target_time_ms: float = 0.0
+var bot_timer_active: bool = false
+var bot_elapsed_time: float = 0.0
+
 func _ready() -> void:
 	# Bosh menyuda turganida ham kelayotgan takliflarni tekshirish uchun fon taymeri
 	var bg_timer := Timer.new()
@@ -38,13 +44,19 @@ func _ready() -> void:
 	add_child(bg_timer)
 
 func _process(delta: float) -> void:
-	if is_polling and not active_duel_id.is_empty():
+	if is_bot_duel and bot_timer_active and GameManager.is_duel_mode and GameManager.is_level_running:
+		bot_elapsed_time += delta * 1000.0
+		if bot_elapsed_time >= bot_target_time_ms:
+			bot_timer_active = false
+			match_finished.emit(false, "bot_ghost")
+
+	if is_polling and not active_duel_id.is_empty() and not is_bot_duel:
 		poll_timer += delta
 		if poll_timer >= POLL_INTERVAL:
 			poll_timer = 0.0
 			_poll_active_duel()
 			
-	if is_opponent_disconnected and not active_duel_id.is_empty():
+	if is_opponent_disconnected and not active_duel_id.is_empty() and not is_bot_duel:
 		disconnect_countdown -= delta
 		opponent_disconnected_alert.emit(int(ceil(disconnect_countdown)))
 		if disconnect_countdown <= 0.0:
@@ -275,7 +287,42 @@ func respond_proposal(proposal_id: int, accept: bool, on_result: Callable = Call
 	})
 	http.request(url, _get_headers(), HTTPClient.METHOD_POST, payload)
 
+# ========================================================
+# 2.B AI GHOST / PRACTICE BOT DUEL
+# ========================================================
+func setup_bot_duel(zone_id: int, level_id: int) -> void:
+	is_bot_duel = true
+	bot_timer_active = false
+	bot_elapsed_time = 0.0
+	var actual_lvl: int = (zone_id - 1) * 20 + level_id
+	
+	# Har bir daraja uchun raqobatbardosh, lekin yutsa bo'ladigan bot vaqti
+	var base_sec: float = 11.5 + (float(actual_lvl) * 0.22)
+	var bot_sec: float = base_sec + randf_range(-0.8, 1.8)
+	bot_target_time_ms = bot_sec * 1000.0
+	
+	active_duel = {
+		"id": "bot_session_local",
+		"player_a_id": ProfileManager.player_id,
+		"player_b_id": "bot_ghost",
+		"selected_zone_id": zone_id,
+		"selected_level_id": level_id,
+		"random_seed": randi() % 999999,
+		"duel_status": "LOBBY"
+	}
+	active_duel_id = "bot_session_local"
+	is_polling = false
+	duel_updated.emit(active_duel)
+
+func start_bot_match_timer() -> void:
+	if is_bot_duel:
+		bot_timer_active = true
+		bot_elapsed_time = 0.0
+
 func start_match() -> void:
+	if is_bot_duel:
+		start_bot_match_timer()
+		return
 	if active_duel_id.is_empty():
 		return
 	var http := HTTPRequest.new()
@@ -289,6 +336,13 @@ func start_match() -> void:
 # 3. ATOMIK G'OLIBLIKNI ANIQLASH (CLAIM FINISH)
 # ========================================================
 func claim_finish(completion_ms: float, deaths: int, on_result: Callable = Callable()) -> void:
+	if is_bot_duel:
+		bot_timer_active = false
+		var won: bool = (completion_ms <= bot_target_time_ms)
+		match_finished.emit(won, ProfileManager.player_id if won else "bot_ghost")
+		if on_result.is_valid():
+			on_result.call({"success": true, "result": "VICTORY" if won else "DEFEAT"})
+		return
 	if active_duel_id.is_empty():
 		return
 	var my_id := ProfileManager.player_id
@@ -345,6 +399,8 @@ func leave_active_duel() -> void:
 	active_duel_id = ""
 	is_polling = false
 	is_opponent_disconnected = false
+	is_bot_duel = false
+	bot_timer_active = false
 
 func _poll_active_duel() -> void:
 	var http := HTTPRequest.new()
@@ -397,6 +453,8 @@ func _process_duel_update(data: Dictionary) -> void:
 		match_finished.emit(is_win, winner)
 
 func get_opponent_id() -> String:
+	if is_bot_duel:
+		return "bot_ghost"
 	var my_id := ProfileManager.player_id
 	var pa: String = str(active_duel.get("player_a_id", ""))
 	var pb: String = str(active_duel.get("player_b_id", ""))
