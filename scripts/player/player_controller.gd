@@ -6,6 +6,9 @@ signal respawned
 signal entered_exit
 
 const SPEED: float = 320.0
+const DASH_SPEED: float = 660.0
+const DASH_DURATION: float = 0.16
+const DASH_COOLDOWN: float = 0.40
 const JUMP_VELOCITY: float = -560.0
 const GRAVITY: float = 1450.0
 const MAX_SHORT_JUMP_FALL: float = -280.0
@@ -20,12 +23,24 @@ var controls_inverted: bool = false
 var is_invulnerable: bool = false
 var invulnerable_timer: float = 0.0
 
+# Genshin Impact uslubidagi bir martalik Dash (Shift) holati
+var is_dashing: bool = false
+var dash_timer: float = 0.0
+var dash_cooldown_timer: float = 0.0
+var dash_dir: float = 1.0
+var ghost_trail_timer: float = 0.0
+
 @onready var visual: Node2D = $Visual
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
 func _ready() -> void:
 	add_to_group("player")
 	spawn_position = global_position
+	if not InputMap.has_action("dash"):
+		InputMap.add_action("dash")
+		var ev := InputEventKey.new()
+		ev.keycode = KEY_SHIFT
+		InputMap.action_add_event("dash", ev)
 
 func _physics_process(delta: float) -> void:
 	if is_dead or is_entering_door:
@@ -35,6 +50,19 @@ func _physics_process(delta: float) -> void:
 		invulnerable_timer -= delta
 		if invulnerable_timer <= 0.0:
 			is_invulnerable = false
+
+	# Dash taymerlari va sharpali qoldiq (ghost afterimage)
+	if dash_cooldown_timer > 0.0:
+		dash_cooldown_timer -= delta
+
+	if is_dashing:
+		dash_timer -= delta
+		ghost_trail_timer -= delta
+		if ghost_trail_timer <= 0.0:
+			ghost_trail_timer = 0.038
+			_spawn_dash_ghost()
+		if dash_timer <= 0.0:
+			is_dashing = false
 
 	# Coyote Time & Jump Buffer
 	if is_on_floor():
@@ -49,7 +77,29 @@ func _physics_process(delta: float) -> void:
 	var move_dir := Input.get_axis("move_left", "move_right")
 	if controls_inverted:
 		move_dir = -move_dir
-	if move_dir != 0:
+
+	# Dash faollashtirish (Faqat bir marta bosilganda - Genshin Impact uslubida)
+	# QAT'IY QOIDA: is_action_just_pressed ishlatiladi, shuning uchun Shift bosib turilsa tez yururmaydi!
+	if Input.is_action_just_pressed("dash") and not is_dashing and dash_cooldown_timer <= 0.0:
+		var target_dir := move_dir
+		if target_dir == 0.0:
+			target_dir = float(facing)
+		dash_dir = target_dir
+		is_dashing = true
+		dash_timer = DASH_DURATION
+		dash_cooldown_timer = DASH_COOLDOWN
+		ghost_trail_timer = 0.0
+		_spawn_dash_ghost()
+		if visual:
+			visual.scale = Vector2(1.38, 0.72)
+		if is_inside_tree():
+			var sm = get_node_or_null("/root/SoundManager")
+			if sm and sm.has_method("play"):
+				sm.play("dash")
+
+	if is_dashing:
+		velocity.x = dash_dir * DASH_SPEED
+	elif move_dir != 0:
 		facing = signi(int(move_dir))
 		velocity.x = move_dir * SPEED
 	else:
@@ -65,9 +115,10 @@ func _physics_process(delta: float) -> void:
 		jump_buffer = 0.0
 		if visual:
 			visual.scale = Vector2(0.75, 1.35)
-		var sm = get_node_or_null("/root/SoundManager")
-		if sm and sm.has_method("play"):
-			sm.play("jump")
+		if is_inside_tree():
+			var sm = get_node_or_null("/root/SoundManager")
+			if sm and sm.has_method("play"):
+				sm.play("jump")
 
 	# Sakrash tugmasi erta qo'yib yuborilganda pastga tortish
 	if Input.is_action_just_released("jump") and velocity.y < MAX_SHORT_JUMP_FALL:
@@ -90,13 +141,17 @@ func kill() -> void:
 	if is_dead or is_entering_door or is_invulnerable:
 		return
 	is_dead = true
+	is_dashing = false
+	dash_timer = 0.0
+	dash_cooldown_timer = 0.0
 	velocity = Vector2.ZERO
-	var sm = get_node_or_null("/root/SoundManager")
-	if sm and sm.has_method("play"):
-		sm.play("die")
-	var gm = get_node_or_null("/root/GameManager")
-	if gm and gm.has_method("record_death"):
-		gm.record_death()
+	if is_inside_tree():
+		var sm = get_node_or_null("/root/SoundManager")
+		if sm and sm.has_method("play"):
+			sm.play("die")
+		var gm = get_node_or_null("/root/GameManager")
+		if gm and gm.has_method("record_death"):
+			gm.record_death()
 	died.emit()
 	
 	visible = false
@@ -119,6 +174,9 @@ func respawn(at_position: Vector2 = spawn_position) -> void:
 	global_position = at_position
 	velocity = Vector2.ZERO
 	is_dead = false
+	is_dashing = false
+	dash_timer = 0.0
+	dash_cooldown_timer = 0.0
 	is_entering_door = false
 	controls_inverted = false
 	is_invulnerable = true
@@ -156,3 +214,13 @@ func _spawn_particles() -> void:
 		var p: CPUParticles2D = p_scene.instantiate()
 		p.global_position = global_position - Vector2(0, 16)
 		get_parent().add_child(p)
+
+func _spawn_dash_ghost() -> void:
+	if not is_inside_tree() or not get_parent():
+		return
+	var ghost := Node2D.new()
+	ghost.global_position = global_position
+	if visual:
+		ghost.scale = visual.scale
+	ghost.set_script(load("res://scripts/player/dash_ghost.gd"))
+	get_parent().add_child(ghost)

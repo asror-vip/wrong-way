@@ -47,3 +47,4 @@ levels.forEach(lvl => {
 
 fs.writeFileSync(jsonPath, JSON.stringify(levels, null, 2), 'utf8');
 console.log('Successfully ensured ceilings for all top traps in data/levels.json!');
+

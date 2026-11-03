@@ -12,6 +12,7 @@ extends Control
 
 @onready var left_btn: Button = get_node_or_null("TouchControls/LeftBtn")
 @onready var right_btn: Button = get_node_or_null("TouchControls/RightBtn")
+@onready var dash_btn: Button = get_node_or_null("TouchControls/DashBtn")
 @onready var jump_btn: Button = get_node_or_null("TouchControls/JumpBtn")
 
 var current_deaths: int = 0
@@ -28,20 +29,24 @@ func _ready() -> void:
 	
 	if left_btn: _setup_touch_btn(left_btn, "move_left")
 	if right_btn: _setup_touch_btn(right_btn, "move_right")
+	if dash_btn: _setup_touch_btn(dash_btn, "dash")
 	if jump_btn: _setup_touch_btn(jump_btn, "jump")
 
 func _apply_custom_touch_layout() -> void:
 	var sm = get_node_or_null("/root/SaveManager")
 	var def_left = Vector2(32, 452)
 	var def_right = Vector2(112, 452)
+	var def_dash = Vector2(780, 452)
 	var def_jump = Vector2(860, 448)
 	if sm:
 		if left_btn: left_btn.position = sm.get_touch_pos("left", def_left)
 		if right_btn: right_btn.position = sm.get_touch_pos("right", def_right)
+		if dash_btn: dash_btn.position = sm.get_touch_pos("dash", def_dash)
 		if jump_btn: jump_btn.position = sm.get_touch_pos("jump", def_jump)
 	else:
 		if left_btn: left_btn.position = def_left
 		if right_btn: right_btn.position = def_right
+		if dash_btn: dash_btn.position = def_dash
 		if jump_btn: jump_btn.position = def_jump
 
 func _process(_delta: float) -> void:
@@ -69,6 +74,10 @@ func _setup_icons() -> void:
 		right_btn.icon = IconFactory.get_icon("circle_btn_right", 1.0)
 		right_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		right_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	if dash_btn:
+		dash_btn.icon = IconFactory.get_icon("circle_btn_dash", 1.0)
+		dash_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		dash_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 	if jump_btn:
 		jump_btn.icon = IconFactory.get_icon("circle_btn_jump", 1.0)
 		jump_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER

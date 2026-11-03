@@ -182,6 +182,20 @@ theme_override_styles/pressed = ExtResource("3_focus")
 theme_override_styles/focus = ExtResource("3_focus")
 action_mode = 0
 
+[node name="DashBtn" type="Button" parent="TouchControls"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 0
+offset_left = 780.0
+offset_top = 452.0
+offset_right = 844.0
+offset_bottom = 516.0
+focus_mode = 0
+theme_override_styles/normal = ExtResource("3_focus")
+theme_override_styles/hover = ExtResource("3_focus")
+theme_override_styles/pressed = ExtResource("3_focus")
+theme_override_styles/focus = ExtResource("3_focus")
+action_mode = 0
+
 [node name="JumpBtn" type="Button" parent="TouchControls"]
 custom_minimum_size = Vector2(68, 68)
 layout_mode = 0

@@ -274,6 +274,13 @@ const SVG_ICONS = {
 		<polygon points="34,20 48,39 20,39" fill="#f8fafc"/>
 	</svg>""",
 
+	"circle_btn_dash": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+		<circle cx="32" cy="33.5" r="28" fill="#000000" opacity="0.38"/>
+		<circle cx="32" cy="32" r="28" fill="#0c1018" fill-opacity="0.80" stroke="#36435c" stroke-width="1.8"/>
+		<circle cx="32" cy="32" r="26.5" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.12"/>
+		<path d="M22 22l11 10-11 10m9-20l11 10-11 10" fill="none" stroke="#f8fafc" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+	</svg>""",
+
 	"circle_btn_pause": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="44" height="44">
 		<circle cx="22" cy="23" r="19" fill="#000000" opacity="0.38"/>
 		<circle cx="22" cy="22" r="19" fill="#0c1018" fill-opacity="0.80" stroke="#36435c" stroke-width="1.6"/>

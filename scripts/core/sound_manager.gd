@@ -115,6 +115,7 @@ func set_music_volume_pause(_is_paused: bool) -> void:
 func _create_procedural_sounds() -> void:
 	players["click"] = _create_player(_generate_tone(450.0, 800.0, 0.04, "sine", 0.08))
 	players["jump"] = _create_player(_generate_tone(240.0, 650.0, 0.14, "square", 0.09))
+	players["dash"] = _create_player(_generate_tone(580.0, 220.0, 0.12, "sine", 0.14))
 	players["die"] = _create_player(_generate_tone(360.0, 60.0, 0.28, "sawtooth", 0.16))
 	players["trap"] = _create_player(_generate_tone(440.0, 130.0, 0.15, "triangle", 0.14))
 	players["win"] = _create_player(_generate_win_chord())
@@ -137,6 +138,7 @@ func play(sound_name: String) -> void:
 
 func play_click() -> void: play("click")
 func play_jump() -> void: play("jump")
+func play_dash() -> void: play("dash")
 func play_die() -> void: play("die")
 func play_trap() -> void: play("trap")
 func play_win() -> void: play("win")
