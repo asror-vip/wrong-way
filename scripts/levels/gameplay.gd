@@ -22,6 +22,10 @@ func _ready() -> void:
 			win_overlay.restore_result(sm.pending_result_data)
 		if level_holder:
 			level_holder.process_mode = Node.PROCESS_MODE_DISABLED
+	elif GameManager.is_duel_mode:
+		var hud = get_node_or_null("CanvasLayer/GameHUD")
+		if hud and hud.has_method("start_duel_countdown"):
+			hud.start_duel_countdown()
 
 func _process(delta: float) -> void:
 	if shake_intensity > 0.0:

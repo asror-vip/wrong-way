@@ -154,6 +154,10 @@ func _on_duel_match_finished(is_victory: bool, _winner_id: String) -> void:
 	get_tree().paused = true
 	visible = true
 	
+	if last_time_ms <= 0.0:
+		last_time_ms = float(Time.get_ticks_msec()) - GameManager.level_start_time
+		last_deaths = GameManager.level_deaths
+	
 	if is_victory:
 		if win_title: win_title.text = "VICTORY"
 		if subtitle: subtitle.text = "Siz duelda g'alaba qozondingiz!"
@@ -209,7 +213,7 @@ func _on_next_pressed() -> void:
 	if GameManager.is_duel_mode:
 		GameManager.is_duel_mode = false
 		get_tree().paused = false
-		get_tree().change_scene_to_file("res://scenes/main/main_menu.tscn")
+		get_tree().change_scene_to_file("res://scenes/multiplayer/multiplayer_menu.tscn")
 		return
 	GameManager.start_game(last_lvl + 1)
 
@@ -218,22 +222,27 @@ func _on_replay_pressed() -> void:
 	visible = false
 	if GameManager.is_duel_mode:
 		get_tree().paused = false
+		last_time_ms = 0.0
 		if DuelService.is_bot_duel:
 			var ch: int = 1 if last_lvl <= 20 else (2 if last_lvl <= 40 else 3)
 			var lvl_in_ch: int = ((last_lvl - 1) % 20) + 1
 			DuelService.setup_bot_duel(ch, lvl_in_ch)
-			DuelService.start_bot_match_timer()
 			GameManager.start_duel_game(last_lvl, randi())
 			return
 		else:
 			GameManager.is_duel_mode = false
-			get_tree().change_scene_to_file("res://scenes/main/main_menu.tscn")
+			get_tree().change_scene_to_file("res://scenes/multiplayer/multiplayer_menu.tscn")
 			return
 	GameManager.start_game(last_lvl)
 
 func _on_map_pressed() -> void:
 	SoundManager.play("click")
 	visible = false
+	if GameManager.is_duel_mode:
+		GameManager.is_duel_mode = false
+		get_tree().paused = false
+		get_tree().change_scene_to_file("res://scenes/multiplayer/multiplayer_menu.tscn")
+		return
 	var sm = get_node_or_null("/root/SaveManager")
 	if sm:
 		sm.navigation_source = "result_modal"
@@ -250,6 +259,11 @@ func _on_map_pressed() -> void:
 func _on_home_pressed() -> void:
 	SoundManager.play("click")
 	visible = false
+	if GameManager.is_duel_mode:
+		GameManager.is_duel_mode = false
+		get_tree().paused = false
+		get_tree().change_scene_to_file("res://scenes/multiplayer/multiplayer_menu.tscn")
+		return
 	var sm = get_node_or_null("/root/SaveManager")
 	if sm:
 		sm.navigation_source = "home_menu"

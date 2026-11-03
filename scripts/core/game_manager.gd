@@ -14,6 +14,7 @@ var level_timer_ms: float = 0.0
 var is_level_running: bool = false
 var is_custom_editor_mode: bool = false
 var is_duel_mode: bool = false
+var is_countdown_active: bool = false
 var duel_random_seed: int = 0
 
 func get_current_chapter() -> int:
@@ -43,6 +44,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func start_game(level_id: int) -> void:
 	is_duel_mode = false
+	is_countdown_active = false
 	get_tree().paused = false
 	current_level_id = level_id
 	level_deaths = 0
@@ -54,6 +56,7 @@ func start_game(level_id: int) -> void:
 
 func start_duel_game(level_id: int, random_seed_num: int = 0) -> void:
 	is_duel_mode = true
+	is_countdown_active = true
 	duel_random_seed = random_seed_num
 	seed(random_seed_num)
 	get_tree().paused = false
@@ -61,7 +64,7 @@ func start_duel_game(level_id: int, random_seed_num: int = 0) -> void:
 	level_deaths = 0
 	level_timer_ms = 0.0
 	level_start_time = Time.get_ticks_msec()
-	is_level_running = true
+	is_level_running = false
 	get_tree().change_scene_to_file("res://scenes/game/gameplay.tscn")
 	level_started.emit(current_level_id)
 

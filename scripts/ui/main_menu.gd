@@ -192,8 +192,7 @@ func _on_profile_pressed() -> void:
 
 func _on_multiplayer_pressed() -> void:
 	SoundManager.play("click")
-	if duel_lobby_modal and duel_lobby_modal.has_method("open"):
-		duel_lobby_modal.open()
+	get_tree().change_scene_to_file("res://scenes/multiplayer/multiplayer_menu.tscn")
 
 func _on_duel_started(zone_id: int, level_id: int, random_seed: int) -> void:
 	var actual_level := (zone_id - 1) * 20 + level_id
@@ -212,8 +211,7 @@ func _on_invite_accepted() -> void:
 	if incoming_invite_card: incoming_invite_card.visible = false
 	if not pending_invite_duel_id.is_empty():
 		DuelService.respond_invitation(pending_invite_duel_id, true)
-		if duel_lobby_modal and duel_lobby_modal.has_method("open"):
-			duel_lobby_modal.open()
+		get_tree().change_scene_to_file("res://scenes/multiplayer/multiplayer_menu.tscn")
 
 func _on_invite_declined() -> void:
 	SoundManager.play("click")

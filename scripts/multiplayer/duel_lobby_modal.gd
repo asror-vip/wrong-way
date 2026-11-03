@@ -128,21 +128,21 @@ func _update_action_buttons() -> void:
 		if propose_btn: propose_btn.visible = false
 		if play_bot_btn:
 			play_bot_btn.visible = true
-			play_bot_btn.text = "🚀 Duelni Boshlash (AI Ghost)"
+			play_bot_btn.text = "Duelni Boshlash (AI Ghost)"
 			_style_button(play_bot_btn, "white")
 		if leave_lobby_btn:
-			leave_lobby_btn.text = "⬅️ Ortga"
+			leave_lobby_btn.text = "Ortga"
 	else:
 		if propose_btn:
 			propose_btn.visible = true
-			propose_btn.text = "⚔️ Raqibga Taklif Qilish"
+			propose_btn.text = "Raqibga Taklif Qilish"
 			_style_button(propose_btn, "white")
 		if play_bot_btn:
 			play_bot_btn.visible = true
-			play_bot_btn.text = "🤖 AI Ghost Bilan O'ynash"
+			play_bot_btn.text = "AI Ghost Bilan O'ynash"
 			_style_button(play_bot_btn, "glass")
 		if leave_lobby_btn:
-			leave_lobby_btn.text = "🚪 Tark etish"
+			leave_lobby_btn.text = "Tark etish"
 
 func _refresh_player_cards() -> void:
 	var d: Dictionary = DuelService.active_duel
@@ -158,7 +158,7 @@ func _refresh_player_cards() -> void:
 		
 	if player_b_name:
 		if DuelService.is_bot_duel or pb_id == "bot_ghost":
-			player_b_name.text = "🤖 AI Ghost Bot"
+			player_b_name.text = "AI Ghost Bot"
 			player_b_tag.text = "Mashg'ulot Raqibi"
 		else:
 			player_b_name.text = "Raqib" if pa_id == my_id else ProfileManager.username
@@ -239,9 +239,9 @@ func _update_selected_level_card() -> void:
 		
 	if selected_gimmick:
 		match selected_chapter:
-			1: selected_gimmick.text = "🌲 Qorong'i O'rmon"
-			2: selected_gimmick.text = "❄️ Qorli Cho'qqilar"
-			3: selected_gimmick.text = "🔥 Do'zax / Kutilmagan Xavflar"
+			1: selected_gimmick.text = "Qorong'i O'rmon"
+			2: selected_gimmick.text = "Qorli Cho'qqilar"
+			3: selected_gimmick.text = "Yashil O'rmon"
 
 func _style_level_button(btn: Button, is_selected: bool) -> void:
 	var normal := StyleBoxFlat.new()

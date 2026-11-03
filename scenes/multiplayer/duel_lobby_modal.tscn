@@ -332,21 +332,21 @@ custom_minimum_size = Vector2(195, 32)
 layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 12
-text = "🌲 1-Bob (1-20)"
+text = "1-Bob (1-20)"
 
 [node name="BtnCh2" type="Button" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/ChapterTabsHBox"]
 custom_minimum_size = Vector2(195, 32)
 layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 12
-text = "❄️ 2-Bob (21-40)"
+text = "2-Bob (21-40)"
 
 [node name="BtnCh3" type="Button" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox/ChapterTabsHBox"]
 custom_minimum_size = Vector2(195, 32)
 layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 12
-text = "🔥 3-Bob (41-60)"
+text = "3-Bob (41-60)"
 
 [node name="LevelGridCenter" type="CenterContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox"]
 layout_mode = 2
@@ -382,7 +382,7 @@ text = "Nomi: Birinchi tuzoq"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.73, 0.2, 1)
 theme_override_font_sizes/font_size = 11
-text = "⚡ 1v1 Sprint"
+text = "1v1 Sprint"
 
 [node name="ActionsHBox" type="HBoxContainer" parent="Center/Panel/VBox/LobbyBox/NegotiationPanel/VBox"]
 layout_mode = 2

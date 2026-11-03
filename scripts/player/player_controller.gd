@@ -43,7 +43,8 @@ func _ready() -> void:
 		InputMap.action_add_event("dash", ev)
 
 func _physics_process(delta: float) -> void:
-	if is_dead or is_entering_door:
+	if is_dead or is_entering_door or GameManager.is_countdown_active:
+		velocity = Vector2.ZERO
 		return
 
 	if invulnerable_timer > 0.0:

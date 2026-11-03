@@ -48,6 +48,7 @@ func _process(delta: float) -> void:
 		bot_elapsed_time += delta * 1000.0
 		if bot_elapsed_time >= bot_target_time_ms:
 			bot_timer_active = false
+			GameManager.is_level_running = false
 			match_finished.emit(false, "bot_ghost")
 
 	if is_polling and not active_duel_id.is_empty() and not is_bot_duel:
@@ -338,6 +339,7 @@ func start_match() -> void:
 func claim_finish(completion_ms: float, deaths: int, on_result: Callable = Callable()) -> void:
 	if is_bot_duel:
 		bot_timer_active = false
+		GameManager.is_level_running = false
 		var won: bool = (completion_ms <= bot_target_time_ms)
 		match_finished.emit(won, ProfileManager.player_id if won else "bot_ghost")
 		if on_result.is_valid():
