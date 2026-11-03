@@ -6,3 +6,4 @@ levels.forEach(lvl => {
     console.log(`Level ${lvl.id} (${lvl.title}): door_pos=${JSON.stringify(lvl.door_pos)}, traps:`, traps.map(t => `${t.name} (x=${t.x}, w=${t.w})`));
   }
 });
+

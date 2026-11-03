@@ -34,3 +34,4 @@ for (let i = 1; i <= 40; i++) {
 
 console.log(`TSCN Ceiling Audit Complete. Total issues found: ${issues.length}`);
 issues.forEach(i => console.log(' - ' + i));
+

@@ -63,3 +63,4 @@ if (l20) {
 
 fs.writeFileSync('data/levels.json', JSON.stringify(levels, null, 2), 'utf8');
 console.log('Successfully updated levels 6, 9, 12, 13, 20 in data/levels.json');
+

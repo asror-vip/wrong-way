@@ -39,3 +39,4 @@ for (const lvl of levels) {
 
 fs.writeFileSync(jsonPath, JSON.stringify(levels, null, 2), 'utf8');
 console.log(`Finished! Updated ${modifiedCount} levels in data/levels.json`);
+

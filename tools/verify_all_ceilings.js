@@ -25,3 +25,4 @@ levels.forEach(lvl => {
 
 console.log(`Ceiling Audit Complete. Total issues found: ${issues.length}`);
 issues.forEach(i => console.log(' - ' + i));
+

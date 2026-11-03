@@ -22,3 +22,4 @@ levels.forEach(lvl => {
 
   console.log(`Level ${lvl.id}: Door at (${doorX}, ${doorY}) | Platform under door: ${underDoor.map(p => `${p.name} [${p.x}..${p.x+p.w}]`).join(', ') || 'NONE!'} | Trap under door: ${trapUnderDoor.map(t => `${t.name} [${t.x}..${t.x+t.w}]`).join(', ') || 'NONE'} | Trap before door: ${trapsNearDoor.map(t => `${t.name} [${t.x}..${t.x+t.w}]`).join(', ') || 'NONE'}`);
 });
+

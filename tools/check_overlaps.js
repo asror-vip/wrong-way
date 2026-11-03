@@ -24,3 +24,4 @@ levels.forEach(lvl => {
 
 console.log(`Total TrapFloor / Platform overlaps: ${overlaps.length}`);
 overlaps.forEach(o => console.log(' - ' + o));
+

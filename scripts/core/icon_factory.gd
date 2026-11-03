@@ -4,7 +4,7 @@ extends Node
 
 # Provides crisp, resolution-independent vector icons without relying on OS emojis.
 
-static var _cache: Dictionary = {}
+var _cache: Dictionary = {}
 
 const SVG_ICONS = {
 	"star_filled": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
@@ -648,7 +648,7 @@ const SVG_ICONS = {
 	</svg>"""
 }
 
-static func get_icon(icon_name: String, scale: float = 1.0) -> Texture2D:
+func get_icon(icon_name: String, scale: float = 1.0) -> Texture2D:
 	var key := "%s_%.1f" % [icon_name, scale]
 	if _cache.has(key):
 		return _cache[key]
@@ -666,7 +666,7 @@ static func get_icon(icon_name: String, scale: float = 1.0) -> Texture2D:
 		return tex
 	return null
 
-static func create_texture_rect(icon_name: String, custom_sz: Vector2 = Vector2(24, 24), scale: float = 1.0) -> TextureRect:
+func create_texture_rect(icon_name: String, custom_sz: Vector2 = Vector2(24, 24), scale: float = 1.0) -> TextureRect:
 	var rect := TextureRect.new()
 	rect.texture = get_icon(icon_name, scale)
 	rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
