@@ -115,8 +115,21 @@ func _update_texts() -> void:
 		btn_global.text = LocaleManager.t("tab_global")
 	if btn_friends:
 		btn_friends.text = LocaleManager.t("tab_friends")
+		
+	var display_name := ProfileManager.username
+	if display_name.is_empty() or display_name.to_lower() == "player":
+		display_name = LocaleManager.t("player_you")
+	else:
+		display_name = "%s (%s)" % [display_name, LocaleManager.t("player_you")]
+		
 	if my_name_label:
-		my_name_label.text = "%s (SIZ)" % LocaleManager.t("player_you")
+		my_name_label.text = display_name
+		
+	if my_avatar_rect:
+		var av_keys := ["avatar_player", "avatar_ninja", "avatar_shadow", "avatar_robot", "avatar_pro"]
+		var av_idx := (ProfileManager.avatar_index - 1) % av_keys.size()
+		if av_idx < 0: av_idx = 0
+		my_avatar_rect.texture = IconFactory.get_icon(av_keys[av_idx], 1.0)
 
 func _set_tab(mode: TabMode) -> void:
 	if current_tab == mode:
@@ -178,9 +191,20 @@ func _refresh_list() -> void:
 	var my_time: int = SaveManager.get_total_beaten_time_sec()
 	var my_deaths: int = SaveManager.get_total_beaten_deaths()
 	
+	var my_display_name := ProfileManager.username
+	if my_display_name.is_empty() or my_display_name.to_lower() == "player":
+		my_display_name = LocaleManager.t("player_you")
+	else:
+		my_display_name = "%s (%s)" % [my_display_name, LocaleManager.t("player_you")]
+		
+	var av_keys := ["avatar_player", "avatar_ninja", "avatar_shadow", "avatar_robot", "avatar_pro"]
+	var av_idx := (ProfileManager.avatar_index - 1) % av_keys.size()
+	if av_idx < 0: av_idx = 0
+	var my_avatar: String = av_keys[av_idx]
+	
 	var my_data := {
-		"name": LocaleManager.t("player_you"),
-		"avatar": "avatar_player",
+		"name": my_display_name,
+		"avatar": my_avatar,
 		"stars": my_stars,
 		"time_sec": my_time,
 		"deaths": my_deaths,

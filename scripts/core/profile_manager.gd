@@ -21,12 +21,14 @@ var username: String = "Player"
 var avatar_index: int = 1
 var auth_provider: String = "guest"
 var email: String = ""
+var has_chosen_auth: bool = false
 var is_ready_online: bool = false
 var saved_friends: Array = []
 
 var http_guest: HTTPRequest
 var http_google: HTTPRequest
 var http_update: HTTPRequest
+var http_cloud: HTTPRequest
 
 var id_overlay: CanvasLayer
 var id_corner_lbl: Label
@@ -34,18 +36,27 @@ var id_corner_lbl: Label
 func _ready() -> void:
 	http_guest = HTTPRequest.new()
 	http_guest.name = "ProfileGuestHTTP"
+	http_guest.timeout = 6.0
 	add_child(http_guest)
 	http_guest.request_completed.connect(_on_guest_completed)
 	
 	http_google = HTTPRequest.new()
 	http_google.name = "ProfileGoogleHTTP"
+	http_google.timeout = 6.0
 	add_child(http_google)
 	http_google.request_completed.connect(_on_google_completed)
 	
 	http_update = HTTPRequest.new()
 	http_update.name = "ProfileUpdateHTTP"
+	http_update.timeout = 6.0
 	add_child(http_update)
 	http_update.request_completed.connect(_on_update_completed)
+
+	http_cloud = HTTPRequest.new()
+	http_cloud.name = "ProfileCloudHTTP"
+	http_cloud.timeout = 6.0
+	add_child(http_cloud)
+	http_cloud.request_completed.connect(_on_cloud_completed)
 
 	_load_or_create_device_id()
 	_load_local_profile()
@@ -132,6 +143,19 @@ func _apply_profile_dict(data: Dictionary) -> void:
 		
 	if data.has("auth_provider"): auth_provider = str(data["auth_provider"])
 	
+	if data.has("has_chosen_auth"):
+		has_chosen_auth = bool(data["has_chosen_auth"])
+	elif auth_provider == "google" and not email.is_empty():
+		has_chosen_auth = true
+	elif not player_id.is_empty() and username != "Player":
+		has_chosen_auth = true
+
+	# Bulutdan kelgan yutuqlarni lokal saqlash tizimi bilan birlashtirish
+	if data.has("save_data") and data["save_data"] is Dictionary:
+		var save_sys = get_node_or_null("/root/SaveManager")
+		if save_sys and save_sys.has_method("merge_cloud_save"):
+			save_sys.merge_cloud_save(data["save_data"])
+	
 	_update_corner_id_text()
 	profile_loaded.emit(get_profile_dict())
 
@@ -144,7 +168,8 @@ func get_profile_dict() -> Dictionary:
 		"avatar_index": avatar_index,
 		"avatar_url": "av_" + str(avatar_index),
 		"auth_provider": auth_provider,
-		"device_id": device_id
+		"device_id": device_id,
+		"has_chosen_auth": has_chosen_auth
 	}
 
 # -------------------------------------------------------------
@@ -176,10 +201,11 @@ func _on_guest_completed(_result: int, response_code: int, _headers: PackedStrin
 		var parsed = JSON.parse_string(txt)
 		if parsed is Dictionary and parsed.has("id"):
 			_apply_profile_dict(parsed)
-			_save_local_cache(parsed)
+			_save_local_cache(get_profile_dict())
 			is_ready_online = true
 			print("ProfileManager: Mehmon sifatida ulandi: ", username, " (", player_tag, ")")
 			profile_updated.emit(get_profile_dict())
+			sync_save_to_cloud()
 	else:
 		print("ProfileManager: Mehmon oflayn rejimda (HTTP %d)" % response_code)
 
@@ -201,6 +227,7 @@ func login_with_google(google_email: String, display_name: String = "") -> void:
 	username = clean_name
 	email = clean_email
 	auth_provider = "google"
+	has_chosen_auth = true
 	_save_local_cache(get_profile_dict())
 	profile_updated.emit(get_profile_dict())
 	
@@ -229,10 +256,19 @@ func _on_google_completed(_result: int, response_code: int, _headers: PackedStri
 	if response_code == 200:
 		var parsed = JSON.parse_string(txt)
 		if parsed is Dictionary and parsed.has("id"):
+			has_chosen_auth = true
 			_apply_profile_dict(parsed)
-			_save_local_cache(parsed)
+			_save_local_cache(get_profile_dict())
 			is_ready_online = true
 			print("ProfileManager: Google hisobi muvaffaqiyatli ulandi! Name: ", username, " Email: ", email, " Tag: ", player_tag)
+			
+			# Bulutli saqlash sinxronlash
+			if parsed.has("save_data") and parsed["save_data"] is Dictionary:
+				var save_sys = get_node_or_null("/root/SaveManager")
+				if save_sys and save_sys.has_method("merge_cloud_save"):
+					save_sys.merge_cloud_save(parsed["save_data"])
+			sync_save_to_cloud()
+			
 			profile_updated.emit(get_profile_dict())
 			google_login_finished.emit(true, "")
 			return
@@ -245,9 +281,52 @@ func logout_to_guest() -> void:
 	email = ""
 	username = "Player"
 	avatar_index = 1
+	has_chosen_auth = false
 	_save_local_cache(get_profile_dict())
 	profile_updated.emit(get_profile_dict())
 	sync_with_supabase()
+
+func save_profile() -> void:
+	_save_local_cache(get_profile_dict())
+	profile_updated.emit(get_profile_dict())
+
+# -------------------------------------------------------------
+# Bulutli Yutuqlar Sinxronizatsiyasi (Cloud Save)
+# -------------------------------------------------------------
+func sync_save_to_cloud() -> void:
+	if not is_ready_online or player_id.is_empty():
+		return
+	if not http_cloud:
+		return
+	if http_cloud.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+		return
+		
+	var save_sys = get_node_or_null("/root/SaveManager")
+	if not save_sys or not save_sys.has_method("get_save_payload"):
+		return
+		
+	var payload_dict: Dictionary = save_sys.get_save_payload()
+	var total_stars: int = save_sys.get_total_stars()
+	var highest_lvl: int = save_sys.get_highest_unlocked_level()
+	
+	var url: String = Env.get_supabase_url() + "/rest/v1/rpc/sync_cloud_save"
+	var anon_key: String = Env.get_supabase_anon_key()
+	var headers := [
+		"apikey: " + anon_key,
+		"Authorization: Bearer " + anon_key,
+		"Content-Type: application/json"
+	]
+	var body := JSON.stringify({
+		"p_player_id": player_id,
+		"p_save_data": payload_dict,
+		"p_total_stars": total_stars,
+		"p_highest_level": highest_lvl
+	})
+	http_cloud.request(url, headers, HTTPClient.METHOD_POST, body)
+
+func _on_cloud_completed(_result: int, response_code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
+	if response_code in [200, 204]:
+		print("ProfileManager: Yutuqlar bulutga muvaffaqiyatli saqlandi!")
 
 func get_known_google_accounts() -> Array:
 	var accounts: Array = []

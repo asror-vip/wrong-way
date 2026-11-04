@@ -141,7 +141,81 @@ func record_result(lvl: int, time_ms: float, deaths: int) -> int:
 			unlocked_levels.append(next_lvl)
 
 	save_data()
+	
+	var pm = get_node_or_null("/root/ProfileManager")
+	if pm and pm.has_method("sync_save_to_cloud"):
+		pm.sync_save_to_cloud()
+		
 	return stars
+
+func get_save_payload() -> Dictionary:
+	return {
+		"unlocked_levels": unlocked_levels,
+		"level_stars": level_stars,
+		"level_best_times": level_best_times,
+		"level_best_deaths": level_best_deaths,
+		"overall_best_ms": overall_best_ms,
+		"overall_best_text": overall_best_text,
+		"ad_unlocked_levels": ad_unlocked_levels,
+		"total_stars": get_total_stars(),
+		"highest_level": get_highest_unlocked_level()
+	}
+
+func merge_cloud_save(cloud_data: Dictionary) -> void:
+	if not cloud_data is Dictionary or cloud_data.is_empty():
+		return
+		
+	var changed := false
+	
+	# 1. Unlocked levels
+	if cloud_data.has("unlocked_levels"):
+		var c_unlocked = cloud_data["unlocked_levels"]
+		if c_unlocked is Array:
+			for lvl in c_unlocked:
+				var ilvl := int(lvl)
+				if ilvl >= 1 and not unlocked_levels.has(ilvl):
+					unlocked_levels.append(ilvl)
+					changed = true
+					
+	# 2. Level stars
+	if cloud_data.has("level_stars"):
+		var c_stars = cloud_data["level_stars"]
+		if c_stars is Dictionary:
+			for k in c_stars.keys():
+				var str_k := str(k)
+				var c_s := int(c_stars[k])
+				var l_s := int(level_stars.get(str_k, 0))
+				if c_s > l_s:
+					level_stars[str_k] = c_s
+					changed = true
+					
+	# 3. Best times
+	if cloud_data.has("level_best_times"):
+		var c_times = cloud_data["level_best_times"]
+		if c_times is Dictionary:
+			for k in c_times.keys():
+				var str_k := str(k)
+				var c_t := float(c_times[k])
+				var l_t := float(level_best_times.get(str_k, 999999999.0))
+				if c_t < l_t:
+					level_best_times[str_k] = c_t
+					changed = true
+					
+	# 4. Overall best
+	if cloud_data.has("overall_best_ms"):
+		var c_ob := float(cloud_data["overall_best_ms"])
+		if c_ob < overall_best_ms:
+			overall_best_ms = c_ob
+			if cloud_data.has("overall_best_text"):
+				overall_best_text = str(cloud_data["overall_best_text"])
+			changed = true
+			
+	if not unlocked_levels.has(1):
+		unlocked_levels.push_front(1)
+		
+	if changed:
+		save_data()
+		print("SaveManager: Bulutli saqlangan o'yin muvaffaqiyatli sinxronlandi!")
 
 func record_level_result(lvl: int, time_ms: float, deaths: int) -> int:
 	return record_result(lvl, time_ms, deaths)

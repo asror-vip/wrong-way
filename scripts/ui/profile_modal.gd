@@ -57,6 +57,8 @@ func _ready() -> void:
 	
 	_apply_modal_styles()
 	_setup_avatar_buttons()
+	if name_input:
+		name_input.max_length = 14
 
 func open() -> void:
 	visible = true
@@ -321,6 +323,12 @@ func _on_save_pressed() -> void:
 	if new_name.is_empty():
 		_show_toast("Ism bo'sh bo'lishi mumkin emas!")
 		return
+	if new_name.length() > 14:
+		_show_toast("Ism 14 ta belgidan oshmasligi kerak!")
+		return
+		
+	if save_btn:
+		save_btn.disabled = true
 		
 	ProfileManager.update_profile(new_name, selected_avatar_idx)
 	_show_toast("Profil muvaffaqiyatli saqlandi!")
@@ -330,6 +338,8 @@ func _on_save_pressed() -> void:
 		sm.play("click")
 		
 	await get_tree().create_timer(0.55).timeout
+	if save_btn:
+		save_btn.disabled = false
 	close()
 
 func _show_toast(msg: String) -> void:

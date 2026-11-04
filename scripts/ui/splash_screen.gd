@@ -4,7 +4,9 @@ extends Control
 # - Atmospheric Ken Burns background camera drift
 # - Volumetric vignette & glow-pulsing logo
 # - Animated loading progress bar with cycling hints
-# - On 100% load: displays Google & Guest sign-in options directly on screen
+# - On 100% load:
+#     * Returning/Authenticated player: Prominent "BOSHLASH" (START) prompt with player greeting
+#     * New/First-time player: Clear Google & Guest choice
 # - Seamless crossfade into Main Menu
 
 @onready var bg_texture: TextureRect = $Background
@@ -15,19 +17,24 @@ extends Control
 @onready var status_label: Label = $BottomBox/StatusLabel
 @onready var version_label: Label = $BottomBox/VersionLabel
 
-@onready var auth_box: VBoxContainer = $AuthBox
-@onready var auth_title: Label = $AuthBox/AuthTitle
-@onready var google_btn: Button = $AuthBox/GoogleBtn
-@onready var guest_btn: Button = $AuthBox/GuestBtn
-@onready var auth_hint: Label = $AuthBox/AuthHint
-@onready var auth_modal: Control = $AuthModal
+@onready var auth_box: VBoxContainer = get_node_or_null("AuthBox")
+@onready var auth_title: Label = get_node_or_null("AuthBox/AuthTitle")
+@onready var google_btn: Button = get_node_or_null("AuthBox/GoogleBtn")
+@onready var guest_btn: Button = get_node_or_null("AuthBox/GuestBtn")
+@onready var auth_hint: Label = get_node_or_null("AuthBox/AuthHint")
 
+@onready var start_box: VBoxContainer = get_node_or_null("StartBox")
+@onready var greeting_label: Label = get_node_or_null("StartBox/GreetingLabel")
+@onready var start_btn: Button = get_node_or_null("StartBox/StartBtn")
+@onready var switch_account_btn: Button = get_node_or_null("StartBox/SwitchAccountBtn")
+
+@onready var auth_modal: Control = get_node_or_null("AuthModal")
 @onready var curtain: ColorRect = $Curtain
 
 var load_progress: float = 0.0
 var target_progress: float = 0.0
 var is_transitioning: bool = false
-var has_logged_in_google: bool = false
+var pulse_tween: Tween
 
 const HINTS := [
 	"Sozlamalar va saqlangan o'yinlar tekshirilmoqda...",
@@ -50,12 +57,23 @@ func _ready() -> void:
 		auth_box.visible = false
 		auth_box.modulate.a = 0.0
 
-	_setup_auth_buttons()
+	if start_box:
+		start_box.visible = false
+		start_box.modulate.a = 0.0
+
+	_setup_buttons()
 	_update_hint(0)
 	_start_background_drift()
 	_run_loading_flow()
 
-func _setup_auth_buttons() -> void:
+func _unhandled_input(event: InputEvent) -> void:
+	if start_box and start_box.visible and not is_transitioning:
+		if event is InputEventKey and event.pressed and not event.echo:
+			if event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
+				_on_start_pressed()
+				get_viewport().set_input_as_handled()
+
+func _setup_buttons() -> void:
 	if google_btn:
 		google_btn.icon = IconFactory.get_icon("google", 1.0)
 		google_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -65,6 +83,14 @@ func _setup_auth_buttons() -> void:
 		guest_btn.icon = IconFactory.get_icon("guest_user", 1.0)
 		guest_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		guest_btn.pressed.connect(_on_guest_pressed)
+
+	if start_btn:
+		start_btn.icon = IconFactory.get_icon("play_dark", 1.0)
+		start_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		start_btn.pressed.connect(_on_start_pressed)
+
+	if switch_account_btn:
+		switch_account_btn.pressed.connect(_on_switch_account_pressed)
 
 	if auth_modal:
 		auth_modal.auth_completed.connect(_on_auth_completed)
@@ -117,25 +143,26 @@ func _process(delta: float) -> void:
 			progress_bar.value = load_progress
 
 func _show_auth_selection() -> void:
-	# Loading barni silliq yashirib, AuthBox ni ko'rsatamiz
+	# Loading barni silliq yashiramiz
 	var tween := create_tween()
 	if bottom_box:
 		tween.tween_property(bottom_box, "modulate:a", 0.0, 0.25)
 		tween.tween_callback(func(): bottom_box.visible = false)
 
-	# Foydalanuvchida avvaldan Google hisobi ulanganmi?
-	has_logged_in_google = (ProfileManager.auth_provider == "google" and not ProfileManager.email.is_empty())
-	
-	if has_logged_in_google:
-		if auth_title:
-			auth_title.text = "Xush kelibsiz, " + ProfileManager.username + "!"
-		if google_btn:
-			google_btn.text = "   " + ProfileManager.email + " bilan kirish"
-		if guest_btn:
-			guest_btn.text = "   Boshqa hisob tanlash"
-		if auth_hint:
-			auth_hint.text = "Profil yutuqlaringiz bulut bilan sinxronlangan"
+	# Foydalanuvchi allaqachon hisob tanlaganmi / tizimga kirganmi?
+	var is_established: bool = ProfileManager.has_chosen_auth or (ProfileManager.auth_provider == "google" and not ProfileManager.email.is_empty()) or (not ProfileManager.player_id.is_empty() and ProfileManager.username != "Player")
+
+	if is_established:
+		# Avvaldan kirgan o'yinchiga qayta Google/Guest chiqmaydi, uning o'rniga "BOSHLASH" chiqadi!
+		if greeting_label:
+			greeting_label.text = "Xush kelibsiz, " + ProfileManager.username + "!"
+		if start_box:
+			start_box.visible = true
+			start_box.modulate.a = 0.0
+			tween.tween_property(start_box, "modulate:a", 1.0, 0.3)
+			_pulse_start_button(start_btn)
 	else:
+		# Birinchi marta yangi o'yinchiga kirish usuli taklif etiladi
 		if auth_title:
 			auth_title.text = "O'yinga kirish usulini tanlang:"
 		if google_btn:
@@ -145,33 +172,49 @@ func _show_auth_selection() -> void:
 		if auth_hint:
 			auth_hint.text = "Hisob bilan yutuqlaringiz bulutda saqlanadi"
 
-	if auth_box:
-		auth_box.visible = true
-		auth_box.modulate.a = 0.0
-		tween.tween_property(auth_box, "modulate:a", 1.0, 0.3)
+		if auth_box:
+			auth_box.visible = true
+			auth_box.modulate.a = 0.0
+			tween.tween_property(auth_box, "modulate:a", 1.0, 0.3)
+
+func _pulse_start_button(btn: Button) -> void:
+	if not btn:
+		return
+	if pulse_tween and pulse_tween.is_valid():
+		pulse_tween.kill()
+	btn.pivot_offset = btn.size / 2.0
+	pulse_tween = create_tween().set_loops()
+	pulse_tween.tween_property(btn, "scale", Vector2(1.025, 1.025), 0.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	pulse_tween.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _on_start_pressed() -> void:
+	SoundManager.play("click")
+	if pulse_tween and pulse_tween.is_valid():
+		pulse_tween.kill()
+	_finish_and_open_main_menu()
+
+func _on_switch_account_pressed() -> void:
+	SoundManager.play("click")
+	if auth_modal:
+		auth_modal.open(true)
 
 func _on_google_pressed() -> void:
 	SoundManager.play("click")
-	if has_logged_in_google:
-		# Allaqachon ulangan hisob bilan to'g'ridan-to'g'ri o'yinga kirish
-		_finish_and_open_main_menu()
-	else:
-		# Google Account Chooser oynasini ochish (Gmaillar ro'yxati va tanlash)
-		if auth_modal:
-			auth_modal.open(true)
+	if auth_modal:
+		auth_modal.open(true)
 
 func _on_guest_pressed() -> void:
 	SoundManager.play("click")
-	if has_logged_in_google:
-		# Boshqa hisob tanlash rejimida Google Account Pickerni ochamiz
-		if auth_modal:
-			auth_modal.open(true)
-	else:
-		# Mehmon sifatida davom etish
-		ProfileManager.auth_provider = "guest"
-		_finish_and_open_main_menu()
+	ProfileManager.auth_provider = "guest"
+	ProfileManager.has_chosen_auth = true
+	ProfileManager.save_profile()
+	_finish_and_open_main_menu()
 
 func _on_auth_completed(_provider: String) -> void:
+	ProfileManager.has_chosen_auth = true
+	ProfileManager.save_profile()
+	if greeting_label:
+		greeting_label.text = "Xush kelibsiz, " + ProfileManager.username + "!"
 	await get_tree().create_timer(0.3).timeout
 	_finish_and_open_main_menu()
 
