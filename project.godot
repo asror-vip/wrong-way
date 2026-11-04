@@ -28,6 +28,7 @@ SaveSystem="*res://scripts/core/save_manager.gd"
 LevelDatabase="*res://scripts/core/level_database.gd"
 ProfileManager="*res://scripts/core/profile_manager.gd"
 DuelService="*res://scripts/multiplayer/duel_service.gd"
+GoogleAuthService="*res://scripts/core/google_auth_service.gd"
 
 [display]
 

@@ -92,8 +92,17 @@ func _setup_buttons() -> void:
 	if switch_account_btn:
 		switch_account_btn.pressed.connect(_on_switch_account_pressed)
 
-	if auth_modal:
-		auth_modal.auth_completed.connect(_on_auth_completed)
+	GoogleAuthService.auth_succeeded.connect(func(_u):
+		ProfileManager.has_chosen_auth = true
+		ProfileManager.save_profile()
+		if greeting_label:
+			greeting_label.text = "Xush kelibsiz, " + ProfileManager.username + "!"
+		await get_tree().create_timer(0.3).timeout
+		_finish_and_open_main_menu()
+	)
+	GoogleAuthService.auth_failed.connect(func(err):
+		print("SplashScreen: Google kirish xatosi: ", err)
+	)
 
 func _start_background_drift() -> void:
 	if not bg_texture:
@@ -195,13 +204,11 @@ func _on_start_pressed() -> void:
 
 func _on_switch_account_pressed() -> void:
 	SoundManager.play("click")
-	if auth_modal:
-		auth_modal.open(true)
+	GoogleAuthService.start_google_sign_in()
 
 func _on_google_pressed() -> void:
 	SoundManager.play("click")
-	if auth_modal:
-		auth_modal.open(true)
+	GoogleAuthService.start_google_sign_in()
 
 func _on_guest_pressed() -> void:
 	SoundManager.play("click")

@@ -49,11 +49,10 @@ func _ready() -> void:
 	ProfileManager.profile_updated.connect(func(_d): _refresh_profile_display())
 	ProfileManager.profile_loaded.connect(func(_d): _refresh_profile_display())
 	
-	if auth_modal:
-		auth_modal.auth_completed.connect(func(_prov):
-			_refresh_profile_display()
-			_show_toast("Google hisobi muvaffaqiyatli ulandi!")
-		)
+	GoogleAuthService.auth_succeeded.connect(func(_u):
+		_refresh_profile_display()
+		_show_toast("Google hisobi muvaffaqiyatli ulandi!")
+	)
 	
 	_apply_modal_styles()
 	_setup_avatar_buttons()
@@ -109,12 +108,8 @@ func _on_auth_action_pressed() -> void:
 		ProfileManager.logout_to_guest()
 		_refresh_profile_display()
 		_show_toast("Google hisobidan chiqildi")
-		# Chiqish bosilganda to'g'ridan-to'g'ri yana login (Google hisob tanlash) oynasini ochamiz
-		if auth_modal and auth_modal.has_method("open"):
-			auth_modal.open(true)
 	else:
-		if auth_modal and auth_modal.has_method("open"):
-			auth_modal.open(true)
+		GoogleAuthService.start_google_sign_in()
 
 func close() -> void:
 	var tween := create_tween()
