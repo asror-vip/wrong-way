@@ -3,7 +3,7 @@ extends Node
 # ProfileManager - Wrong Way Player Identity & Auth System
 # - Manages Device UUID, Supabase Player Tag (e.g. WW-4467), Username & Avatar
 # - Local caching in user://player_profile.json
-# - Seamless background sync with Supabase profiles table
+# - Seamless background sync with Supabase profiles table via Env configuration
 
 signal profile_loaded(profile_data: Dictionary)
 signal profile_updated(profile_data: Dictionary)
@@ -13,9 +13,6 @@ const PROFILE_CACHE_PATH := "user://player_profile.json"
 const FRIENDS_CACHE_PATH := "user://saved_friends.json"
 const GOOGLE_ACCOUNTS_PATH := "user://google_accounts.json"
 const DEVICE_ID_PATH := "user://device_id.txt"
-
-const SUPABASE_URL := "https://wcwjobrrwwjfthpflzhg.supabase.co"
-const SUPABASE_ANON_KEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjd2pvYnJyd3dqZnRocGZsemhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0NzIzNTEsImV4cCI6MjEwOTA0ODM1MX0.16SXhNkvVehgIuNhcGH3l9bDS37mkmbGt12h8F2CyoY"
 
 var device_id: String = ""
 var player_id: String = ""
@@ -27,17 +24,23 @@ var email: String = ""
 var is_ready_online: bool = false
 var saved_friends: Array = []
 
-var http_auth: HTTPRequest
+var http_guest: HTTPRequest
+var http_google: HTTPRequest
 var http_update: HTTPRequest
 
 var id_overlay: CanvasLayer
 var id_corner_lbl: Label
 
 func _ready() -> void:
-	http_auth = HTTPRequest.new()
-	http_auth.name = "ProfileAuthHTTP"
-	add_child(http_auth)
-	http_auth.request_completed.connect(_on_auth_completed)
+	http_guest = HTTPRequest.new()
+	http_guest.name = "ProfileGuestHTTP"
+	add_child(http_guest)
+	http_guest.request_completed.connect(_on_guest_completed)
+	
+	http_google = HTTPRequest.new()
+	http_google.name = "ProfileGoogleHTTP"
+	add_child(http_google)
+	http_google.request_completed.connect(_on_google_completed)
 	
 	http_update = HTTPRequest.new()
 	http_update.name = "ProfileUpdateHTTP"
@@ -48,7 +51,12 @@ func _ready() -> void:
 	_load_local_profile()
 	_load_saved_friends()
 	_setup_corner_id_overlay()
-	sync_with_supabase()
+	
+	# Agar avval Google bilan kirgan bo'lsa, to'g'ridan-to'g'ri Google profili sinxronlanadi
+	if auth_provider == "google" and not email.is_empty():
+		login_with_google(email, username)
+	else:
+		sync_with_supabase()
 
 func _load_or_create_device_id() -> void:
 	if FileAccess.file_exists(DEVICE_ID_PATH):
@@ -81,7 +89,7 @@ func _apply_profile_dict(data: Dictionary) -> void:
 	if data.has("id"): player_id = str(data["id"])
 	if data.has("player_tag"): player_tag = str(data["player_tag"])
 	if data.has("username"): username = str(data["username"])
-	if data.has("email"): email = str(data["email"])
+	if data.has("email") and data["email"] != null: email = str(data["email"])
 	if data.has("avatar_url"):
 		var av: String = str(data["avatar_url"])
 		if av.begins_with("av_"):
@@ -105,13 +113,20 @@ func get_profile_dict() -> Dictionary:
 		"device_id": device_id
 	}
 
+# -------------------------------------------------------------
+# Supabase Guest Sync
+# -------------------------------------------------------------
 func sync_with_supabase() -> void:
-	if not http_auth:
+	if not http_guest:
 		return
-	var url := SUPABASE_URL + "/rest/v1/rpc/register_or_login_guest"
+	if http_guest.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+		http_guest.cancel_request()
+		
+	var url := Env.get_supabase_url() + "/rest/v1/rpc/register_or_login_guest"
+	var anon_key := Env.get_supabase_anon_key()
 	var headers := [
-		"apikey: " + SUPABASE_ANON_KEY,
-		"Authorization: Bearer " + SUPABASE_ANON_KEY,
+		"apikey: " + anon_key,
+		"Authorization: Bearer " + anon_key,
 		"Content-Type: application/json"
 	]
 	var payload := JSON.stringify({
@@ -119,9 +134,9 @@ func sync_with_supabase() -> void:
 		"p_username": username,
 		"p_avatar_url": "av_" + str(avatar_index)
 	})
-	http_auth.request(url, headers, HTTPClient.METHOD_POST, payload)
+	http_guest.request(url, headers, HTTPClient.METHOD_POST, payload)
 
-func _on_auth_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+func _on_guest_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	if response_code == 200:
 		var txt := body.get_string_from_utf8()
 		var parsed = JSON.parse_string(txt)
@@ -129,24 +144,31 @@ func _on_auth_completed(_result: int, response_code: int, _headers: PackedString
 			_apply_profile_dict(parsed)
 			_save_local_cache(parsed)
 			is_ready_online = true
-			print("ProfileManager: Foydalanuvchi tizimga ulandi: ", username, " (", player_tag, ", ", auth_provider, ")")
+			print("ProfileManager: Mehmon sifatida ulandi: ", username, " (", player_tag, ")")
 			profile_updated.emit(get_profile_dict())
-			google_login_finished.emit(true, "")
 	else:
-		print("ProfileManager: Oflayn rejimda davom etilmoqda (HTTP %d)" % response_code)
-		google_login_finished.emit(false, "Serverga ulanib bo'lmadi")
+		print("ProfileManager: Mehmon oflayn rejimda (HTTP %d)" % response_code)
 
+# -------------------------------------------------------------
+# Supabase Google Login / Link
+# -------------------------------------------------------------
 func login_with_google(google_email: String, display_name: String = "") -> void:
-	if not http_auth:
+	if not http_google:
 		return
+	if http_google.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+		http_google.cancel_request()
+		
 	var clean_email := google_email.strip_edges().to_lower()
 	var clean_name := display_name.strip_edges() if not display_name.is_empty() else username
 	add_known_google_account(clean_email, clean_name)
 	
-	var url := SUPABASE_URL + "/rest/v1/rpc/login_or_link_google"
+	print("ProfileManager: Google orqali kirish so'rovi yuborilmoqda: ", clean_email)
+	
+	var url := Env.get_supabase_url() + "/rest/v1/rpc/login_or_link_google"
+	var anon_key := Env.get_supabase_anon_key()
 	var headers := [
-		"apikey: " + SUPABASE_ANON_KEY,
-		"Authorization: Bearer " + SUPABASE_ANON_KEY,
+		"apikey: " + anon_key,
+		"Authorization: Bearer " + anon_key,
 		"Content-Type: application/json"
 	]
 	var payload := JSON.stringify({
@@ -155,7 +177,31 @@ func login_with_google(google_email: String, display_name: String = "") -> void:
 		"p_username": clean_name,
 		"p_avatar_url": "av_" + str(avatar_index)
 	})
-	http_auth.request(url, headers, HTTPClient.METHOD_POST, payload)
+	http_google.request(url, headers, HTTPClient.METHOD_POST, payload)
+
+func _on_google_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	var txt := body.get_string_from_utf8()
+	print("ProfileManager: Google javob keldi (HTTP %d)" % response_code)
+	if response_code == 200:
+		var parsed = JSON.parse_string(txt)
+		if parsed is Dictionary and parsed.has("id"):
+			_apply_profile_dict(parsed)
+			_save_local_cache(parsed)
+			is_ready_online = true
+			print("ProfileManager: Google hisobi muvaffaqiyatli ulandi! Name: ", username, " Email: ", email, " Tag: ", player_tag)
+			profile_updated.emit(get_profile_dict())
+			google_login_finished.emit(true, "")
+			return
+			
+	print("ProfileManager: Google xatolik: ", txt)
+	google_login_finished.emit(false, "Serverga ulanishda xatolik (HTTP %d)" % response_code)
+
+func logout_to_guest() -> void:
+	auth_provider = "guest"
+	email = ""
+	_save_local_cache(get_profile_dict())
+	profile_updated.emit(get_profile_dict())
+	sync_with_supabase()
 
 func get_known_google_accounts() -> Array:
 	var accounts: Array = []
@@ -168,7 +214,6 @@ func get_known_google_accounts() -> Array:
 			if parsed is Array:
 				accounts = parsed
 	
-	# Agar saqlangan email bo'lsa va ro'yxatda yo'q bo'lsa, birinchi o'ringa qo'shish
 	if not email.is_empty():
 		var found := false
 		for acc in accounts:
@@ -182,7 +227,6 @@ func get_known_google_accounts() -> Array:
 				"avatar": "av_" + str(avatar_index)
 			})
 			
-	# Agar umuman hisob bo'lmasa, tizimdan avtomatik taklif yaratish
 	if accounts.is_empty():
 		var os_user := OS.get_environment("USERNAME")
 		if os_user.is_empty():
@@ -202,7 +246,6 @@ func add_known_google_account(acc_email: String, acc_name: String = "") -> void:
 	var clean_email := acc_email.strip_edges().to_lower()
 	var accounts := get_known_google_accounts()
 	
-	# Mavjud bo'lsa olib tashlab, eng boshiga qo'yish
 	for i in range(accounts.size() - 1, -1, -1):
 		var item = accounts[i]
 		if item is Dictionary and item.get("email", "").to_lower() == clean_email:
@@ -223,13 +266,9 @@ func add_known_google_account(acc_email: String, acc_name: String = "") -> void:
 		f.store_string(JSON.stringify(accounts))
 		f.close()
 
-func logout_to_guest() -> void:
-	auth_provider = "guest"
-	email = ""
-	_save_local_cache(get_profile_dict())
-	profile_updated.emit(get_profile_dict())
-	sync_with_supabase()
-
+# -------------------------------------------------------------
+# Profil tahrirlash (Ism va Avatar)
+# -------------------------------------------------------------
 func update_profile(new_name: String, new_avatar_idx: int) -> void:
 	username = new_name.strip_edges()
 	avatar_index = new_avatar_idx
@@ -240,10 +279,11 @@ func update_profile(new_name: String, new_avatar_idx: int) -> void:
 	profile_updated.emit(cur)
 	
 	if is_ready_online and not player_id.is_empty():
-		var url := SUPABASE_URL + "/rest/v1/profiles?id=eq." + player_id
+		var url := Env.get_supabase_url() + "/rest/v1/profiles?id=eq." + player_id
+		var anon_key := Env.get_supabase_anon_key()
 		var headers := [
-			"apikey: " + SUPABASE_ANON_KEY,
-			"Authorization: Bearer " + SUPABASE_ANON_KEY,
+			"apikey: " + anon_key,
+			"Authorization: Bearer " + anon_key,
 			"Content-Type: application/json",
 			"Prefer: return=minimal"
 		]
@@ -338,4 +378,3 @@ func _setup_corner_id_overlay() -> void:
 func _update_corner_id_text() -> void:
 	if id_corner_lbl:
 		id_corner_lbl.text = player_tag
-

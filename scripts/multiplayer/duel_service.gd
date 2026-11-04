@@ -13,8 +13,13 @@ signal match_started(started_at: String)
 signal match_finished(is_victory: bool, winner_id: String)
 signal opponent_disconnected_alert(seconds_left: int)
 
-const SUPABASE_URL := "https://wcwjobrrwwjfthpflzhg.supabase.co"
-const SUPABASE_ANON_KEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjd2pvYnJyd3dqZnRocGZsemhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0NzIzNTEsImV4cCI6MjEwOTA0ODM1MX0.16SXhNkvVehgIuNhcGH3l9bDS37mkmbGt12h8F2CyoY"
+var SUPABASE_URL: String = "https://wcwjobrrwwjfthpflzhg.supabase.co"
+var SUPABASE_ANON_KEY: String = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjd2pvYnJyd3dqZnRocGZsemhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0NzIzNTEsImV4cCI6MjEwOTA0ODM1MX0.16SXhNkvVehgIuNhcGH3l9bDS37mkmbGt12h8F2CyoY"
+
+func _init() -> void:
+	if Env:
+		SUPABASE_URL = Env.get_supabase_url()
+		SUPABASE_ANON_KEY = Env.get_supabase_anon_key()
 
 var active_duel: Dictionary = {}
 var active_duel_id: String = ""

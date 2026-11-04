@@ -200,6 +200,15 @@ func _select_google_account(acc_email: String, acc_name: String) -> void:
 	SoundManager.play("click")
 	_set_status("Google hisobiga ulanmoqda...", false)
 	ProfileManager.login_with_google(acc_email, acc_name)
+	
+	# Xavfsizlik taymeri (8 soniyada javob bo'lmasa qotib qolmasligi uchun)
+	var auth_generation := Time.get_ticks_msec()
+	set_meta("auth_token", auth_generation)
+	get_tree().create_timer(8.0).timeout.connect(func():
+		if is_authenticating and get_meta("auth_token", 0) == auth_generation:
+			is_authenticating = false
+			_set_status("Server javob bermadi. Internetni tekshirib qayta urining.", true)
+	)
 
 func _on_custom_connect_pressed() -> void:
 	if not custom_email_input or is_authenticating:

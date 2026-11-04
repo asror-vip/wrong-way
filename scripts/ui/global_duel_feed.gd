@@ -6,9 +6,6 @@ extends Control
 # - Continuous rotation cycle through recent duels
 # - Responsive, non-intrusive UI placed near main menu top-right
 
-const SUPABASE_URL := "https://wcwjobrrwwjfthpflzhg.supabase.co"
-const SUPABASE_ANON_KEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjd2pvYnJyd3dqZnRocGZsemhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0NzIzNTEsImV4cCI6MjEwOTA0ODM1MX0.16SXhNkvVehgIuNhcGH3l9bDS37mkmbGt12h8F2CyoY"
-
 @onready var container: VBoxContainer = $FeedContainer
 
 var feed_items: Array = []
@@ -72,10 +69,11 @@ func fetch_feed() -> void:
 				feed_items = parsed
 				current_feed_idx = current_feed_idx % feed_items.size()
 	)
-	var url := SUPABASE_URL + "/rest/v1/rpc/get_global_duel_feed"
+	var url := Env.get_supabase_url() + "/rest/v1/rpc/get_global_duel_feed"
+	var anon_key := Env.get_supabase_anon_key()
 	var headers := PackedStringArray([
-		"apikey: " + SUPABASE_ANON_KEY,
-		"Authorization: Bearer " + SUPABASE_ANON_KEY,
+		"apikey: " + anon_key,
+		"Authorization: Bearer " + anon_key,
 		"Content-Type: application/json"
 	])
 	var payload := JSON.stringify({"p_limit": 6})

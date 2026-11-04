@@ -7,8 +7,6 @@ extends Node
 
 signal levels_synced_from_cloud(count: int)
 
-const SUPABASE_URL := "https://wcwjobrrwwjfthpflzhg.supabase.co"
-const SUPABASE_ANON_KEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjd2pvYnJyd3dqZnRocGZsemhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0NzIzNTEsImV4cCI6MjEwOTA0ODM1MX0.16SXhNkvVehgIuNhcGH3l9bDS37mkmbGt12h8F2CyoY"
 const CACHE_FILE_PATH := "user://levels_cache.json"
 
 var _levels_cache: Dictionary = {}
@@ -67,10 +65,11 @@ func _init_supabase_sync() -> void:
 func fetch_from_supabase() -> void:
 	if not http_sync:
 		return
-	var url := SUPABASE_URL + "/rest/v1/levels?select=*&order=id.asc"
+	var url := Env.get_supabase_url() + "/rest/v1/levels?select=*&order=id.asc"
+	var anon_key := Env.get_supabase_anon_key()
 	var headers := [
-		"apikey: " + SUPABASE_ANON_KEY,
-		"Authorization: Bearer " + SUPABASE_ANON_KEY
+		"apikey: " + anon_key,
+		"Authorization: Bearer " + anon_key
 	]
 	var err := http_sync.request(url, headers)
 	if err != OK:

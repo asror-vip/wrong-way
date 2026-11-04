@@ -4,3 +4,9 @@
 *.translation
 export_presets.cfg
 
+# Secrets & Environment variables
+.env
+.env.*
+*.secret
+
+
