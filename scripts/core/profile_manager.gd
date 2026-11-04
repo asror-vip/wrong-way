@@ -355,23 +355,19 @@ func get_known_google_accounts() -> Array:
 		if not n.is_empty():
 			real_name = n.capitalize()
 			
-	if real_email.is_empty():
-		real_email = "asror8471@gmail.com"
-	if real_name.is_empty():
-		real_name = "Asror"
-		
-	var has_real := false
-	for acc in accounts:
-		if acc is Dictionary and acc.get("email", "").to_lower() == real_email:
-			has_real = true
-			break
-			
-	if not has_real:
-		accounts.insert(0, {
-			"email": real_email,
-			"name": real_name,
-			"avatar": "av_1"
-		})
+	if not real_email.is_empty():
+		var has_real := false
+		for acc in accounts:
+			if acc is Dictionary and acc.get("email", "").to_lower() == real_email:
+				has_real = true
+				break
+				
+		if not has_real:
+			accounts.insert(0, {
+				"email": real_email,
+				"name": real_name if not real_name.is_empty() else "Google Player",
+				"avatar": "av_1"
+			})
 		
 	if not email.is_empty() and email != real_email and email.contains("@"):
 		var found_saved := false

@@ -114,7 +114,7 @@ func _setup_icons() -> void:
 	if editor_btn:
 		editor_btn.icon = IconFactory.get_icon("wrench", 0.85)
 	if leaderboard_btn:
-		leaderboard_btn.icon = IconFactory.get_icon("trophy_white", 0.85)
+		leaderboard_btn.icon = IconFactory.get_icon("trophy", 0.85)
 	if multiplayer_btn:
 		multiplayer_btn.icon = IconFactory.get_icon("users_white", 0.85)
 	if info_close_btn:

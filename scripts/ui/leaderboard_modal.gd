@@ -28,28 +28,19 @@ var style_glass_press = preload("res://resources/themes/btn_capsule_glass_presse
 enum TabMode { GLOBAL, FRIENDS }
 var current_tab: TabMode = TabMode.GLOBAL
 
-const GLOBAL_BENCHMARK: Array = [
-	{"name": "ShadowRunner", "avatar": "avatar_shadow", "stars": 58, "time_sec": 195, "deaths": 14, "is_me": false},
-	{"name": "Ninja_X", "avatar": "avatar_ninja", "stars": 56, "time_sec": 210, "deaths": 18, "is_me": false},
-	{"name": "Speedy", "avatar": "avatar_pro", "stars": 52, "time_sec": 235, "deaths": 22, "is_me": false},
-	{"name": "CyberCat", "avatar": "avatar_robot", "stars": 48, "time_sec": 260, "deaths": 31, "is_me": false},
-	{"name": "GhostDash", "avatar": "avatar_shadow", "stars": 42, "time_sec": 290, "deaths": 45, "is_me": false},
-	{"name": "PixelKing", "avatar": "avatar_pro", "stars": 35, "time_sec": 320, "deaths": 58, "is_me": false},
-	{"name": "NeoRacer", "avatar": "avatar_robot", "stars": 28, "time_sec": 360, "deaths": 70, "is_me": false},
-	{"name": "DarkKnight", "avatar": "avatar_ninja", "stars": 20, "time_sec": 410, "deaths": 88, "is_me": false}
-]
-
-const FRIENDS_BENCHMARK: Array = [
-	{"name": "Jasur_Pro", "avatar": "avatar_pro", "stars": 54, "time_sec": 220, "deaths": 20, "is_me": false},
-	{"name": "Ali_Uz", "avatar": "avatar_ninja", "stars": 49, "time_sec": 250, "deaths": 34, "is_me": false},
-	{"name": "Madina", "avatar": "avatar_player", "stars": 44, "time_sec": 285, "deaths": 41, "is_me": false},
-	{"name": "Sardor", "avatar": "avatar_shadow", "stars": 33, "time_sec": 340, "deaths": 62, "is_me": false},
-	{"name": "Bekzod", "avatar": "avatar_robot", "stars": 24, "time_sec": 395, "deaths": 80, "is_me": false}
-]
+var http_request: HTTPRequest = null
+var remote_players: Array = []
+var is_fetching: bool = false
 
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	http_request = HTTPRequest.new()
+	http_request.name = "LeaderboardHTTP"
+	http_request.timeout = 5.0
+	add_child(http_request)
+	http_request.request_completed.connect(_on_http_completed)
 	
 	if close_btn:
 		close_btn.icon = IconFactory.get_icon("circle_btn_close", 1.0)
@@ -89,6 +80,7 @@ func open() -> void:
 	visible = true
 	_update_texts()
 	_update_tab_buttons()
+	_fetch_supabase_leaderboard()
 	_refresh_list()
 	
 	# Smooth entry tween
@@ -180,6 +172,45 @@ func _sort_players(a: Dictionary, b: Dictionary) -> bool:
 	var b_deaths: int = b.get("deaths", 0)
 	return a_deaths < b_deaths
 
+func _fetch_supabase_leaderboard() -> void:
+	if is_fetching or not http_request:
+		return
+	is_fetching = true
+	var url := Env.get_supabase_url() + "/rest/v1/profiles?select=id,username,avatar_index,stars,time_sec,deaths&order=stars.desc,time_sec.asc&limit=50"
+	var headers := [
+		"apikey: " + Env.get_supabase_anon_key(),
+		"Authorization: Bearer " + Env.get_supabase_anon_key()
+	]
+	http_request.request(url, headers, HTTPClient.METHOD_GET)
+
+func _on_http_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	is_fetching = false
+	if response_code == 200:
+		var txt := body.get_string_from_utf8()
+		var parsed = JSON.parse_string(txt)
+		if parsed is Array:
+			remote_players.clear()
+			var av_keys := ["avatar_player", "avatar_ninja", "avatar_shadow", "avatar_robot", "avatar_pro"]
+			for row in parsed:
+				if row is Dictionary:
+					var p_id: String = str(row.get("id", ""))
+					# O'z profilimizni lokal holatda pastda qo'shamiz
+					if p_id == ProfileManager.player_id:
+						continue
+					var a_idx: int = int(row.get("avatar_index", 1)) - 1
+					if a_idx < 0 or a_idx >= av_keys.size(): a_idx = 0
+					var u_name: String = str(row.get("username", "O'yinchi"))
+					remote_players.append({
+						"id": p_id,
+						"name": u_name,
+						"avatar": av_keys[a_idx],
+						"stars": int(row.get("stars", 0)),
+						"time_sec": int(row.get("time_sec", 0)),
+						"deaths": int(row.get("deaths", 0)),
+						"is_me": false
+					})
+			_refresh_list()
+
 func _refresh_list() -> void:
 	if not list_box:
 		return
@@ -213,9 +244,12 @@ func _refresh_list() -> void:
 	
 	var raw_list: Array = []
 	if current_tab == TabMode.GLOBAL:
-		raw_list = GLOBAL_BENCHMARK.duplicate(true)
+		raw_list = remote_players.duplicate(true)
 	else:
-		raw_list = FRIENDS_BENCHMARK.duplicate(true)
+		# Do'stlar ro'yxati
+		for p in remote_players:
+			if ProfileManager.is_friend(p.get("id", "")):
+				raw_list.append(p)
 		
 	raw_list.append(my_data)
 	raw_list.sort_custom(_sort_players)

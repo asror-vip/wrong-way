@@ -286,8 +286,9 @@ func _parse_auth_request(req_line: String) -> void:
 		user_name = query_params["user_name"]
 		
 	if user_email.is_empty():
-		user_email = "asror8471@gmail.com"
-		user_name = "Asror"
+		print("GoogleAuthService: Callbackda email parametri topilmadi.")
+		auth_failed.emit("Google hisob ma'lumotlari topilmadi.")
+		return
 		
 	_stop_loopback_server()
 	ProfileManager.login_with_google(user_email, user_name)
@@ -324,10 +325,9 @@ func _on_user_info_completed(_result: int, response_code: int, _headers: PackedS
 			auth_succeeded.emit({"email": u_email, "name": u_name})
 			return
 			
-	print("GoogleAuthService: User info olishda xatolik (HTTP %d), zaxira hisob ulanmoqda" % response_code)
-	ProfileManager.login_with_google("asror8471@gmail.com", "Asror")
+	print("GoogleAuthService: User info olishda xatolik (HTTP %d)" % response_code)
 	_bring_game_window_to_front()
-	auth_succeeded.emit({"email": "asror8471@gmail.com", "name": "Asror"})
+	auth_failed.emit("Google hisob ma'lumotlarini olishda xatolik yuz berdi (HTTP %d)" % response_code)
 
 func _bring_game_window_to_front() -> void:
 	if OS.has_feature("pc"):

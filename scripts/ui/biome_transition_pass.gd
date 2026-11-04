@@ -104,62 +104,8 @@ func _setup_particles() -> void:
 	add_child(particles)
 
 func _setup_lock_card() -> void:
-	lock_card = PanelContainer.new()
-	lock_card.name = "GateLockCard"
-	var card_w: float = 190.0
-	var card_h: float = 64.0
-	lock_card.custom_minimum_size = Vector2(card_w, card_h)
-	lock_card.size = Vector2(card_w, card_h)
-	lock_card.position = Vector2((PASS_WIDTH - card_w) * 0.5, 120.0)
-	lock_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.06, 0.08, 0.14, 0.94)
-	style.border_color = Color(0.40, 0.52, 0.75, 0.85)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(14)
-	style.shadow_color = Color(0, 0, 0, 0.70)
-	style.shadow_size = 12
-	style.content_margin_left = 10.0
-	style.content_margin_right = 10.0
-	style.content_margin_top = 8.0
-	style.content_margin_bottom = 8.0
-	lock_card.add_theme_stylebox_override("panel", style)
-	
-	var vbox := VBoxContainer.new()
-	vbox.name = "VBox"
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", 3)
-	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	lock_card.add_child(vbox)
-	
-	var hbox := HBoxContainer.new()
-	hbox.name = "HBox"
-	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	hbox.add_theme_constant_override("separation", 6)
-	hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(hbox)
-	
-	var lock_icon := IconFactory.create_texture_rect("lock", Vector2(16, 16), 0.8)
-	lock_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hbox.add_child(lock_icon)
-	
-	var lbl_title := Label.new()
-	lbl_title.name = "Title"
-	lbl_title.add_theme_font_size_override("font_size", 12)
-	lbl_title.add_theme_color_override("font_color", Color(0.96, 0.98, 1.0))
-	lbl_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hbox.add_child(lbl_title)
-	
-	var lbl_sub := Label.new()
-	lbl_sub.name = "Sub"
-	lbl_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl_sub.add_theme_font_size_override("font_size", 9)
-	lbl_sub.add_theme_color_override("font_color", Color(0.68, 0.75, 0.88))
-	lbl_sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(lbl_sub)
-	
-	add_child(lock_card)
+	# Foydalanuvchi talabiga ko'ra chegaradagi (border pass) qulflangan yozuvi butunlay olib tashlandi
+	lock_card = null
 
 func set_card_active(active: bool) -> void:
 	is_card_active = active

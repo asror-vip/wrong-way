@@ -186,17 +186,89 @@ func _setup_nav_connections() -> void:
 	if btn_ch3:
 		btn_ch3.pressed.connect(func(): switch_to_chapter(3, true))
 
-func _show_notice(title_text: String, message_text: String) -> void:
-	if not notice_modal:
+var toast_panel: PanelContainer = null
+var toast_title_lbl: Label = null
+var toast_msg_lbl: Label = null
+var toast_tween: Tween = null
+
+func _setup_toast_ui() -> void:
+	if toast_panel:
 		return
-	if "title" in notice_modal:
-		notice_modal.title = title_text
-	if "dialog_text" in notice_modal:
-		notice_modal.dialog_text = message_text
-	if notice_modal.has_method("popup_centered"):
-		notice_modal.popup_centered()
-	elif notice_modal.has_method("show"):
-		notice_modal.show()
+	toast_panel = PanelContainer.new()
+	toast_panel.name = "FloatingToast"
+	toast_panel.custom_minimum_size = Vector2(380, 56)
+	toast_panel.size = Vector2(380, 56)
+	toast_panel.position = Vector2((960.0 - 380.0) * 0.5, 75.0)
+	toast_panel.z_index = 100
+	toast_panel.visible = false
+	toast_panel.modulate.a = 0.0
+	
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.10, 0.16, 0.96)
+	style.border_color = Color("#f59e0b")
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(14)
+	style.shadow_color = Color(0, 0, 0, 0.65)
+	style.shadow_size = 14
+	style.content_margin_left = 14.0
+	style.content_margin_right = 14.0
+	style.content_margin_top = 8.0
+	style.content_margin_bottom = 8.0
+	toast_panel.add_theme_stylebox_override("panel", style)
+	
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 10)
+	toast_panel.add_child(hbox)
+	
+	var lock_icon := IconFactory.create_texture_rect("lock", Vector2(20, 20), 0.9)
+	hbox.add_child(lock_icon)
+	
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override("separation", 2)
+	hbox.add_child(vbox)
+	
+	toast_title_lbl = Label.new()
+	toast_title_lbl.add_theme_font_size_override("font_size", 13)
+	toast_title_lbl.add_theme_color_override("font_color", Color(0.98, 0.90, 0.55))
+	vbox.add_child(toast_title_lbl)
+	
+	toast_msg_lbl = Label.new()
+	toast_msg_lbl.add_theme_font_size_override("font_size", 11)
+	toast_msg_lbl.add_theme_color_override("font_color", Color(0.80, 0.86, 0.96))
+	vbox.add_child(toast_msg_lbl)
+	
+	add_child(toast_panel)
+
+func _show_notice(title_text: String, message_text: String) -> void:
+	if not toast_panel:
+		_setup_toast_ui()
+		
+	if toast_title_lbl:
+		toast_title_lbl.text = title_text
+	if toast_msg_lbl:
+		toast_msg_lbl.text = message_text
+		
+	if toast_tween and toast_tween.is_valid():
+		toast_tween.kill()
+		
+	toast_panel.visible = true
+	toast_panel.position.y = 55.0
+	toast_panel.modulate.a = 0.0
+	
+	toast_tween = create_tween()
+	toast_tween.set_parallel(true)
+	toast_tween.tween_property(toast_panel, "position:y", 75.0, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	toast_tween.tween_property(toast_panel, "modulate:a", 1.0, 0.25)
+	
+	toast_tween.chain().tween_interval(2.5)
+	
+	var fade_out = toast_tween.chain().set_parallel(true)
+	fade_out.tween_property(toast_panel, "position:y", 60.0, 0.25).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	fade_out.tween_property(toast_panel, "modulate:a", 0.0, 0.25)
+	toast_tween.chain().tween_callback(func(): toast_panel.visible = false)
 
 func _on_side_nav_right_pressed() -> void:
 	if current_chapter == 1:
@@ -604,27 +676,28 @@ func _update_chapter_locks() -> void:
 			lock_card_ch3.visible = false
 
 func _create_chapter_lock_card(chapter: int) -> Control:
-	var card_w: float = 380.0
-	var card_h: float = 72.0
+	var card_w: float = 340.0
+	var card_h: float = 56.0
 	
 	var card := PanelContainer.new()
 	card.name = "ChapterLockCard%d" % chapter
 	card.custom_minimum_size = Vector2(card_w, card_h)
 	card.size = Vector2(card_w, card_h)
-	card.position = Vector2((960.0 - card_w) * 0.5, (540.0 - card_h) * 0.5)
+	card.position = Vector2((960.0 - card_w) * 0.5, 455.0)
+	card.z_index = 25
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.06, 0.08, 0.13, 0.94)
 	style.border_color = Color(0.35, 0.45, 0.65, 0.85)
 	style.set_border_width_all(2)
-	style.set_corner_radius_all(16)
+	style.set_corner_radius_all(14)
 	style.shadow_color = Color(0, 0, 0, 0.65)
 	style.shadow_size = 12
-	style.content_margin_left = 16.0
-	style.content_margin_right = 16.0
-	style.content_margin_top = 10.0
-	style.content_margin_bottom = 10.0
+	style.content_margin_left = 14.0
+	style.content_margin_right = 14.0
+	style.content_margin_top = 8.0
+	style.content_margin_bottom = 8.0
 	card.add_theme_stylebox_override("panel", style)
 	
 	var vbox := VBoxContainer.new()

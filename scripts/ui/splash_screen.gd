@@ -191,10 +191,9 @@ func _pulse_start_button(btn: Button) -> void:
 		return
 	if pulse_tween and pulse_tween.is_valid():
 		pulse_tween.kill()
-	btn.pivot_offset = btn.size / 2.0
 	pulse_tween = create_tween().set_loops()
-	pulse_tween.tween_property(btn, "scale", Vector2(1.025, 1.025), 0.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	pulse_tween.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	pulse_tween.tween_property(btn, "modulate:a", 0.70, 0.9).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	pulse_tween.tween_property(btn, "modulate:a", 1.0, 0.9).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 func _on_start_pressed() -> void:
 	SoundManager.play("click")
