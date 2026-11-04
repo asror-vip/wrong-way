@@ -212,13 +212,17 @@ func _handle_http_client(peer: StreamPeerTCP) -> void:
         <h1>Muvaffaqiyatli kirdingiz!</h1>
         <p>Google hisobingiz Wrong Way o'yiniga ulandi. Ushbu brauzer oynasini yopib, o'yinga qaytishingiz mumkin.</p>
         <div class="tag">Wrong Way Game</div>
+        <br>
+        <button onclick="window.close();" style="margin-top: 18px; padding: 12px 28px; font-size: 15px; background: #0284c7; color: #ffffff; border: none; border-radius: 25px; cursor: pointer; font-weight: 600; box-shadow: 0 4px 15px rgba(2,132,199,0.4);">
+            Ilovaga qaytish
+        </button>
     </div>
     <script>
         // Fragment (#access_token=...) parametrlarini query qilib qayta yuborish
         if (window.location.hash && window.location.hash.length > 1) {
-            window.location.href = '/callback?' + window.location.hash.substring(1);
+            window.location.replace('/callback?' + window.location.hash.substring(1));
         } else {
-            setTimeout(function() { window.close(); }, 2500);
+            setTimeout(function() { window.close(); }, 3000);
         }
     </script>
 </body>
@@ -231,13 +235,12 @@ func _handle_http_client(peer: StreamPeerTCP) -> void:
 	response += html_body
 	
 	peer.put_data(response.to_utf8_buffer())
-	peer.flush()
 	
 	# URL dagi parametrlarni ajratib olish
 	_parse_auth_request(request_line)
 	
 	# Qisqa tanaffusdan keyin ulanishni yopish
-	get_tree().create_timer(0.3).timeout.connect(func():
+	get_tree().create_timer(0.4).timeout.connect(func():
 		peer.disconnect_from_host()
 	)
 
@@ -317,12 +320,20 @@ func _on_user_info_completed(_result: int, response_code: int, _headers: PackedS
 				
 			print("GoogleAuthService: Haqiqiy Google foydalanuvchisi olindi: ", u_email, " (", u_name, ")")
 			ProfileManager.login_with_google(u_email, u_name)
+			_bring_game_window_to_front()
 			auth_succeeded.emit({"email": u_email, "name": u_name})
 			return
 			
 	print("GoogleAuthService: User info olishda xatolik (HTTP %d), zaxira hisob ulanmoqda" % response_code)
 	ProfileManager.login_with_google("asror8471@gmail.com", "Asror")
+	_bring_game_window_to_front()
 	auth_succeeded.emit({"email": "asror8471@gmail.com", "name": "Asror"})
+
+func _bring_game_window_to_front() -> void:
+	if OS.has_feature("pc"):
+		DisplayServer.window_request_attention()
+		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP, true)
+		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_ALWAYS_ON_TOP, false)
 
 func _stop_loopback_server() -> void:
 	is_listening = false
@@ -330,4 +341,3 @@ func _stop_loopback_server() -> void:
 		tcp_server.stop()
 		tcp_server = null
 	print("GoogleAuthService: Loopback server to'xtatildi.")
-

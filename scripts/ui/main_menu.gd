@@ -42,8 +42,8 @@ var pending_invite_duel_id: String = ""
 
 func _ready() -> void:
 	var adm = get_node_or_null("/root/AdManager")
-	if adm and adm.has_method("hide_banner"):
-		adm.hide_banner()
+	if adm and adm.has_method("show_banner"):
+		adm.show_banner()
 		
 	LocaleManager.language_changed.connect(_on_language_changed)
 	

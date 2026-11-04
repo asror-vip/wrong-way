@@ -235,7 +235,7 @@ func record_level_attempt(lvl: int) -> void:
 # Yangilangan Reklama orqali Daraja Ochish Tizimi:
 # 1. Faqat birinchi qulflangan darajagagina ruxsat (sakrab ketish taqiqlanadi).
 # 2. Ochmoqchi bo'lgan darajadan oldingisini kamida bir marta o'ynagan bo'lishi shart (1-ni o'ynamay 2-ni ocholmaydi).
-# 3. Har 3 ta darajadan keyin yana reklama orqali ochish mumkin (masalan 5 ochilsa, 6 va 7 ochilmaydi, 8 ochiladi).
+# 3. Bitta daraja oralab (cheriz) reklama ruxsat beriladi (masalan 2 dan o'tolmasa 3 ni reklama bilan ochadi, 4 da bu yo'q, 5 da bor va h.k.).
 # -------------------------------------------------------------
 func is_level_ad_unlockable(lvl: int) -> bool:
 	if lvl <= 1 or lvl > 40:
@@ -256,9 +256,9 @@ func is_level_ad_unlockable(lvl: int) -> bool:
 	if not attempted_levels.has(lvl - 1):
 		return false
 		
-	# 3. Har 3 ta darajadan keyin reklama ruxsat beriladi
+	# 3. Bitta daraja oralab (cheriz) reklama ruxsat beriladi
 	if last_ad_unlocked_level > 0:
-		if (lvl - last_ad_unlocked_level) < 3:
+		if (lvl - last_ad_unlocked_level) < 2:
 			return false
 			
 	return true
@@ -282,8 +282,8 @@ func get_lock_reason_dialog(lvl: int) -> Dictionary:
 			"text": LocaleManager.t("lock_need_attempt", [lvl - 1])
 		}
 		
-	if last_ad_unlocked_level > 0 and (lvl - last_ad_unlocked_level) < 3:
-		var next_allowed := last_ad_unlocked_level + 3
+	if last_ad_unlocked_level > 0 and (lvl - last_ad_unlocked_level) < 2:
+		var next_allowed := last_ad_unlocked_level + 2
 		return {
 			"title": LocaleManager.t("lock_title"),
 			"text": LocaleManager.t("lock_cooldown", [last_ad_unlocked_level, next_allowed])
