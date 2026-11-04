@@ -156,17 +156,10 @@ alignment = 1
 [node name="ProfileNameLabel" type="Label" parent="TopBar/ProfileTopBtn/HBox/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 13
 text = "Player"
 horizontal_alignment = 2
 clip_text = true
-
-[node name="ProfileTagLabel" type="Label" parent="TopBar/ProfileTopBtn/HBox/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.38, 0.74, 0.97, 1)
-theme_override_font_sizes/font_size = 10
-text = "WW-0000"
-horizontal_alignment = 2
 
 [node name="ProfileAvatar" type="TextureRect" parent="TopBar/ProfileTopBtn/HBox"]
 custom_minimum_size = Vector2(28, 28)

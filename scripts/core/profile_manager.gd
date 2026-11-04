@@ -28,7 +28,7 @@ var http_auth: HTTPRequest
 var http_update: HTTPRequest
 
 var id_overlay: CanvasLayer
-var id_corner_btn: Button
+var id_corner_lbl: Label
 
 func _ready() -> void:
 	http_auth = HTTPRequest.new()
@@ -211,53 +211,30 @@ func _setup_corner_id_overlay() -> void:
 	id_overlay.layer = 125
 	add_child(id_overlay)
 	
-	id_corner_btn = Button.new()
-	id_corner_btn.name = "CornerPlayerIDBtn"
-	id_corner_btn.flat = true
-	id_corner_btn.focus_mode = Control.FOCUS_NONE
-	id_corner_btn.anchors_preset = Control.PRESET_BOTTOM_RIGHT
-	id_corner_btn.anchor_left = 1.0
-	id_corner_btn.anchor_top = 1.0
-	id_corner_btn.anchor_right = 1.0
-	id_corner_btn.anchor_bottom = 1.0
-	id_corner_btn.offset_left = -110.0
-	id_corner_btn.offset_top = -28.0
-	id_corner_btn.offset_right = -12.0
-	id_corner_btn.offset_bottom = -8.0
-	id_corner_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	id_corner_btn.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	id_corner_btn.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	id_corner_lbl = Label.new()
+	id_corner_lbl.name = "CornerPlayerIDLabel"
+	id_corner_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	id_corner_lbl.anchors_preset = Control.PRESET_BOTTOM_RIGHT
+	id_corner_lbl.anchor_left = 1.0
+	id_corner_lbl.anchor_top = 1.0
+	id_corner_lbl.anchor_right = 1.0
+	id_corner_lbl.anchor_bottom = 1.0
+	id_corner_lbl.offset_left = -110.0
+	id_corner_lbl.offset_top = -26.0
+	id_corner_lbl.offset_right = -12.0
+	id_corner_lbl.offset_bottom = -8.0
+	id_corner_lbl.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	id_corner_lbl.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	id_corner_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	id_corner_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	
-	id_corner_btn.add_theme_font_size_override("font_size", 11)
-	id_corner_btn.add_theme_color_override("font_color", Color(0.65, 0.72, 0.85, 0.75))
-	id_corner_btn.add_theme_color_override("font_hover_color", Color(0.38, 0.74, 0.97, 1.0))
-	id_corner_btn.add_theme_color_override("font_pressed_color", Color(0.95, 0.98, 1.0, 1.0))
-	
-	var empty_style := StyleBoxEmpty.new()
-	id_corner_btn.add_theme_stylebox_override("normal", empty_style)
-	id_corner_btn.add_theme_stylebox_override("hover", empty_style)
-	id_corner_btn.add_theme_stylebox_override("pressed", empty_style)
-	id_corner_btn.add_theme_stylebox_override("focus", empty_style)
+	id_corner_lbl.add_theme_font_size_override("font_size", 10)
+	id_corner_lbl.add_theme_color_override("font_color", Color(0.65, 0.72, 0.85, 0.40))
 	
 	_update_corner_id_text()
-	
-	id_corner_btn.pressed.connect(func():
-		DisplayServer.clipboard_set(player_tag)
-		var old_tag := player_tag
-		id_corner_btn.text = " " + old_tag
-		id_corner_btn.icon = IconFactory.get_icon("check", 0.7)
-		var tw := create_tween()
-		tw.tween_interval(1.2)
-		tw.tween_callback(func():
-			if id_corner_btn:
-				id_corner_btn.text = player_tag
-				id_corner_btn.icon = null
-		)
-	)
-	
-	id_overlay.add_child(id_corner_btn)
+	id_overlay.add_child(id_corner_lbl)
 
 func _update_corner_id_text() -> void:
-	if id_corner_btn:
-		id_corner_btn.text = player_tag
+	if id_corner_lbl:
+		id_corner_lbl.text = player_tag
 

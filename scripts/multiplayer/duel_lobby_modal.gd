@@ -99,9 +99,6 @@ func open() -> void:
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 1.0, 0.2)
 	
-	if my_id_label:
-		my_id_label.text = "Sizning ID: #" + ProfileManager.player_tag
-		
 	if tag_input:
 		tag_input.text = ""
 		
@@ -154,7 +151,7 @@ func _refresh_player_cards() -> void:
 	
 	if player_a_name:
 		player_a_name.text = ProfileManager.username if (pa_id == my_id or DuelService.is_bot_duel) else "Raqib"
-		player_a_tag.text = "#" + ProfileManager.player_tag if (pa_id == my_id or DuelService.is_bot_duel) else ""
+		player_a_tag.text = ""
 		
 	if player_b_name:
 		if DuelService.is_bot_duel or pb_id == "bot_ghost":
@@ -162,7 +159,7 @@ func _refresh_player_cards() -> void:
 			player_b_tag.text = "Mashg'ulot Raqibi"
 		else:
 			player_b_name.text = "Raqib" if pa_id == my_id else ProfileManager.username
-			player_b_tag.text = "Kutilmoqda..." if pa_id == my_id else ("#" + ProfileManager.player_tag)
+			player_b_tag.text = "Ulangan" if pa_id != my_id else "Kutilmoqda..."
 
 # -------------------------------------------------------------
 # Boblar va Darajalar Tanlash (Interactive Chapter Tabs & Level Grid)

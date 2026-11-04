@@ -108,10 +108,19 @@ func _apply_modal_styles() -> void:
 		close_top_btn.add_theme_font_size_override("font_size", 14)
 		close_top_btn.add_theme_color_override("font_color", Color(0.85, 0.90, 1.0))
 		
-	# Copy button icon
+	# Copy button icon (icon only, no box/frame)
 	if copy_btn:
-		copy_btn.icon = IconFactory.get_icon("copy", 0.7)
-		copy_btn.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		copy_btn.text = ""
+		copy_btn.flat = true
+		copy_btn.focus_mode = Control.FOCUS_NONE
+		var empty_sb := StyleBoxEmpty.new()
+		copy_btn.add_theme_stylebox_override("normal", empty_sb)
+		copy_btn.add_theme_stylebox_override("hover", empty_sb)
+		copy_btn.add_theme_stylebox_override("pressed", empty_sb)
+		copy_btn.add_theme_stylebox_override("focus", empty_sb)
+		copy_btn.icon = IconFactory.get_icon("copy", 0.75)
+		copy_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		copy_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 		
 	# Name input style
 	if name_input:
@@ -238,14 +247,14 @@ func _load_stats() -> void:
 func _on_copy_tag() -> void:
 	DisplayServer.clipboard_set(ProfileManager.player_tag)
 	if copy_btn:
-		copy_btn.text = "Olingan!"
-		copy_btn.icon = IconFactory.get_icon("check", 0.7)
+		copy_btn.text = ""
+		copy_btn.icon = IconFactory.get_icon("check", 0.75)
 		var tw := create_tween()
-		tw.tween_interval(1.5)
+		tw.tween_interval(1.2)
 		tw.tween_callback(func():
 			if copy_btn:
-				copy_btn.text = "Nusxa"
-				copy_btn.icon = IconFactory.get_icon("copy", 0.7)
+				copy_btn.text = ""
+				copy_btn.icon = IconFactory.get_icon("copy", 0.75)
 		)
 	_show_toast("ID nusxalandi: #" + ProfileManager.player_tag)
 

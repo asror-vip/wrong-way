@@ -8,7 +8,6 @@ extends Control
 @onready var best_crown_icon: TextureRect = get_node_or_null("TopBar/BestBadge/HBox/CrownIcon")
 @onready var profile_top_btn: Button = get_node_or_null("TopBar/ProfileTopBtn")
 @onready var profile_name_lbl: Label = get_node_or_null("TopBar/ProfileTopBtn/HBox/VBox/ProfileNameLabel")
-@onready var profile_tag_lbl: Label = get_node_or_null("TopBar/ProfileTopBtn/HBox/VBox/ProfileTagLabel")
 @onready var profile_avatar_rect: TextureRect = get_node_or_null("TopBar/ProfileTopBtn/HBox/ProfileAvatar")
 @onready var menu_character: Control = get_node_or_null("MenuCharacter")
 @onready var settings_top_btn: Button = get_node_or_null("TopBar/SettingsTopBtn")
@@ -176,8 +175,6 @@ func _update_profile_button() -> void:
 		profile_top_btn.icon = null
 		if profile_name_lbl:
 			profile_name_lbl.text = ProfileManager.username
-		if profile_tag_lbl:
-			profile_tag_lbl.text = ProfileManager.player_tag
 		if profile_avatar_rect:
 			var av_keys := ["avatar_player", "avatar_ninja", "avatar_shadow", "avatar_robot", "avatar_pro"]
 			var av_idx := (ProfileManager.avatar_index - 1) % av_keys.size()

@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="res://scripts/multiplayer/multiplayer_menu.gd" id="1_mp"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass.tres" id="2_circ"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass_hover.tres" id="3_circ_hov"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_focus_empty.tres" id="4_focus_empty"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.04, 0.05, 0.08, 1)
@@ -119,6 +121,9 @@ offset_bottom = 19.0
 grow_vertical = 2
 focus_mode = 0
 theme_override_styles/normal = ExtResource("2_circ")
+theme_override_styles/hover = ExtResource("3_circ_hov")
+theme_override_styles/pressed = ExtResource("3_circ_hov")
+theme_override_styles/focus = ExtResource("4_focus_empty")
 
 [node name="TitleLabel" type="Label" parent="TopBar"]
 layout_mode = 1
@@ -140,35 +145,6 @@ theme_override_font_sizes/font_size = 18
 text = "< ◇ — 1v1 DUEL MULTIPLAYER — ◇ >"
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="MyIdBar" type="HBoxContainer" parent="TopBar"]
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -260.0
-offset_top = -14.0
-offset_right = -16.0
-offset_bottom = 14.0
-grow_horizontal = 0
-grow_vertical = 2
-theme_override_constants/separation = 10
-alignment = 2
-
-[node name="MyIdLabel" type="Label" parent="TopBar/MyIdBar"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.84, 0.95, 0.9)
-theme_override_font_sizes/font_size = 12
-text = "Sizning ID: #WW-0000"
-
-[node name="CopyIdBtn" type="Button" parent="TopBar/MyIdBar"]
-custom_minimum_size = Vector2(85, 26)
-layout_mode = 2
-focus_mode = 0
-theme_override_font_sizes/font_size = 11
-text = "Nusxa"
 
 [node name="MainContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -229,10 +205,11 @@ text = "Siz"
 horizontal_alignment = 1
 
 [node name="TagLabel" type="Label" parent="MainContainer/LobbyView/PlayersHBox/PlayerACard/VBox"]
+visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0.38, 0.74, 0.97, 1)
 theme_override_font_sizes/font_size = 11
-text = "WW-0000"
+text = ""
 horizontal_alignment = 1
 
 [node name="VsLabel" type="Label" parent="MainContainer/LobbyView/PlayersHBox"]

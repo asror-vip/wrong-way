@@ -94,9 +94,6 @@ func _ready() -> void:
 	_update_selected_level_card()
 	_refresh_player_cards()
 	
-	if my_id_label:
-		my_id_label.text = "Sizning ID: #" + ProfileManager.player_tag
-		
 	if loading_curtain:
 		loading_curtain.visible = false
 
@@ -129,7 +126,9 @@ func _refresh_player_cards() -> void:
 	
 	if player_a_name:
 		player_a_name.text = ProfileManager.username
-		player_a_tag.text = "#" + ProfileManager.player_tag
+	if player_a_tag:
+		player_a_tag.text = ""
+		player_a_tag.visible = false
 		
 	if player_b_name:
 		if DuelService.is_bot_duel or pb_id == "bot_ghost" or d.is_empty():
@@ -535,6 +534,13 @@ func _apply_all_styles() -> void:
 		back_btn.icon = IconFactory.get_icon("arrow_left", 0.9)
 		back_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		back_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+		var circ_norm: StyleBox = preload("res://resources/themes/btn_circle_glass.tres")
+		var circ_hov: StyleBox = preload("res://resources/themes/btn_circle_glass_hover.tres")
+		var empty_f: StyleBox = preload("res://resources/themes/btn_focus_empty.tres")
+		back_btn.add_theme_stylebox_override("normal", circ_norm)
+		back_btn.add_theme_stylebox_override("hover", circ_hov)
+		back_btn.add_theme_stylebox_override("pressed", circ_hov)
+		back_btn.add_theme_stylebox_override("focus", empty_f)
 	if copy_id_btn: _style_button(copy_id_btn, "chip")
 	if play_bot_btn: _style_button(play_bot_btn, "white")
 	if propose_btn: _style_button(propose_btn, "glass")
