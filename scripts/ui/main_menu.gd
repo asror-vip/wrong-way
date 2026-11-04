@@ -70,7 +70,10 @@ func _ready() -> void:
 	
 	ProfileManager.profile_updated.connect(func(_d): _update_profile_button())
 	ProfileManager.profile_loaded.connect(func(_d): _update_profile_button())
-	DuelService.invitation_received.connect(_on_invitation_received)
+	if multiplayer_btn:
+		multiplayer_btn.visible = false
+	if incoming_invite_card:
+		incoming_invite_card.visible = false
 	
 	if duel_lobby_modal:
 		duel_lobby_modal.duel_started.connect(_on_duel_started)

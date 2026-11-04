@@ -294,6 +294,7 @@ text = "   LEADERBOARD"
 alignment = 0
 
 [node name="MultiplayerBtn" type="Button" parent="MenuStack"]
+visible = false
 custom_minimum_size = Vector2(300, 46)
 layout_mode = 2
 focus_mode = 0

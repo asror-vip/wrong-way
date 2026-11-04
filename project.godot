@@ -34,6 +34,7 @@ DuelService="*res://scripts/multiplayer/duel_service.gd"
 window/size/viewport_width=960
 window/size/viewport_height=540
 window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
 window/handheld/orientation=6
 
 [input]

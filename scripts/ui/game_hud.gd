@@ -143,6 +143,14 @@ func _update_deaths_display() -> void:
 		deaths_label.text = "%d" % current_deaths
 
 func _setup_touch_btn(btn: Button, action: String) -> void:
+	btn.gui_input.connect(func(event: InputEvent):
+		if event is InputEventScreenTouch:
+			var st := event as InputEventScreenTouch
+			if st.pressed:
+				Input.action_press(action)
+			else:
+				Input.action_release(action)
+	)
 	btn.button_down.connect(func(): Input.action_press(action))
 	btn.button_up.connect(func(): Input.action_release(action))
 	btn.mouse_exited.connect(func():
