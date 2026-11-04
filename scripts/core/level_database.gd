@@ -65,8 +65,8 @@ func _init_supabase_sync() -> void:
 func fetch_from_supabase() -> void:
 	if not http_sync:
 		return
-	var url := Env.get_supabase_url() + "/rest/v1/levels?select=*&order=id.asc"
-	var anon_key := Env.get_supabase_anon_key()
+	var url: String = Env.get_supabase_url() + "/rest/v1/levels?select=*&order=id.asc"
+	var anon_key: String = Env.get_supabase_anon_key()
 	var headers := [
 		"apikey: " + anon_key,
 		"Authorization: Bearer " + anon_key

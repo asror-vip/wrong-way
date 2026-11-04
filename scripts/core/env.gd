@@ -1,17 +1,19 @@
-extends Node
+class_name Env
+extends RefCounted
 
 # Env - Wrong Way Central Environment & Configuration Manager
 # Parses .env file from project root or falls back to system environment & defaults
 
-var _vars: Dictionary = {}
+static var _vars: Dictionary = {}
+static var _is_loaded: bool = false
 
 const DEFAULT_SUPABASE_URL := "https://wcwjobrrwwjfthpflzhg.supabase.co"
 const DEFAULT_SUPABASE_ANON_KEY := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjd2pvYnJyd3dqZnRocGZsemhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0NzIzNTEsImV4cCI6MjEwOTA0ODM1MX0.16SXhNkvVehgIuNhcGH3l9bDS37mkmbGt12h8F2CyoY"
 
-func _init() -> void:
-	_load_env_file()
-
-func _load_env_file() -> void:
+static func _ensure_loaded() -> void:
+	if _is_loaded:
+		return
+	_is_loaded = true
 	var paths := ["res://.env", ".env"]
 	for p in paths:
 		if FileAccess.file_exists(p):
@@ -31,7 +33,8 @@ func _load_env_file() -> void:
 				f.close()
 				break
 
-func get_var(key: String, default_val: String = "") -> String:
+static func get_var(key: String, default_val: String = "") -> String:
+	_ensure_loaded()
 	if _vars.has(key) and not str(_vars[key]).is_empty():
 		return str(_vars[key])
 	var os_val := OS.get_environment(key)
@@ -39,8 +42,8 @@ func get_var(key: String, default_val: String = "") -> String:
 		return os_val
 	return default_val
 
-func get_supabase_url() -> String:
+static func get_supabase_url() -> String:
 	return get_var("SUPABASE_URL", DEFAULT_SUPABASE_URL)
 
-func get_supabase_anon_key() -> String:
+static func get_supabase_anon_key() -> String:
 	return get_var("SUPABASE_ANON_KEY", DEFAULT_SUPABASE_ANON_KEY)

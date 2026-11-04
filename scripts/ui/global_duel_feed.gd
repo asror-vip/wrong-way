@@ -69,8 +69,8 @@ func fetch_feed() -> void:
 				feed_items = parsed
 				current_feed_idx = current_feed_idx % feed_items.size()
 	)
-	var url := Env.get_supabase_url() + "/rest/v1/rpc/get_global_duel_feed"
-	var anon_key := Env.get_supabase_anon_key()
+	var url: String = Env.get_supabase_url() + "/rest/v1/rpc/get_global_duel_feed"
+	var anon_key: String = Env.get_supabase_anon_key()
 	var headers := PackedStringArray([
 		"apikey: " + anon_key,
 		"Authorization: Bearer " + anon_key,

@@ -89,7 +89,14 @@ func _apply_profile_dict(data: Dictionary) -> void:
 	if data.has("id"): player_id = str(data["id"])
 	if data.has("player_tag"): player_tag = str(data["player_tag"])
 	if data.has("username"): username = str(data["username"])
-	if data.has("email") and data["email"] != null: email = str(data["email"])
+	if data.has("email") and data["email"] != null and typeof(data["email"]) == TYPE_STRING:
+		var raw_e: String = str(data["email"]).strip_edges()
+		if raw_e != "<null>" and raw_e != "null" and not raw_e.is_empty():
+			email = raw_e
+		else:
+			email = ""
+	else:
+		email = ""
 	if data.has("avatar_url"):
 		var av: String = str(data["avatar_url"])
 		if av.begins_with("av_"):
@@ -122,8 +129,8 @@ func sync_with_supabase() -> void:
 	if http_guest.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
 		http_guest.cancel_request()
 		
-	var url := Env.get_supabase_url() + "/rest/v1/rpc/register_or_login_guest"
-	var anon_key := Env.get_supabase_anon_key()
+	var url: String = Env.get_supabase_url() + "/rest/v1/rpc/register_or_login_guest"
+	var anon_key: String = Env.get_supabase_anon_key()
 	var headers := [
 		"apikey: " + anon_key,
 		"Authorization: Bearer " + anon_key,
@@ -155,17 +162,17 @@ func _on_guest_completed(_result: int, response_code: int, _headers: PackedStrin
 func login_with_google(google_email: String, display_name: String = "") -> void:
 	if not http_google:
 		return
-	if http_google.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
-		http_google.cancel_request()
-		
 	var clean_email := google_email.strip_edges().to_lower()
+	if clean_email.is_empty() or clean_email == "<null>" or clean_email == "null" or not clean_email.contains("@"):
+		print("ProfileManager: Noto'g'ri email bilan Google kirish bekor qilindi: ", clean_email)
+		return
 	var clean_name := display_name.strip_edges() if not display_name.is_empty() else username
 	add_known_google_account(clean_email, clean_name)
 	
 	print("ProfileManager: Google orqali kirish so'rovi yuborilmoqda: ", clean_email)
 	
-	var url := Env.get_supabase_url() + "/rest/v1/rpc/login_or_link_google"
-	var anon_key := Env.get_supabase_anon_key()
+	var url: String = Env.get_supabase_url() + "/rest/v1/rpc/login_or_link_google"
+	var anon_key: String = Env.get_supabase_anon_key()
 	var headers := [
 		"apikey: " + anon_key,
 		"Authorization: Bearer " + anon_key,
@@ -279,8 +286,8 @@ func update_profile(new_name: String, new_avatar_idx: int) -> void:
 	profile_updated.emit(cur)
 	
 	if is_ready_online and not player_id.is_empty():
-		var url := Env.get_supabase_url() + "/rest/v1/profiles?id=eq." + player_id
-		var anon_key := Env.get_supabase_anon_key()
+		var url: String = Env.get_supabase_url() + "/rest/v1/profiles?id=eq." + player_id
+		var anon_key: String = Env.get_supabase_anon_key()
 		var headers := [
 			"apikey: " + anon_key,
 			"Authorization: Bearer " + anon_key,
