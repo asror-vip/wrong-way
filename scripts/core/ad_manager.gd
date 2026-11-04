@@ -5,6 +5,12 @@ extends Node
 # - Interstitial (To'liq ekranli oraliq reklama): Triggers immediately when a player replays an already beaten level.
 # - Rewarded Video: Triggers when player watches an ad to unlock a level (alternating "cheriz" rule).
 
+# Google AdMob Identifikatorlari (Official Production IDs)
+const ADMOB_APP_ID := "ca-app-pub-9009277559004471~1297962659"
+const ADMOB_BANNER_ID := "ca-app-pub-9009277559004471/5320968143"
+const ADMOB_INTERSTITIAL_ID := "ca-app-pub-9009277559004471/1106390961"
+const ADMOB_REWARDED_ID := "ca-app-pub-9009277559004471/5903035034"
+
 signal banner_visibility_changed(is_visible: bool)
 signal rewarded_ad_started
 signal rewarded_ad_completed(reward_granted: bool)
@@ -478,28 +484,63 @@ func _process(delta: float) -> void:
 func _init_native_admob() -> void:
 	if Engine.has_singleton("PoingGodotAdMob"):
 		var admob = Engine.get_singleton("PoingGodotAdMob")
-		print("AdManager: Native Android AdMob aniqlandi")
+		print("AdManager: Native Android PoingGodotAdMob aniqlandi")
+		if admob.has_method("initialize"):
+			admob.initialize()
+		if admob.has_method("load_banner"):
+			admob.load_banner(ADMOB_BANNER_ID, false, 0)
+		if admob.has_method("load_interstitial"):
+			admob.load_interstitial(ADMOB_INTERSTITIAL_ID)
+		if admob.has_method("load_rewarded_video"):
+			admob.load_rewarded_video(ADMOB_REWARDED_ID)
+	elif Engine.has_singleton("GodotAdMob"):
+		var admob = Engine.get_singleton("GodotAdMob")
+		print("AdManager: Native Android GodotAdMob aniqlandi")
+		if admob.has_method("init"):
+			admob.init(false, get_instance_id())
+		if admob.has_method("loadBanner"):
+			admob.loadBanner(ADMOB_BANNER_ID, true)
+		if admob.has_method("loadInterstitial"):
+			admob.loadInterstitial(ADMOB_INTERSTITIAL_ID)
+		if admob.has_method("loadRewardedVideo"):
+			admob.loadRewardedVideo(ADMOB_REWARDED_ID)
 
 func _native_show_banner() -> void:
 	if Engine.has_singleton("PoingGodotAdMob"):
 		var admob = Engine.get_singleton("PoingGodotAdMob")
 		if admob.has_method("show_banner"):
 			admob.show_banner()
+	elif Engine.has_singleton("GodotAdMob"):
+		var admob = Engine.get_singleton("GodotAdMob")
+		if admob.has_method("showBanner"):
+			admob.showBanner()
 
 func _native_hide_banner() -> void:
 	if Engine.has_singleton("PoingGodotAdMob"):
 		var admob = Engine.get_singleton("PoingGodotAdMob")
 		if admob.has_method("hide_banner"):
 			admob.hide_banner()
+	elif Engine.has_singleton("GodotAdMob"):
+		var admob = Engine.get_singleton("GodotAdMob")
+		if admob.has_method("hideBanner"):
+			admob.hideBanner()
 
 func _native_show_interstitial() -> void:
 	if Engine.has_singleton("PoingGodotAdMob"):
 		var admob = Engine.get_singleton("PoingGodotAdMob")
 		if admob.has_method("show_interstitial"):
 			admob.show_interstitial()
+	elif Engine.has_singleton("GodotAdMob"):
+		var admob = Engine.get_singleton("GodotAdMob")
+		if admob.has_method("showInterstitial"):
+			admob.showInterstitial()
 
 func _native_show_rewarded() -> void:
 	if Engine.has_singleton("PoingGodotAdMob"):
 		var admob = Engine.get_singleton("PoingGodotAdMob")
 		if admob.has_method("show_rewarded_video"):
 			admob.show_rewarded_video()
+	elif Engine.has_singleton("GodotAdMob"):
+		var admob = Engine.get_singleton("GodotAdMob")
+		if admob.has_method("showRewardedVideo"):
+			admob.showRewardedVideo()
