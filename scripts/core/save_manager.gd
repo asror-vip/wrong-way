@@ -19,6 +19,9 @@ var shake_enabled: bool = true
 var current_language: String = "uz"
 var custom_touch_layout: Dictionary = {}
 
+# Developer / Test rejimi: barcha daraja va boblarni sinov uchun ochiq qilish
+var debug_unlock_all: bool = true
+
 # Ad-unlock & Navigation Context
 var ad_unlocked_levels: Array[int] = []
 var attempted_levels: Array[int] = []
@@ -95,6 +98,8 @@ func reset_touch_layout() -> void:
 	touch_layout_changed.emit()
 
 func is_level_unlocked(lvl: int) -> bool:
+	if debug_unlock_all:
+		return true
 	if lvl == 1:
 		return true
 	return unlocked_levels.has(lvl) or ad_unlocked_levels.has(lvl)
@@ -398,6 +403,8 @@ func get_chapter_total_time_sec(chapter: int) -> int:
 	return total_sec
 
 func is_chapter_unlocked(chapter: int) -> bool:
+	if debug_unlock_all:
+		return true
 	if chapter == 1:
 		return true
 	elif chapter == 2:

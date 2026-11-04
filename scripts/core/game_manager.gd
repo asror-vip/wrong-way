@@ -40,6 +40,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			restart_current_level()
 		elif event.keycode == KEY_F11:
 			toggle_fullscreen()
+		elif event.keycode == KEY_F10:
+			var sm = get_node_or_null("/root/SaveManager")
+			if sm and "debug_unlock_all" in sm:
+				sm.debug_unlock_all = not sm.debug_unlock_all
+				print("SaveManager: debug_unlock_all = ", sm.debug_unlock_all)
 
 
 func start_game(level_id: int) -> void:

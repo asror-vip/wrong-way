@@ -620,7 +620,7 @@ func _on_level_btn_pressed(lvl: int) -> void:
 		return
 		
 	var already_beaten := SaveManager.is_level_completed(lvl)
-	if already_beaten:
+	if already_beaten and not SaveManager.debug_unlock_all:
 		var adm = get_node_or_null("/root/AdManager")
 		if adm and adm.has_method("show_interstitial_ad"):
 			adm.show_interstitial_ad(func():
