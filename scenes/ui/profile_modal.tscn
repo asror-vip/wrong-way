@@ -4,6 +4,7 @@
 [ext_resource type="StyleBox" path="res://resources/themes/panel_obsidian_modal.tres" id="2_obsidian"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white.tres" id="3_white"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass.tres" id="4_glass"]
+[ext_resource type="PackedScene" path="res://scenes/ui/auth_modal.tscn" id="5_auth"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_avatar_frame"]
 bg_color = Color(0.06, 0.08, 0.13, 0.9)
@@ -167,6 +168,13 @@ theme_override_colors/font_color = Color(0.55, 0.62, 0.75, 0.9)
 theme_override_font_sizes/font_size = 11
 text = "• Mehmon"
 
+[node name="AuthActionBtn" type="Button" parent="CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox/TagHBox"]
+custom_minimum_size = Vector2(110, 24)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 11
+text = "Google bilan ulash"
+
 [node name="StatsHBox" type="HBoxContainer" parent="CenterContainer/Panel/ContentVBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
@@ -291,3 +299,6 @@ grow_vertical = 0
 theme_override_colors/font_color = Color(0.38, 0.85, 0.45, 1)
 theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
+
+[node name="AuthModal" parent="." instance=ExtResource("5_auth")]
+visible = false

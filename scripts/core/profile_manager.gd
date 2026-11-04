@@ -7,6 +7,7 @@ extends Node
 
 signal profile_loaded(profile_data: Dictionary)
 signal profile_updated(profile_data: Dictionary)
+signal google_login_finished(success: bool, error_msg: String)
 
 const PROFILE_CACHE_PATH := "user://player_profile.json"
 const FRIENDS_CACHE_PATH := "user://saved_friends.json"
@@ -21,6 +22,7 @@ var player_tag: String = "WW-0000"
 var username: String = "Player"
 var avatar_index: int = 1
 var auth_provider: String = "guest"
+var email: String = ""
 var is_ready_online: bool = false
 var saved_friends: Array = []
 
@@ -78,6 +80,7 @@ func _apply_profile_dict(data: Dictionary) -> void:
 	if data.has("id"): player_id = str(data["id"])
 	if data.has("player_tag"): player_tag = str(data["player_tag"])
 	if data.has("username"): username = str(data["username"])
+	if data.has("email"): email = str(data["email"])
 	if data.has("avatar_url"):
 		var av: String = str(data["avatar_url"])
 		if av.begins_with("av_"):
@@ -94,6 +97,7 @@ func get_profile_dict() -> Dictionary:
 		"id": player_id,
 		"player_tag": player_tag,
 		"username": username,
+		"email": email,
 		"avatar_index": avatar_index,
 		"avatar_url": "av_" + str(avatar_index),
 		"auth_provider": auth_provider,
@@ -124,10 +128,36 @@ func _on_auth_completed(_result: int, response_code: int, _headers: PackedString
 			_apply_profile_dict(parsed)
 			_save_local_cache(parsed)
 			is_ready_online = true
-			print("ProfileManager: Foydalanuvchi tizimga ulandi: ", username, " (", player_tag, ")")
+			print("ProfileManager: Foydalanuvchi tizimga ulandi: ", username, " (", player_tag, ", ", auth_provider, ")")
 			profile_updated.emit(get_profile_dict())
+			google_login_finished.emit(true, "")
 	else:
 		print("ProfileManager: Oflayn rejimda davom etilmoqda (HTTP %d)" % response_code)
+		google_login_finished.emit(false, "Serverga ulanib bo'lmadi")
+
+func login_with_google(google_email: String, display_name: String = "") -> void:
+	if not http_auth:
+		return
+	var url := SUPABASE_URL + "/rest/v1/rpc/login_or_link_google"
+	var headers := [
+		"apikey: " + SUPABASE_ANON_KEY,
+		"Authorization: Bearer " + SUPABASE_ANON_KEY,
+		"Content-Type: application/json"
+	]
+	var payload := JSON.stringify({
+		"p_device_id": device_id,
+		"p_email": google_email.strip_edges().to_lower(),
+		"p_username": display_name.strip_edges() if not display_name.is_empty() else username,
+		"p_avatar_url": "av_" + str(avatar_index)
+	})
+	http_auth.request(url, headers, HTTPClient.METHOD_POST, payload)
+
+func logout_to_guest() -> void:
+	auth_provider = "guest"
+	email = ""
+	_save_local_cache(get_profile_dict())
+	profile_updated.emit(get_profile_dict())
+	sync_with_supabase()
 
 func update_profile(new_name: String, new_avatar_idx: int) -> void:
 	username = new_name.strip_edges()

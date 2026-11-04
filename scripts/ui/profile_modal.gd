@@ -17,6 +17,8 @@ extends Control
 @onready var tag_label: Label = get_node_or_null("CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox/TagHBox/TagPanel/TagLabel")
 @onready var copy_btn: Button = get_node_or_null("CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox/TagHBox/CopyBtn")
 @onready var auth_label: Label = get_node_or_null("CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox/TagHBox/AuthLabel")
+@onready var auth_action_btn: Button = get_node_or_null("CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox/TagHBox/AuthActionBtn")
+@onready var auth_modal: Control = get_node_or_null("AuthModal")
 
 @onready var avatar_preview: TextureRect = get_node_or_null("CenterContainer/Panel/ContentVBox/HeroHBox/AvatarFrame/AvatarPreview")
 @onready var avatar_grid: HBoxContainer = get_node_or_null("CenterContainer/Panel/ContentVBox/AvatarSection/AvatarGrid")
@@ -42,6 +44,8 @@ func _ready() -> void:
 	if cancel_btn: cancel_btn.pressed.connect(close)
 	if save_btn: save_btn.pressed.connect(_on_save_pressed)
 	if copy_btn: copy_btn.pressed.connect(_on_copy_tag)
+	if auth_action_btn: auth_action_btn.pressed.connect(_on_auth_action_pressed)
+	ProfileManager.profile_updated.connect(func(_d): _update_auth_ui())
 	
 	_apply_modal_styles()
 	_setup_avatar_buttons()
@@ -64,17 +68,36 @@ func open() -> void:
 	_update_avatar_preview()
 	_refresh_avatar_grid_styles()
 	_load_stats()
-	
+	_update_auth_ui()
+			
+	if toast_label:
+		toast_label.text = ""
+
+func _update_auth_ui() -> void:
 	if auth_label:
 		if ProfileManager.auth_provider == "google":
-			auth_label.text = "• Google Tasdiqlangan"
+			auth_label.text = "• Google Ulangan"
 			auth_label.add_theme_color_override("font_color", Color(0.38, 0.85, 0.55))
 		else:
 			auth_label.text = "• Mehmon Hisobi"
 			auth_label.add_theme_color_override("font_color", Color(0.55, 0.62, 0.75))
 			
-	if toast_label:
-		toast_label.text = ""
+	if auth_action_btn:
+		if ProfileManager.auth_provider == "google":
+			auth_action_btn.text = "Chiqish"
+			auth_action_btn.icon = null
+		else:
+			auth_action_btn.text = " Google"
+			auth_action_btn.icon = IconFactory.get_icon("google", 0.75)
+
+func _on_auth_action_pressed() -> void:
+	SoundManager.play("click")
+	if ProfileManager.auth_provider == "google":
+		ProfileManager.logout_to_guest()
+		_show_toast("Google hisobidan chiqildi")
+	else:
+		if auth_modal and auth_modal.has_method("open"):
+			auth_modal.open()
 
 func close() -> void:
 	var tween := create_tween()
@@ -147,6 +170,23 @@ func _apply_modal_styles() -> void:
 		levels_icon.texture = IconFactory.get_icon("map", 0.85)
 	if best_icon:
 		best_icon.texture = IconFactory.get_icon("trophy_white", 0.85)
+		
+	if auth_action_btn:
+		var a_sb := StyleBoxFlat.new()
+		a_sb.bg_color = Color(0.12, 0.16, 0.24, 0.85)
+		a_sb.border_color = Color(0.30, 0.45, 0.65, 0.6)
+		a_sb.set_border_width_all(1)
+		a_sb.set_corner_radius_all(12)
+		a_sb.content_margin_left = 10
+		a_sb.content_margin_right = 10
+		a_sb.content_margin_top = 2
+		a_sb.content_margin_bottom = 2
+		auth_action_btn.add_theme_stylebox_override("normal", a_sb)
+		var a_hov := a_sb.duplicate() as StyleBoxFlat
+		a_hov.bg_color = Color(0.18, 0.25, 0.38, 0.95)
+		a_hov.border_color = Color(0.38, 0.74, 0.97, 0.9)
+		auth_action_btn.add_theme_stylebox_override("hover", a_hov)
+		auth_action_btn.add_theme_stylebox_override("pressed", a_hov)
 
 func _setup_avatar_buttons() -> void:
 	if not avatar_grid:

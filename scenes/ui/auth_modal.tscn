@@ -1,0 +1,156 @@
+[gd_scene load_steps=6 format=3 uid="uid://authmodal001"]
+
+[ext_resource type="Script" path="res://scripts/ui/auth_modal.gd" id="1_auth"]
+[ext_resource type="StyleBox" path="res://resources/themes/panel_obsidian_modal.tres" id="2_card"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass.tres" id="3_circ"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white.tres" id="4_white"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass.tres" id="5_glass"]
+
+[node name="AuthModal" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_auth")
+
+[node name="DimOverlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.03, 0.05, 0.75)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CardPanel" type="Panel" parent="CenterContainer"]
+custom_minimum_size = Vector2(420, 320)
+layout_mode = 2
+theme_override_styles/panel = ExtResource("2_card")
+
+[node name="CloseBtn" type="Button" parent="CenterContainer/CardPanel"]
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -44.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 44.0
+grow_horizontal = 0
+focus_mode = 0
+theme_override_styles/normal = ExtResource("3_circ")
+text = "✕"
+
+[node name="ContentVBox" type="VBoxContainer" parent="CenterContainer/CardPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = 24.0
+offset_right = -28.0
+offset_bottom = -28.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/CardPanel/ContentVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "< ◇ — HISOB BILAN KIRISH — ◇ >"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="CenterContainer/CardPanel/ContentVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.8, 0.92, 0.85)
+theme_override_font_sizes/font_size = 12
+text = "Yutuqlaringiz va yulduzlaringizni bulutda saqlang:"
+horizontal_alignment = 1
+
+[node name="SelectView" type="VBoxContainer" parent="CenterContainer/CardPanel/ContentVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="GoogleBtn" type="Button" parent="CenterContainer/CardPanel/ContentVBox/SelectView"]
+custom_minimum_size = Vector2(280, 46)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.08, 0.1, 0.15, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = ExtResource("4_white")
+text = "   Google orqali kirish"
+alignment = 1
+
+[node name="GuestBtn" type="Button" parent="CenterContainer/CardPanel/ContentVBox/SelectView"]
+custom_minimum_size = Vector2(280, 46)
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = ExtResource("5_glass")
+text = "   Mehmon sifatida davom etish"
+alignment = 1
+
+[node name="GooglePickerView" type="VBoxContainer" parent="CenterContainer/CardPanel/ContentVBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PickerTitle" type="Label" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "Google hisobingizni tanlang:"
+horizontal_alignment = 1
+
+[node name="AccountsVBox" type="VBoxContainer" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CustomEmailRow" type="HBoxContainer" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="EmailInput" type="LineEdit" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView/CustomEmailRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Boshqa email (user@gmail.com)"
+
+[node name="ConnectBtn" type="Button" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView/CustomEmailRow"]
+custom_minimum_size = Vector2(80, 32)
+layout_mode = 2
+text = "Ulash"
+
+[node name="PickerBackBtn" type="Button" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView"]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 2
+focus_mode = 0
+text = "   Ortga"
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/CardPanel"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -26.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+vertical_alignment = 1
