@@ -69,8 +69,11 @@ const CHAPTER_3_POS: Array[Vector2] = UNIFIED_ROAD_POS
 
 var style_white = preload("res://resources/themes/btn_capsule_white.tres")
 var style_white_hov = preload("res://resources/themes/btn_capsule_white_hover.tres")
+var style_white_press = preload("res://resources/themes/btn_capsule_white_pressed.tres")
 var style_glass = preload("res://resources/themes/btn_capsule_glass.tres")
 var style_glass_hov = preload("res://resources/themes/btn_capsule_glass_hover.tres")
+var style_glass_press = preload("res://resources/themes/btn_capsule_glass_pressed.tres")
+var empty_focus = preload("res://resources/themes/btn_focus_empty.tres")
 
 var current_chapter: int = 1
 var is_animating: bool = false
@@ -139,6 +142,11 @@ func _setup_top_bar() -> void:
 		back_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		back_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 		back_btn.text = ""
+		var empty_sb := StyleBoxEmpty.new()
+		back_btn.add_theme_stylebox_override("normal", empty_sb)
+		back_btn.add_theme_stylebox_override("hover", empty_sb)
+		back_btn.add_theme_stylebox_override("pressed", empty_sb)
+		back_btn.add_theme_stylebox_override("focus", empty_sb)
 		if not back_btn.pressed.is_connected(_on_back_pressed):
 			back_btn.pressed.connect(_on_back_pressed)
 	
@@ -362,10 +370,14 @@ func _set_btn_active(btn: Button, active: bool) -> void:
 	if active:
 		btn.add_theme_stylebox_override("normal", style_white)
 		btn.add_theme_stylebox_override("hover", style_white_hov)
+		btn.add_theme_stylebox_override("pressed", style_white_press)
+		btn.add_theme_stylebox_override("focus", empty_focus)
 		btn.add_theme_color_override("font_color", Color(0.08, 0.08, 0.12))
 	else:
 		btn.add_theme_stylebox_override("normal", style_glass)
 		btn.add_theme_stylebox_override("hover", style_glass_hov)
+		btn.add_theme_stylebox_override("pressed", style_glass_press)
+		btn.add_theme_stylebox_override("focus", empty_focus)
 		btn.add_theme_color_override("font_color", Color(0.85, 0.88, 0.94))
 
 func _on_language_changed(_lang: String) -> void:

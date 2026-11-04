@@ -187,6 +187,7 @@ func _apply_modal_styles() -> void:
 		a_hov.border_color = Color(0.38, 0.74, 0.97, 0.9)
 		auth_action_btn.add_theme_stylebox_override("hover", a_hov)
 		auth_action_btn.add_theme_stylebox_override("pressed", a_hov)
+		auth_action_btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 
 func _setup_avatar_buttons() -> void:
 	if not avatar_grid:

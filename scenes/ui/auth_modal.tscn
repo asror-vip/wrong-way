@@ -1,10 +1,17 @@
-[gd_scene load_steps=6 format=3 uid="uid://authmodal001"]
+[gd_scene load_steps=13 format=3 uid="uid://uthmodal001"]
 
 [ext_resource type="Script" path="res://scripts/ui/auth_modal.gd" id="1_auth"]
 [ext_resource type="StyleBox" path="res://resources/themes/panel_obsidian_modal.tres" id="2_card"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass.tres" id="3_circ"]
-[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white.tres" id="4_white"]
-[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass.tres" id="5_glass"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass_hover.tres" id="4_circ_hov"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass_pressed.tres" id="5_circ_press"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white.tres" id="6_white"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white_hover.tres" id="7_white_hov"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white_pressed.tres" id="8_white_press"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass.tres" id="9_glass"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass_hover.tres" id="10_glass_hov"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass_pressed.tres" id="11_glass_press"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_focus_empty.tres" id="12_focus"]
 
 [node name="AuthModal" type="Control"]
 layout_mode = 3
@@ -22,7 +29,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.02, 0.03, 0.05, 0.75)
+color = Color(0.02, 0.03, 0.05, 0.78)
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -33,7 +40,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="CardPanel" type="Panel" parent="CenterContainer"]
-custom_minimum_size = Vector2(420, 320)
+custom_minimum_size = Vector2(440, 360)
 layout_mode = 2
 theme_override_styles/panel = ExtResource("2_card")
 
@@ -43,13 +50,18 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -44.0
-offset_top = 10.0
-offset_right = -10.0
-offset_bottom = 44.0
+offset_left = -46.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = 46.0
 grow_horizontal = 0
 focus_mode = 0
+theme_override_colors/font_color = Color(0.85, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 14
 theme_override_styles/normal = ExtResource("3_circ")
+theme_override_styles/hover = ExtResource("4_circ_hov")
+theme_override_styles/pressed = ExtResource("5_circ_press")
+theme_override_styles/focus = ExtResource("12_focus")
 text = "✕"
 
 [node name="ContentVBox" type="VBoxContainer" parent="CenterContainer/CardPanel"]
@@ -58,18 +70,20 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 28.0
-offset_top = 24.0
+offset_top = 22.0
 offset_right = -28.0
 offset_bottom = -28.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 alignment = 1
 
 [node name="TitleLabel" type="Label" parent="CenterContainer/CardPanel/ContentVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_shadow_color = Color(0.22, 0.74, 0.97, 0.35)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 17
 text = "< ◇ — HISOB BILAN KIRISH — ◇ >"
 horizontal_alignment = 1
 
@@ -86,24 +100,40 @@ theme_override_constants/separation = 12
 alignment = 1
 
 [node name="GoogleBtn" type="Button" parent="CenterContainer/CardPanel/ContentVBox/SelectView"]
-custom_minimum_size = Vector2(280, 46)
+custom_minimum_size = Vector2(290, 48)
 layout_mode = 2
+size_flags_horizontal = 4
 focus_mode = 0
 theme_override_colors/font_color = Color(0.08, 0.1, 0.15, 1)
 theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = ExtResource("4_white")
+theme_override_styles/normal = ExtResource("6_white")
+theme_override_styles/hover = ExtResource("7_white_hov")
+theme_override_styles/pressed = ExtResource("8_white_press")
+theme_override_styles/focus = ExtResource("12_focus")
 text = "   Google orqali kirish"
 alignment = 1
 
 [node name="GuestBtn" type="Button" parent="CenterContainer/CardPanel/ContentVBox/SelectView"]
-custom_minimum_size = Vector2(280, 46)
+custom_minimum_size = Vector2(290, 46)
 layout_mode = 2
+size_flags_horizontal = 4
 focus_mode = 0
 theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
 theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = ExtResource("5_glass")
+theme_override_styles/normal = ExtResource("9_glass")
+theme_override_styles/hover = ExtResource("10_glass_hov")
+theme_override_styles/pressed = ExtResource("11_glass_press")
+theme_override_styles/focus = ExtResource("12_focus")
 text = "   Mehmon sifatida davom etish"
 alignment = 1
+
+[node name="HintLabel" type="Label" parent="CenterContainer/CardPanel/ContentVBox/SelectView"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.52, 0.65, 0.8)
+theme_override_font_sizes/font_size = 10
+text = "Mehmon rejimida o'yin ma'lumotlari faqat ushbu qurilmada saqlanadi"
+horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="GooglePickerView" type="VBoxContainer" parent="CenterContainer/CardPanel/ContentVBox"]
 visible = false
@@ -112,13 +142,19 @@ theme_override_constants/separation = 10
 
 [node name="PickerTitle" type="Label" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.9, 1, 1)
+theme_override_colors/font_color = Color(0.9, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 13
 text = "Google hisobingizni tanlang:"
 horizontal_alignment = 1
 
-[node name="AccountsVBox" type="VBoxContainer" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView"]
+[node name="AccountsScroll" type="ScrollContainer" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView"]
+custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="AccountsVBox" type="VBoxContainer" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView/AccountsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 8
 
 [node name="CustomEmailRow" type="HBoxContainer" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView"]
@@ -126,19 +162,35 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="EmailInput" type="LineEdit" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView/CustomEmailRow"]
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
 placeholder_text = "Boshqa email (user@gmail.com)"
 
 [node name="ConnectBtn" type="Button" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView/CustomEmailRow"]
-custom_minimum_size = Vector2(80, 32)
+custom_minimum_size = Vector2(86, 34)
 layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.08, 0.1, 0.15, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = ExtResource("6_white")
+theme_override_styles/hover = ExtResource("7_white_hov")
+theme_override_styles/pressed = ExtResource("8_white_press")
+theme_override_styles/focus = ExtResource("12_focus")
 text = "Ulash"
 
 [node name="PickerBackBtn" type="Button" parent="CenterContainer/CardPanel/ContentVBox/GooglePickerView"]
-custom_minimum_size = Vector2(0, 32)
+custom_minimum_size = Vector2(130, 32)
 layout_mode = 2
+size_flags_horizontal = 4
 focus_mode = 0
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = ExtResource("9_glass")
+theme_override_styles/hover = ExtResource("10_glass_hov")
+theme_override_styles/pressed = ExtResource("11_glass_press")
+theme_override_styles/focus = ExtResource("12_focus")
 text = "   Ortga"
 
 [node name="StatusLabel" type="Label" parent="CenterContainer/CardPanel"]

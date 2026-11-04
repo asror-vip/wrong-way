@@ -1,10 +1,18 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/profile_modal.gd" id="1_pm"]
 [ext_resource type="StyleBox" path="res://resources/themes/panel_obsidian_modal.tres" id="2_obsidian"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white.tres" id="3_white"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass.tres" id="4_glass"]
 [ext_resource type="PackedScene" path="res://scenes/ui/auth_modal.tscn" id="5_auth"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white_hover.tres" id="6_white_hov"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white_pressed.tres" id="7_white_press"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass_hover.tres" id="8_glass_hov"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass_pressed.tres" id="9_glass_press"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass.tres" id="10_circ"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass_hover.tres" id="11_circ_hov"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_circle_glass_pressed.tres" id="12_circ_press"]
+[ext_resource type="StyleBox" path="res://resources/themes/btn_focus_empty.tres" id="13_focus"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_avatar_frame"]
 bg_color = Color(0.06, 0.08, 0.13, 0.9)
@@ -93,6 +101,12 @@ offset_right = -12.0
 offset_bottom = 48.0
 grow_horizontal = 0
 focus_mode = 0
+theme_override_colors/font_color = Color(0.85, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = ExtResource("10_circ")
+theme_override_styles/hover = ExtResource("11_circ_hov")
+theme_override_styles/pressed = ExtResource("12_circ_press")
+theme_override_styles/focus = ExtResource("13_focus")
 text = "✕"
 
 [node name="ContentVBox" type="VBoxContainer" parent="CenterContainer/Panel"]
@@ -169,10 +183,15 @@ theme_override_font_sizes/font_size = 11
 text = "• Mehmon"
 
 [node name="AuthActionBtn" type="Button" parent="CenterContainer/Panel/ContentVBox/HeroHBox/InfoVBox/TagHBox"]
-custom_minimum_size = Vector2(110, 24)
+custom_minimum_size = Vector2(110, 26)
 layout_mode = 2
 focus_mode = 0
+theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
 theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = ExtResource("4_glass")
+theme_override_styles/hover = ExtResource("8_glass_hov")
+theme_override_styles/pressed = ExtResource("9_glass_press")
+theme_override_styles/focus = ExtResource("13_focus")
 text = "Google bilan ulash"
 
 [node name="StatsHBox" type="HBoxContainer" parent="CenterContainer/Panel/ContentVBox"]
@@ -276,6 +295,9 @@ layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(0.85, 0.9, 0.98, 1)
 theme_override_styles/normal = ExtResource("4_glass")
+theme_override_styles/hover = ExtResource("8_glass_hov")
+theme_override_styles/pressed = ExtResource("9_glass_press")
+theme_override_styles/focus = ExtResource("13_focus")
 text = "Bekor qilish"
 
 [node name="SaveBtn" type="Button" parent="CenterContainer/Panel/ContentVBox/ActionHBox"]
@@ -284,6 +306,9 @@ layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(0.08, 0.1, 0.15, 1)
 theme_override_styles/normal = ExtResource("3_white")
+theme_override_styles/hover = ExtResource("6_white_hov")
+theme_override_styles/pressed = ExtResource("7_white_press")
+theme_override_styles/focus = ExtResource("13_focus")
 text = "Saqlash"
 
 [node name="ToastLabel" type="Label" parent="CenterContainer/Panel"]

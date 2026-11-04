@@ -11,6 +11,7 @@ signal google_login_finished(success: bool, error_msg: String)
 
 const PROFILE_CACHE_PATH := "user://player_profile.json"
 const FRIENDS_CACHE_PATH := "user://saved_friends.json"
+const GOOGLE_ACCOUNTS_PATH := "user://google_accounts.json"
 const DEVICE_ID_PATH := "user://device_id.txt"
 
 const SUPABASE_URL := "https://wcwjobrrwwjfthpflzhg.supabase.co"
@@ -138,6 +139,10 @@ func _on_auth_completed(_result: int, response_code: int, _headers: PackedString
 func login_with_google(google_email: String, display_name: String = "") -> void:
 	if not http_auth:
 		return
+	var clean_email := google_email.strip_edges().to_lower()
+	var clean_name := display_name.strip_edges() if not display_name.is_empty() else username
+	add_known_google_account(clean_email, clean_name)
+	
 	var url := SUPABASE_URL + "/rest/v1/rpc/login_or_link_google"
 	var headers := [
 		"apikey: " + SUPABASE_ANON_KEY,
@@ -146,11 +151,77 @@ func login_with_google(google_email: String, display_name: String = "") -> void:
 	]
 	var payload := JSON.stringify({
 		"p_device_id": device_id,
-		"p_email": google_email.strip_edges().to_lower(),
-		"p_username": display_name.strip_edges() if not display_name.is_empty() else username,
+		"p_email": clean_email,
+		"p_username": clean_name,
 		"p_avatar_url": "av_" + str(avatar_index)
 	})
 	http_auth.request(url, headers, HTTPClient.METHOD_POST, payload)
+
+func get_known_google_accounts() -> Array:
+	var accounts: Array = []
+	if FileAccess.file_exists(GOOGLE_ACCOUNTS_PATH):
+		var f := FileAccess.open(GOOGLE_ACCOUNTS_PATH, FileAccess.READ)
+		if f:
+			var txt := f.get_as_text()
+			f.close()
+			var parsed = JSON.parse_string(txt)
+			if parsed is Array:
+				accounts = parsed
+	
+	# Agar saqlangan email bo'lsa va ro'yxatda yo'q bo'lsa, birinchi o'ringa qo'shish
+	if not email.is_empty():
+		var found := false
+		for acc in accounts:
+			if acc is Dictionary and acc.get("email", "") == email:
+				found = true
+				break
+		if not found:
+			accounts.insert(0, {
+				"email": email,
+				"name": username if not username.is_empty() else "Google Player",
+				"avatar": "av_" + str(avatar_index)
+			})
+			
+	# Agar umuman hisob bo'lmasa, tizimdan avtomatik taklif yaratish
+	if accounts.is_empty():
+		var os_user := OS.get_environment("USERNAME")
+		if os_user.is_empty():
+			os_user = "Player"
+		var fallback_email := os_user.to_lower().replace(" ", "") + "@gmail.com"
+		accounts.append({
+			"email": fallback_email,
+			"name": os_user.capitalize(),
+			"avatar": "av_1"
+		})
+		
+	return accounts
+
+func add_known_google_account(acc_email: String, acc_name: String = "") -> void:
+	if acc_email.is_empty():
+		return
+	var clean_email := acc_email.strip_edges().to_lower()
+	var accounts := get_known_google_accounts()
+	
+	# Mavjud bo'lsa olib tashlab, eng boshiga qo'yish
+	for i in range(accounts.size() - 1, -1, -1):
+		var item = accounts[i]
+		if item is Dictionary and item.get("email", "").to_lower() == clean_email:
+			accounts.remove_at(i)
+			
+	var display := acc_name if not acc_name.is_empty() else clean_email.split("@")[0].capitalize()
+	accounts.insert(0, {
+		"email": clean_email,
+		"name": display,
+		"avatar": "av_" + str(avatar_index)
+	})
+	
+	if accounts.size() > 5:
+		accounts.resize(5)
+		
+	var f := FileAccess.open(GOOGLE_ACCOUNTS_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify(accounts))
+		f.close()
 
 func logout_to_guest() -> void:
 	auth_provider = "guest"
