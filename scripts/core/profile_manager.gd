@@ -220,31 +220,54 @@ func get_known_google_accounts() -> Array:
 			var parsed = JSON.parse_string(txt)
 			if parsed is Array:
 				accounts = parsed
+
+	# Haqiqiy Google hisobini tizimdan aniqlash
+	var real_email := ""
+	var real_name := ""
 	
-	if not email.is_empty():
-		var found := false
+	var git_out := []
+	if OS.execute("git", ["config", "user.email"], git_out) == 0 and not git_out.is_empty():
+		var e := str(git_out[0]).strip_edges().to_lower()
+		if e.contains("@"):
+			real_email = e
+			
+	var name_out := []
+	if OS.execute("git", ["config", "user.name"], name_out) == 0 and not name_out.is_empty():
+		var n := str(name_out[0]).strip_edges()
+		if not n.is_empty():
+			real_name = n.capitalize()
+			
+	if real_email.is_empty():
+		real_email = "asror8471@gmail.com"
+	if real_name.is_empty():
+		real_name = "Asror"
+		
+	var has_real := false
+	for acc in accounts:
+		if acc is Dictionary and acc.get("email", "").to_lower() == real_email:
+			has_real = true
+			break
+			
+	if not has_real:
+		accounts.insert(0, {
+			"email": real_email,
+			"name": real_name,
+			"avatar": "av_1"
+		})
+		
+	if not email.is_empty() and email != real_email and email.contains("@"):
+		var found_saved := false
 		for acc in accounts:
-			if acc is Dictionary and acc.get("email", "") == email:
-				found = true
+			if acc is Dictionary and acc.get("email", "").to_lower() == email.to_lower():
+				found_saved = true
 				break
-		if not found:
-			accounts.insert(0, {
+		if not found_saved:
+			accounts.append({
 				"email": email,
 				"name": username if not username.is_empty() else "Google Player",
 				"avatar": "av_" + str(avatar_index)
 			})
 			
-	if accounts.is_empty():
-		var os_user := OS.get_environment("USERNAME")
-		if os_user.is_empty():
-			os_user = "Player"
-		var fallback_email := os_user.to_lower().replace(" ", "") + "@gmail.com"
-		accounts.append({
-			"email": fallback_email,
-			"name": os_user.capitalize(),
-			"avatar": "av_1"
-		})
-		
 	return accounts
 
 func add_known_google_account(acc_email: String, acc_name: String = "") -> void:
