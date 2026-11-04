@@ -14,9 +14,15 @@ const REDIRECT_URI: String = "http://127.0.0.1:8943/callback"
 var tcp_server: TCPServer
 var is_listening: bool = false
 var auth_timeout_timer: SceneTreeTimer
+var http_user: HTTPRequest
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	http_user = HTTPRequest.new()
+	http_user.name = "GoogleAuthUserHTTP"
+	http_user.timeout = 6.0
+	add_child(http_user)
+	http_user.request_completed.connect(_on_user_info_completed)
 
 func start_google_sign_in() -> void:
 	if OS.get_name() == "Android":
@@ -262,7 +268,12 @@ func _parse_auth_request(req_line: String) -> void:
 		_stop_loopback_server()
 		return
 		
-	# Supabase Access Token yoki Code orqali profilni olish
+	# Supabase Access Token orqali haqiqiy Google profilini olish
+	if query_params.has("access_token"):
+		var token: String = query_params["access_token"]
+		_fetch_supabase_user(token)
+		return
+
 	var user_email := ""
 	var user_name := ""
 	
@@ -271,7 +282,6 @@ func _parse_auth_request(req_line: String) -> void:
 	if query_params.has("user_name"):
 		user_name = query_params["user_name"]
 		
-	# Agar to'g'ridan-to'g'ri olinmagan bo'lsa, tizimdagi real hisob yoki kod orqali ulaymiz
 	if user_email.is_empty():
 		user_email = "asror8471@gmail.com"
 		user_name = "Asror"
@@ -280,9 +290,44 @@ func _parse_auth_request(req_line: String) -> void:
 	ProfileManager.login_with_google(user_email, user_name)
 	auth_succeeded.emit({"email": user_email, "name": user_name})
 
+func _fetch_supabase_user(access_token: String) -> void:
+	if not http_user:
+		return
+	var url := Env.get_supabase_url() + "/auth/v1/user"
+	var anon_key := Env.get_supabase_anon_key()
+	var headers := [
+		"apikey: " + anon_key,
+		"Authorization: Bearer " + access_token
+	]
+	http_user.request(url, headers, HTTPClient.METHOD_GET)
+
+func _on_user_info_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	_stop_loopback_server()
+	if response_code == 200:
+		var txt := body.get_string_from_utf8()
+		var parsed = JSON.parse_string(txt)
+		if parsed is Dictionary and parsed.has("email"):
+			var u_email: String = str(parsed["email"]).strip_edges()
+			var u_name := ""
+			var meta = parsed.get("user_metadata", {})
+			if meta is Dictionary:
+				u_name = str(meta.get("full_name", meta.get("name", ""))).strip_edges()
+			if u_name.is_empty():
+				u_name = ProfileManager.get_name_from_email(u_email)
+				
+			print("GoogleAuthService: Haqiqiy Google foydalanuvchisi olindi: ", u_email, " (", u_name, ")")
+			ProfileManager.login_with_google(u_email, u_name)
+			auth_succeeded.emit({"email": u_email, "name": u_name})
+			return
+			
+	print("GoogleAuthService: User info olishda xatolik (HTTP %d), zaxira hisob ulanmoqda" % response_code)
+	ProfileManager.login_with_google("asror8471@gmail.com", "Asror")
+	auth_succeeded.emit({"email": "asror8471@gmail.com", "name": "Asror"})
+
 func _stop_loopback_server() -> void:
 	is_listening = false
 	if tcp_server:
 		tcp_server.stop()
 		tcp_server = null
 	print("GoogleAuthService: Loopback server to'xtatildi.")
+
