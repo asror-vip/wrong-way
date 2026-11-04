@@ -427,20 +427,19 @@ func update_profile(new_name: String, new_avatar_idx: int) -> void:
 	profile_updated.emit(cur)
 	
 	if is_ready_online and not player_id.is_empty():
-		var url: String = Env.get_supabase_url() + "/rest/v1/profiles?id=eq." + player_id
+		var url: String = Env.get_supabase_url() + "/rest/v1/rpc/update_player_profile"
 		var anon_key: String = Env.get_supabase_anon_key()
 		var headers := [
 			"apikey: " + anon_key,
 			"Authorization: Bearer " + anon_key,
-			"Content-Type: application/json",
-			"Prefer: return=minimal"
+			"Content-Type: application/json"
 		]
 		var payload := JSON.stringify({
-			"username": username,
-			"avatar_url": av_url,
-			"updated_at": Time.get_datetime_string_from_system(true) + "Z"
+			"p_player_id": player_id,
+			"p_username": username,
+			"p_avatar_url": av_url
 		})
-		http_update.request(url, headers, HTTPClient.METHOD_PATCH, payload)
+		http_update.request(url, headers, HTTPClient.METHOD_POST, payload)
 
 func _on_update_completed(_result: int, response_code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
 	if response_code in [200, 204]:
