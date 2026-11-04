@@ -45,7 +45,15 @@ func _ready() -> void:
 	if save_btn: save_btn.pressed.connect(_on_save_pressed)
 	if copy_btn: copy_btn.pressed.connect(_on_copy_tag)
 	if auth_action_btn: auth_action_btn.pressed.connect(_on_auth_action_pressed)
-	ProfileManager.profile_updated.connect(func(_d): _update_auth_ui())
+	
+	ProfileManager.profile_updated.connect(func(_d): _refresh_profile_display())
+	ProfileManager.profile_loaded.connect(func(_d): _refresh_profile_display())
+	
+	if auth_modal:
+		auth_modal.auth_completed.connect(func(_prov):
+			_refresh_profile_display()
+			_show_toast("Google hisobi muvaffaqiyatli ulandi!")
+		)
 	
 	_apply_modal_styles()
 	_setup_avatar_buttons()
@@ -56,6 +64,13 @@ func open() -> void:
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 1.0, 0.2)
 	
+	_refresh_profile_display()
+	_load_stats()
+			
+	if toast_label:
+		toast_label.text = ""
+
+func _refresh_profile_display() -> void:
 	if name_input:
 		name_input.text = ProfileManager.username
 	if tag_label:
@@ -67,11 +82,7 @@ func open() -> void:
 		
 	_update_avatar_preview()
 	_refresh_avatar_grid_styles()
-	_load_stats()
 	_update_auth_ui()
-			
-	if toast_label:
-		toast_label.text = ""
 
 func _update_auth_ui() -> void:
 	if auth_label:
@@ -87,17 +98,21 @@ func _update_auth_ui() -> void:
 			auth_action_btn.text = "Chiqish"
 			auth_action_btn.icon = null
 		else:
-			auth_action_btn.text = " Google"
+			auth_action_btn.text = " Google bilan ulash"
 			auth_action_btn.icon = IconFactory.get_icon("google", 0.75)
 
 func _on_auth_action_pressed() -> void:
 	SoundManager.play("click")
 	if ProfileManager.auth_provider == "google":
 		ProfileManager.logout_to_guest()
+		_refresh_profile_display()
 		_show_toast("Google hisobidan chiqildi")
+		# Chiqish bosilganda to'g'ridan-to'g'ri yana login (Google hisob tanlash) oynasini ochamiz
+		if auth_modal and auth_modal.has_method("open"):
+			auth_modal.open(true)
 	else:
 		if auth_modal and auth_modal.has_method("open"):
-			auth_modal.open()
+			auth_modal.open(true)
 
 func close() -> void:
 	var tween := create_tween()

@@ -85,10 +85,21 @@ func _load_local_profile() -> void:
 			if parsed is Dictionary:
 				_apply_profile_dict(parsed)
 
+func get_name_from_email(e: String) -> String:
+	var prefix := e.split("@")[0].strip_edges()
+	var letters := ""
+	for i in range(prefix.length()):
+		var ch := prefix[i]
+		if not ch.is_valid_int():
+			letters += ch
+	if letters.length() >= 3:
+		return letters.capitalize()
+	return prefix.capitalize()
+
 func _apply_profile_dict(data: Dictionary) -> void:
 	if data.has("id"): player_id = str(data["id"])
 	if data.has("player_tag"): player_tag = str(data["player_tag"])
-	if data.has("username"): username = str(data["username"])
+	
 	if data.has("email") and data["email"] != null and typeof(data["email"]) == TYPE_STRING:
 		var raw_e: String = str(data["email"]).strip_edges()
 		if raw_e != "<null>" and raw_e != "null" and not raw_e.is_empty():
@@ -97,12 +108,28 @@ func _apply_profile_dict(data: Dictionary) -> void:
 			email = ""
 	else:
 		email = ""
+		
+	if data.has("username"):
+		var raw_u: String = str(data["username"]).strip_edges()
+		if (raw_u.is_empty() or raw_u.to_lower() == "player") and not email.is_empty():
+			username = get_name_from_email(email)
+		elif not raw_u.is_empty():
+			username = raw_u
+		else:
+			username = "Player"
+			
 	if data.has("avatar_url"):
 		var av: String = str(data["avatar_url"])
 		if av.begins_with("av_"):
 			avatar_index = av.trim_prefix("av_").to_int()
 		else:
 			avatar_index = 1
+	else:
+		avatar_index = 1
+		
+	if avatar_index < 1 or avatar_index > 5:
+		avatar_index = 1
+		
 	if data.has("auth_provider"): auth_provider = str(data["auth_provider"])
 	
 	_update_corner_id_text()
@@ -166,10 +193,20 @@ func login_with_google(google_email: String, display_name: String = "") -> void:
 	if clean_email.is_empty() or clean_email == "<null>" or clean_email == "null" or not clean_email.contains("@"):
 		print("ProfileManager: Noto'g'ri email bilan Google kirish bekor qilindi: ", clean_email)
 		return
-	var clean_name := display_name.strip_edges() if not display_name.is_empty() else username
+		
+	var clean_name := display_name.strip_edges()
+	if clean_name.is_empty() or clean_name.to_lower() == "player":
+		clean_name = get_name_from_email(clean_email)
+		
+	username = clean_name
+	email = clean_email
+	auth_provider = "google"
+	_save_local_cache(get_profile_dict())
+	profile_updated.emit(get_profile_dict())
+	
 	add_known_google_account(clean_email, clean_name)
 	
-	print("ProfileManager: Google orqali kirish so'rovi yuborilmoqda: ", clean_email)
+	print("ProfileManager: Google orqali kirish so'rovi yuborilmoqda: ", clean_email, " (", clean_name, ")")
 	
 	var url: String = Env.get_supabase_url() + "/rest/v1/rpc/login_or_link_google"
 	var anon_key: String = Env.get_supabase_anon_key()
@@ -206,6 +243,8 @@ func _on_google_completed(_result: int, response_code: int, _headers: PackedStri
 func logout_to_guest() -> void:
 	auth_provider = "guest"
 	email = ""
+	username = "Player"
+	avatar_index = 1
 	_save_local_cache(get_profile_dict())
 	profile_updated.emit(get_profile_dict())
 	sync_with_supabase()
