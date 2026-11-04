@@ -33,6 +33,15 @@ const GAMEPLAY_BG_PATHS_CH2: Array[String] = [
 	"res://assets/images/chapter_2/watermarked_img_14303081489371812048.jpg",
 ]
 
+const GAMEPLAY_BG_PATHS_CH3: Array[String] = [
+	"res://assets/images/chapter_3/forest_bg_01.png",
+	"res://assets/images/chapter_3/forest_bg_02.png",
+	"res://assets/images/chapter_3/forest_bg_03.png",
+	"res://assets/images/chapter_3/forest_bg_04.png",
+	"res://assets/images/chapter_3/forest_bg_05.png",
+	"res://assets/images/chapter_3/forest_bg_06.png",
+]
+
 @onready var bg_texture_rect: TextureRect = get_node_or_null("BgTexture")
 
 var _texture: Texture2D
@@ -84,6 +93,13 @@ func set_level_background(level_id: int) -> void:
 			var idx: int = ((level_id - 21) / 2) % GAMEPLAY_BG_PATHS_CH2.size()
 			var path: String = GAMEPLAY_BG_PATHS_CH2[idx]
 			_load_texture(path)
+	elif level_id <= 60:
+		# 3-Bob (41-60): Ziravorli chuqur o'rmon va qadimiy qasr manzarasi (Deep Forest Vibe)
+		_current_theme = "deep_forest"
+		if not GAMEPLAY_BG_PATHS_CH3.is_empty():
+			var idx: int = ((level_id - 41) / 2) % GAMEPLAY_BG_PATHS_CH3.size()
+			var path: String = GAMEPLAY_BG_PATHS_CH3[idx]
+			_load_texture(path)
 	else:
 		_current_theme = "default"
 		_clear_gameplay_texture()
@@ -109,6 +125,8 @@ func _update_blur_material() -> void:
 		elif blur_amount > 0.01:
 			if _current_theme == "winter":
 				mat.set_shader_parameter("tint_color", Color(0.04, 0.08, 0.16, 0.30))
+			elif _current_theme == "deep_forest":
+				mat.set_shader_parameter("tint_color", Color(0.02, 0.06, 0.04, 0.28))
 			else:
 				# 1-bob asl gameplay tuman qoplamasi
 				mat.set_shader_parameter("tint_color", Color(0.04, 0.05, 0.09, 0.28))
@@ -215,6 +233,10 @@ func _draw() -> void:
 			if _current_theme == "winter":
 				draw_circle(Vector2(px, p.y), p.sz + 1.2, Color(0.55, 0.85, 1.0, p.alpha * 0.28))
 				draw_circle(Vector2(px, p.y), p.sz, Color(1.0, 1.0, 1.0, p.alpha))
+			elif _current_theme == "deep_forest":
+				var c := Color(0.65, 0.95, 0.55, p.alpha * (0.8 + 0.2 * sin(_time * 2.5 + p.offset)))
+				draw_circle(Vector2(px, p.y), p.sz + 0.8, Color(0.40, 0.85, 0.35, p.alpha * 0.22))
+				draw_circle(Vector2(px, p.y), p.sz, c)
 			else:
 				var c := Color(0.85, 0.90, 1.0, p.alpha * (0.8 + 0.2 * sin(_time * 2.0 + p.offset)))
 				draw_circle(Vector2(px, p.y), p.sz, c)
