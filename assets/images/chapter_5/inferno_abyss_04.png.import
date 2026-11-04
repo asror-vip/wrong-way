@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://2te6j8o8evb2"
-path="res://.godot/imported/ae1a37e3-408d-4e17-a007-793431120d9b.jpg-ff24c2b363df1e31abfab5b0a925ad6b.ctex"
+uid="uid://d2j1sn7gl5vse"
+path="res://.godot/imported/inferno_abyss_04.png-a4bdc3811e644eee1b02a16e72e9b2b5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/chapter_2/ae1a37e3-408d-4e17-a007-793431120d9b.jpg"
-dest_files=["res://.godot/imported/ae1a37e3-408d-4e17-a007-793431120d9b.jpg-ff24c2b363df1e31abfab5b0a925ad6b.ctex"]
+source_file="res://assets/images/chapter_5/inferno_abyss_04.png"
+dest_files=["res://.godot/imported/inferno_abyss_04.png-a4bdc3811e644eee1b02a16e72e9b2b5.ctex"]
 
 [params]
 

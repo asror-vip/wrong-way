@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://eq41wp4ue674"
-path="res://.godot/imported/Screenshot 2026-10-31 190259.png-b26869c222a0803ab555da9dd57fcd48.ctex"
+uid="uid://cjv5nc0g2ntoo"
+path="res://.godot/imported/frost_peak_02.jpg-3f0c4fda2a8a880e0efda2bd47a13232.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/chapter_1/Screenshot 2026-10-31 190259.png"
-dest_files=["res://.godot/imported/Screenshot 2026-10-31 190259.png-b26869c222a0803ab555da9dd57fcd48.ctex"]
+source_file="res://assets/images/chapter_2/frost_peak_02.jpg"
+dest_files=["res://.godot/imported/frost_peak_02.jpg-3f0c4fda2a8a880e0efda2bd47a13232.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dw0wqetxiy5qp"
-path="res://.godot/imported/Screenshot 2026-10-31 190521.png-12852ecf764114ba25d106bf140951bf.ctex"
+uid="uid://de7tdcqyt1rdu"
+path="res://.godot/imported/twilight_mist_01.png-444715fa9fb5ff7d0808bf0dfbbe3a65.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/chapter_1/Screenshot 2026-10-31 190521.png"
-dest_files=["res://.godot/imported/Screenshot 2026-10-31 190521.png-12852ecf764114ba25d106bf140951bf.ctex"]
+source_file="res://assets/images/chapter_1/twilight_mist_01.png"
+dest_files=["res://.godot/imported/twilight_mist_01.png-444715fa9fb5ff7d0808bf0dfbbe3a65.ctex"]
 
 [params]
 

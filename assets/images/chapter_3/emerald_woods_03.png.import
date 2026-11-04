@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://duw5eodvwtyon"
-path="res://.godot/imported/Screenshot 2026-10-31 190308.png-2df1504f191e2b82fc38540b3575ed26.ctex"
+uid="uid://dm5kw0p4uldv5"
+path="res://.godot/imported/emerald_woods_03.png-acaeb1cda5c87405f41152e3c68d8c55.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/chapter_1/Screenshot 2026-10-31 190308.png"
-dest_files=["res://.godot/imported/Screenshot 2026-10-31 190308.png-2df1504f191e2b82fc38540b3575ed26.ctex"]
+source_file="res://assets/images/chapter_3/emerald_woods_03.png"
+dest_files=["res://.godot/imported/emerald_woods_03.png-acaeb1cda5c87405f41152e3c68d8c55.ctex"]
 
 [params]
 

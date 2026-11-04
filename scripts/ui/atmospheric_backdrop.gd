@@ -3,8 +3,11 @@ extends Control
 # Wrong Way - Atmospheric Backdrop
 # Renders authentic Limbo/Badland landscape art from assets/images:
 # - home-img.png for UI interfaces (Main Menu, Level Select, Editor)
-# - assets/images/chapter_1/*.png for Chapter 1 gameplay
-# - Cold winter sky with active snowfall for Chapter 2 gameplay (no map images)
+# - Chapter 1: twilight_mist_01..06.png (Qorong'u tumanli o'rmon)
+# - Chapter 2: frost_peak_01..06.jpg (Qorli muz cho'qqilari)
+# - Chapter 3: emerald_woods_01..06.png (Zumrad chakalakzor)
+# - Chapter 4: golden_canyon_01..06.png (Oltin vodiy)
+# - Chapter 5: inferno_abyss_01..06.png (Olovli tublik)
 # - Supports Cinematic Bokeh Blur to separate background from foreground physics
 
 @export var show_menu_cliff: bool = false
@@ -15,31 +18,49 @@ extends Control
 
 const UI_BG_PATH := "res://assets/images/home-img.png"
 
-const GAMEPLAY_BG_PATHS: Array[String] = [
-	"res://assets/images/chapter_1/Screenshot 2026-10-31 190224.png",
-	"res://assets/images/chapter_1/Screenshot 2026-10-31 190259.png",
-	"res://assets/images/chapter_1/Screenshot 2026-10-31 190308.png",
-	"res://assets/images/chapter_1/Screenshot 2026-10-31 190318.png",
-	"res://assets/images/chapter_1/Screenshot 2026-10-31 190512.png",
-	"res://assets/images/chapter_1/Screenshot 2026-10-31 190521.png",
+const GAMEPLAY_BG_PATHS_CH1: Array[String] = [
+	"res://assets/images/chapter_1/twilight_mist_01.png",
+	"res://assets/images/chapter_1/twilight_mist_02.png",
+	"res://assets/images/chapter_1/twilight_mist_03.png",
+	"res://assets/images/chapter_1/twilight_mist_04.png",
+	"res://assets/images/chapter_1/twilight_mist_05.png",
+	"res://assets/images/chapter_1/twilight_mist_06.png",
 ]
 
 const GAMEPLAY_BG_PATHS_CH2: Array[String] = [
-	"res://assets/images/chapter_2/14913cf4-4b76-4b00-97d3-fd321e7b12f2.jpg",
-	"res://assets/images/chapter_2/281257b0-a6f0-4433-a6b3-dabe9a85012b.jpg",
-	"res://assets/images/chapter_2/659a5502-842f-453f-ba37-e281ad2d5325.jpg",
-	"res://assets/images/chapter_2/ae1a37e3-408d-4e17-a007-793431120d9b.jpg",
-	"res://assets/images/chapter_2/f3608a69-675c-41a5-aa9e-28516b264682.jpg",
-	"res://assets/images/chapter_2/watermarked_img_14303081489371812048.jpg",
+	"res://assets/images/chapter_2/frost_peak_01.jpg",
+	"res://assets/images/chapter_2/frost_peak_02.jpg",
+	"res://assets/images/chapter_2/frost_peak_03.jpg",
+	"res://assets/images/chapter_2/frost_peak_04.jpg",
+	"res://assets/images/chapter_2/frost_peak_05.jpg",
+	"res://assets/images/chapter_2/frost_peak_06.jpg",
 ]
 
 const GAMEPLAY_BG_PATHS_CH3: Array[String] = [
-	"res://assets/images/chapter_3/forest_bg_01.png",
-	"res://assets/images/chapter_3/forest_bg_02.png",
-	"res://assets/images/chapter_3/forest_bg_03.png",
-	"res://assets/images/chapter_3/forest_bg_04.png",
-	"res://assets/images/chapter_3/forest_bg_05.png",
-	"res://assets/images/chapter_3/forest_bg_06.png",
+	"res://assets/images/chapter_3/emerald_woods_01.png",
+	"res://assets/images/chapter_3/emerald_woods_02.png",
+	"res://assets/images/chapter_3/emerald_woods_03.png",
+	"res://assets/images/chapter_3/emerald_woods_04.png",
+	"res://assets/images/chapter_3/emerald_woods_05.png",
+	"res://assets/images/chapter_3/emerald_woods_06.png",
+]
+
+const GAMEPLAY_BG_PATHS_CH4: Array[String] = [
+	"res://assets/images/chapter_4/golden_canyon_01.png",
+	"res://assets/images/chapter_4/golden_canyon_02.png",
+	"res://assets/images/chapter_4/golden_canyon_03.png",
+	"res://assets/images/chapter_4/golden_canyon_04.png",
+	"res://assets/images/chapter_4/golden_canyon_05.png",
+	"res://assets/images/chapter_4/golden_canyon_06.png",
+]
+
+const GAMEPLAY_BG_PATHS_CH5: Array[String] = [
+	"res://assets/images/chapter_5/inferno_abyss_01.png",
+	"res://assets/images/chapter_5/inferno_abyss_02.png",
+	"res://assets/images/chapter_5/inferno_abyss_03.png",
+	"res://assets/images/chapter_5/inferno_abyss_04.png",
+	"res://assets/images/chapter_5/inferno_abyss_05.png",
+	"res://assets/images/chapter_5/inferno_abyss_06.png",
 ]
 
 @onready var bg_texture_rect: TextureRect = get_node_or_null("BgTexture")
@@ -55,7 +76,7 @@ func _ready() -> void:
 	if show_particles:
 		_init_particles()
 		
-	# Gameplay fonida o'yinchi chalg'imasligi uchun avtomatik Bokeh Blur (5.5)
+	# Gameplay fonida o'yinchi chalg'imasligi uchun avtomatik Bokeh Blur (2.8)
 	if not is_ui_background and not show_menu_cliff and not is_map_background:
 		if blur_amount <= 0.01:
 			blur_amount = 2.8
@@ -75,31 +96,39 @@ func _ready() -> void:
 		else:
 			set_level_background(1)
 
-var _current_theme := "forest"
+var _current_theme := "twilight_mist"
 
 func set_level_background(level_id: int) -> void:
 	if level_id <= 20:
-		# 1-Bob (1-20): Asl o'yin dizayni saqlanadi (o'rmon qorong'u manzarasi)
-		_current_theme = "forest"
-		if not GAMEPLAY_BG_PATHS.is_empty():
-			var idx: int = ((level_id - 1) / 2) % GAMEPLAY_BG_PATHS.size()
-			var path: String = GAMEPLAY_BG_PATHS[idx]
-			_load_texture(path)
+		# 1-Bob (1-20): Tumanli qorong'u o'rmon
+		_current_theme = "twilight_mist"
+		if not GAMEPLAY_BG_PATHS_CH1.is_empty():
+			var idx: int = ((level_id - 1) / 2) % GAMEPLAY_BG_PATHS_CH1.size()
+			_load_texture(GAMEPLAY_BG_PATHS_CH1[idx])
 	elif level_id <= 40:
-		# 2-Bob (21-40): Qishki qor va sovuq tog'lar muhiti (Winter Vibe)
-		# Foydalanuvchi yuklagan 2-bob rasmlari (assets/images/chapter_2)
-		_current_theme = "winter"
+		# 2-Bob (21-40): Qorli muz cho'qqilari
+		_current_theme = "frost_peak"
 		if not GAMEPLAY_BG_PATHS_CH2.is_empty():
 			var idx: int = ((level_id - 21) / 2) % GAMEPLAY_BG_PATHS_CH2.size()
-			var path: String = GAMEPLAY_BG_PATHS_CH2[idx]
-			_load_texture(path)
+			_load_texture(GAMEPLAY_BG_PATHS_CH2[idx])
 	elif level_id <= 60:
-		# 3-Bob (41-60): Ziravorli chuqur o'rmon va qadimiy qasr manzarasi (Deep Forest Vibe)
-		_current_theme = "deep_forest"
+		# 3-Bob (41-60): Zumrad chakalakzor va qasr zallari
+		_current_theme = "emerald_woods"
 		if not GAMEPLAY_BG_PATHS_CH3.is_empty():
 			var idx: int = ((level_id - 41) / 2) % GAMEPLAY_BG_PATHS_CH3.size()
-			var path: String = GAMEPLAY_BG_PATHS_CH3[idx]
-			_load_texture(path)
+			_load_texture(GAMEPLAY_BG_PATHS_CH3[idx])
+	elif level_id <= 80:
+		# 4-Bob (61-80): Oltin kanyon va quyoshli xarobalar
+		_current_theme = "golden_canyon"
+		if not GAMEPLAY_BG_PATHS_CH4.is_empty():
+			var idx: int = ((level_id - 61) / 2) % GAMEPLAY_BG_PATHS_CH4.size()
+			_load_texture(GAMEPLAY_BG_PATHS_CH4[idx])
+	elif level_id <= 100:
+		# 5-Bob (81-100): Olovli vulqon tubligi
+		_current_theme = "inferno_abyss"
+		if not GAMEPLAY_BG_PATHS_CH5.is_empty():
+			var idx: int = ((level_id - 81) / 2) % GAMEPLAY_BG_PATHS_CH5.size()
+			_load_texture(GAMEPLAY_BG_PATHS_CH5[idx])
 	else:
 		_current_theme = "default"
 		_clear_gameplay_texture()
@@ -123,13 +152,18 @@ func _update_blur_material() -> void:
 		if is_map_background:
 			mat.set_shader_parameter("tint_color", Color(0.0, 0.0, 0.0, 0.0))
 		elif blur_amount > 0.01:
-			if _current_theme == "winter":
-				mat.set_shader_parameter("tint_color", Color(0.04, 0.08, 0.16, 0.30))
-			elif _current_theme == "deep_forest":
-				mat.set_shader_parameter("tint_color", Color(0.02, 0.06, 0.04, 0.28))
-			else:
-				# 1-bob asl gameplay tuman qoplamasi
-				mat.set_shader_parameter("tint_color", Color(0.04, 0.05, 0.09, 0.28))
+			match _current_theme:
+				"frost_peak":
+					mat.set_shader_parameter("tint_color", Color(0.04, 0.08, 0.16, 0.30))
+				"emerald_woods":
+					mat.set_shader_parameter("tint_color", Color(0.02, 0.06, 0.04, 0.28))
+				"golden_canyon":
+					mat.set_shader_parameter("tint_color", Color(0.12, 0.08, 0.03, 0.26))
+				"inferno_abyss":
+					mat.set_shader_parameter("tint_color", Color(0.14, 0.04, 0.02, 0.32))
+				_:
+					# 1-bob tuman qoplamasi
+					mat.set_shader_parameter("tint_color", Color(0.04, 0.05, 0.09, 0.28))
 		else:
 			mat.set_shader_parameter("tint_color", Color(0.0, 0.0, 0.0, 0.0))
 
@@ -147,44 +181,73 @@ func _load_texture(path: String) -> void:
 
 func _init_particles() -> void:
 	_particles.clear()
-	var count := 65 if _current_theme == "winter" else 25
+	var count := 65 if _current_theme == "frost_peak" else 28
 	for i in range(count):
-		if _current_theme == "winter":
-			# Qor parchalari (yuqoridan pastga silliq tushadi)
-			_particles.append({
-				"x": randf_range(0, 960),
-				"y": randf_range(0, 540),
-				"sz": randf_range(1.2, 3.4),
-				"speed": randf_range(35.0, 85.0),
-				"alpha": randf_range(0.45, 0.95),
-				"offset": randf_range(0, TAU)
-			})
-		else:
-			# 1-Bob: Havoda suzuvchi spora va chang zarrachalari
-			_particles.append({
-				"x": randf_range(0, 960),
-				"y": randf_range(50, 480),
-				"sz": randf_range(1.2, 2.5),
-				"speed": randf_range(6.0, 18.0),
-				"alpha": randf_range(0.2, 0.6),
-				"offset": randf_range(0, TAU)
-			})
+		match _current_theme:
+			"frost_peak":
+				# Qor parchalari
+				_particles.append({
+					"x": randf_range(0, 960),
+					"y": randf_range(0, 540),
+					"sz": randf_range(1.2, 3.4),
+					"speed": randf_range(35.0, 85.0),
+					"alpha": randf_range(0.45, 0.95),
+					"offset": randf_range(0, TAU)
+				})
+			"inferno_abyss":
+				# Olovli cho'g' va uchqunlar (tezroq yuqoriga uchadi)
+				_particles.append({
+					"x": randf_range(0, 960),
+					"y": randf_range(100, 540),
+					"sz": randf_range(1.4, 3.2),
+					"speed": randf_range(25.0, 65.0),
+					"alpha": randf_range(0.4, 0.9),
+					"offset": randf_range(0, TAU)
+				})
+			"golden_canyon":
+				# Oltin chang va quyosh nurlari zarrachalari
+				_particles.append({
+					"x": randf_range(0, 960),
+					"y": randf_range(40, 500),
+					"sz": randf_range(1.2, 2.6),
+					"speed": randf_range(8.0, 20.0),
+					"alpha": randf_range(0.3, 0.7),
+					"offset": randf_range(0, TAU)
+				})
+			"emerald_woods":
+				# Yashil o'rmon sporalari
+				_particles.append({
+					"x": randf_range(0, 960),
+					"y": randf_range(40, 500),
+					"sz": randf_range(1.4, 2.8),
+					"speed": randf_range(7.0, 20.0),
+					"alpha": randf_range(0.3, 0.75),
+					"offset": randf_range(0, TAU)
+				})
+			_:
+				# 1-Bob: Havoda suzuvchi tuman sporalari
+				_particles.append({
+					"x": randf_range(0, 960),
+					"y": randf_range(50, 480),
+					"sz": randf_range(1.2, 2.5),
+					"speed": randf_range(6.0, 18.0),
+					"alpha": randf_range(0.2, 0.6),
+					"offset": randf_range(0, TAU)
+				})
 
 func _process(delta: float) -> void:
 	_time += delta
 	if show_particles:
 		for p in _particles:
-			if _current_theme == "winter":
-				# Qor pastga tushishi
+			if _current_theme == "frost_peak":
 				p.y += delta * p.speed
 				if p.y > 540.0:
 					p.y = -10.0
 					p.x = randf_range(0, 960)
 			else:
-				# 1-bob chang yuqoriga suzishi
 				p.y -= delta * p.speed
-				if p.y < 30.0:
-					p.y = 510.0
+				if p.y < 20.0:
+					p.y = 520.0
 					p.x = randf_range(0, 960)
 		queue_redraw()
 
@@ -192,32 +255,8 @@ func _draw() -> void:
 	var w: float = size.x if size.x > 0 else 960.0
 	var h: float = size.y if size.y > 0 else 540.0
 
-	if _current_theme == "winter" and (bg_texture_rect == null or not bg_texture_rect.visible):
-		# Qishki sovuq tun osmoni va tog'lar silueti (O'yinga maps imagelari umuman kirmaydi)
+	if _current_theme == "frost_peak" and (bg_texture_rect == null or not bg_texture_rect.visible):
 		draw_rect(Rect2(0, 0, w, h), Color("#060b14"), true)
-		var sky_glow := PackedVector2Array([
-			Vector2(0, 160), Vector2(w, 160), Vector2(w, h), Vector2(0, h)
-		])
-		draw_colored_polygon(sky_glow, Color(0.06, 0.12, 0.22, 0.55))
-		
-		# Uzoqdagi qorli tog'lar
-		var far_pts := PackedVector2Array([
-			Vector2(0, 360), Vector2(120, 280), Vector2(250, 320),
-			Vector2(390, 230), Vector2(520, 300), Vector2(680, 240),
-			Vector2(820, 310), Vector2(960, 270), Vector2(960, 540), Vector2(0, 540)
-		])
-		draw_colored_polygon(far_pts, Color("#0c1524"))
-		draw_colored_polygon(PackedVector2Array([Vector2(360, 255), Vector2(390, 230), Vector2(420, 255)]), Color(0.40, 0.65, 0.95, 0.35))
-		draw_colored_polygon(PackedVector2Array([Vector2(655, 265), Vector2(680, 240), Vector2(705, 265)]), Color(0.40, 0.65, 0.95, 0.35))
-		
-		# Yaqindagi qorong'u qoyalar
-		var near_pts := PackedVector2Array([
-			Vector2(0, 430), Vector2(170, 370), Vector2(340, 420),
-			Vector2(530, 350), Vector2(710, 400), Vector2(860, 340),
-			Vector2(960, 390), Vector2(960, 540), Vector2(0, 540)
-		])
-		draw_colored_polygon(near_pts, Color("#080e18"))
-		draw_rect(Rect2(0, 380, w, 160), Color(0.22, 0.74, 0.97, 0.06), true)
 	elif bg_texture_rect == null:
 		if _texture:
 			draw_texture_rect(_texture, Rect2(0, 0, w, h), false)
@@ -226,17 +265,30 @@ func _draw() -> void:
 		else:
 			draw_rect(Rect2(0, 0, w, h), Color(0.08, 0.10, 0.16), true)
 
-	# Zarrachalar (1-bobda spora changi, 2-bobda haqiqiy qor yog'ishi!)
+	# Zarrachalar (Har bir bobning o'ziga xos vizual effekti)
 	if show_particles:
 		for p in _particles:
-			var px: float = p.x + sin(_time * 1.5 + p.offset) * (14.0 if _current_theme == "winter" else 10.0)
-			if _current_theme == "winter":
-				draw_circle(Vector2(px, p.y), p.sz + 1.2, Color(0.55, 0.85, 1.0, p.alpha * 0.28))
-				draw_circle(Vector2(px, p.y), p.sz, Color(1.0, 1.0, 1.0, p.alpha))
-			elif _current_theme == "deep_forest":
-				var c := Color(0.65, 0.95, 0.55, p.alpha * (0.8 + 0.2 * sin(_time * 2.5 + p.offset)))
-				draw_circle(Vector2(px, p.y), p.sz + 0.8, Color(0.40, 0.85, 0.35, p.alpha * 0.22))
-				draw_circle(Vector2(px, p.y), p.sz, c)
-			else:
-				var c := Color(0.85, 0.90, 1.0, p.alpha * (0.8 + 0.2 * sin(_time * 2.0 + p.offset)))
-				draw_circle(Vector2(px, p.y), p.sz, c)
+			var px: float = p.x + sin(_time * 1.5 + p.offset) * (14.0 if _current_theme == "frost_peak" else 8.0)
+			match _current_theme:
+				"frost_peak":
+					draw_circle(Vector2(px, p.y), p.sz + 1.2, Color(0.55, 0.85, 1.0, p.alpha * 0.28))
+					draw_circle(Vector2(px, p.y), p.sz, Color(1.0, 1.0, 1.0, p.alpha))
+				"inferno_abyss":
+					# Olovli uchqun
+					var pulse := 0.7 + 0.3 * sin(_time * 4.0 + p.offset)
+					draw_circle(Vector2(px, p.y), p.sz + 1.2, Color(0.95, 0.25, 0.08, p.alpha * 0.35 * pulse))
+					draw_circle(Vector2(px, p.y), p.sz, Color(1.0, 0.65, 0.20, p.alpha * pulse))
+				"golden_canyon":
+					# Oltin zarracha
+					var pulse := 0.8 + 0.2 * sin(_time * 2.0 + p.offset)
+					draw_circle(Vector2(px, p.y), p.sz + 0.8, Color(0.95, 0.75, 0.25, p.alpha * 0.25))
+					draw_circle(Vector2(px, p.y), p.sz, Color(1.0, 0.88, 0.50, p.alpha * pulse))
+				"emerald_woods":
+					# Yashil o'rmon sporasi
+					var pulse := 0.8 + 0.2 * sin(_time * 2.5 + p.offset)
+					draw_circle(Vector2(px, p.y), p.sz + 0.8, Color(0.40, 0.85, 0.35, p.alpha * 0.22))
+					draw_circle(Vector2(px, p.y), p.sz, Color(0.65, 0.95, 0.55, p.alpha * pulse))
+				_:
+					# Tumanli o'rmon
+					var c := Color(0.85, 0.90, 1.0, p.alpha * (0.8 + 0.2 * sin(_time * 2.0 + p.offset)))
+					draw_circle(Vector2(px, p.y), p.sz, c)

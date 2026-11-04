@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bthwaqv5wtl25"
-path="res://.godot/imported/14913cf4-4b76-4b00-97d3-fd321e7b12f2.jpg-9bd8acee150a2bda74c3413073a0199e.ctex"
+uid="uid://ubjghhtigyeo"
+path="res://.godot/imported/golden_canyon_03.png-48aa5d7c82b66617b66fd1b8d2529feb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/chapter_2/14913cf4-4b76-4b00-97d3-fd321e7b12f2.jpg"
-dest_files=["res://.godot/imported/14913cf4-4b76-4b00-97d3-fd321e7b12f2.jpg-9bd8acee150a2bda74c3413073a0199e.ctex"]
+source_file="res://assets/images/chapter_4/golden_canyon_03.png"
+dest_files=["res://.godot/imported/golden_canyon_03.png-48aa5d7c82b66617b66fd1b8d2529feb.ctex"]
 
 [params]
 
