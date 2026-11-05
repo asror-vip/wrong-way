@@ -1,9 +1,15 @@
 extends Control
 
 const GRID_SIZE: int = 32
-const COLS: int = 30 # 0 .. 29 (960px)
 const MIN_ROW: int = 2 # y = 64px (TopBar osti)
 const MAX_ROW: int = 14 # y = 448px (BottomPalette usti)
+
+func _get_canvas_width() -> float:
+	return maxf(960.0, get_viewport_rect().size.x)
+
+func _get_cols() -> int:
+	return int(_get_canvas_width() / float(GRID_SIZE))
+
 
 # Asboblar ro'yxati (har birining o'z maxsus SVG belgisi bor)
 const TOOLS = [
@@ -355,7 +361,7 @@ func _update_all_texts() -> void:
 		lbl.text = LocaleManager.t(data["loc_key"])
 
 func _snap_to_cell(pos: Vector2) -> Vector2i:
-	var gx: int = clampi(int(pos.x / float(GRID_SIZE)), 0, COLS - 1)
+	var gx: int = clampi(int(pos.x / float(GRID_SIZE)), 0, _get_cols() - 1)
 	var gy: int = clampi(int(pos.y / float(GRID_SIZE)), MIN_ROW, MAX_ROW)
 	return Vector2i(gx, gy)
 
@@ -447,17 +453,18 @@ func _apply_tool_at_pos(pos: Vector2) -> void:
 	canvas.queue_redraw()
 
 func _on_canvas_draw() -> void:
+	var cw := _get_canvas_width()
 	# 1. 32px to'r koordinata nuqtalari (qorong'i atmosfera nuqtalari)
-	for x in range(0, 960, GRID_SIZE):
+	for x in range(0, int(cw) + GRID_SIZE, GRID_SIZE):
 		for y in range(MIN_ROW * GRID_SIZE, (MAX_ROW + 1) * GRID_SIZE, GRID_SIZE):
 			canvas.draw_circle(Vector2(x, y), 1.2, Color(0.20, 0.26, 0.38, 0.45))
 			
 	# Asosiy standart pol yo'naltiruvchi chiziq (Row 12, y=384)
-	canvas.draw_dashed_line(Vector2(0, 12 * GRID_SIZE), Vector2(960, 12 * GRID_SIZE), Color(0.35, 0.45, 0.65, 0.35), 1.2, 8.0)
+	canvas.draw_dashed_line(Vector2(0, 12 * GRID_SIZE), Vector2(cw, 12 * GRID_SIZE), Color(0.35, 0.45, 0.65, 0.35), 1.2, 8.0)
 	
 	# Maydon chegaralari
-	canvas.draw_line(Vector2(0, MIN_ROW * GRID_SIZE), Vector2(960, MIN_ROW * GRID_SIZE), Color(0.18, 0.24, 0.35, 0.8), 1.5)
-	canvas.draw_line(Vector2(0, (MAX_ROW + 1) * GRID_SIZE), Vector2(960, (MAX_ROW + 1) * GRID_SIZE), Color(0.18, 0.24, 0.35, 0.8), 1.5)
+	canvas.draw_line(Vector2(0, MIN_ROW * GRID_SIZE), Vector2(cw, MIN_ROW * GRID_SIZE), Color(0.18, 0.24, 0.35, 0.8), 1.5)
+	canvas.draw_line(Vector2(0, (MAX_ROW + 1) * GRID_SIZE), Vector2(cw, (MAX_ROW + 1) * GRID_SIZE), Color(0.18, 0.24, 0.35, 0.8), 1.5)
 	
 	# 2. Joylashtirilgan elementlarni chizish
 	for key in cell_map:
@@ -745,6 +752,23 @@ func _spawn_test_world() -> void:
 	var door = SCENE_EXIT_DOOR.instantiate()
 	door.position = exit_door_pos
 	playtest_world.add_child(door)
+
+	# Chegaraviy devorlar va shift
+	var cw := _get_canvas_width()
+	var left_w = SCENE_PLATFORM.instantiate()
+	left_w.position = Vector2(0, 0)
+	left_w.set("platform_size", Vector2(32, 540))
+	playtest_world.add_child(left_w)
+	
+	var right_w = SCENE_PLATFORM.instantiate()
+	right_w.position = Vector2(cw - 32, 0)
+	right_w.set("platform_size", Vector2(32, 540))
+	playtest_world.add_child(right_w)
+	
+	var ceiling = SCENE_PLATFORM.instantiate()
+	ceiling.position = Vector2(0, 0)
+	ceiling.set("platform_size", Vector2(cw, 60))
+	playtest_world.add_child(ceiling)
 	
 	# O'yinchi (faqat bitta marta yaratiladi!)
 	_spawn_test_player_once()
@@ -798,12 +822,12 @@ func _on_slot_selected(idx: int) -> void:
 		_select_current_slot_in_dropdown()
 
 func _snap_door_pos(raw: Vector2) -> Vector2:
-	var gx: int = clampi(int(floor(raw.x / float(GRID_SIZE))), 0, COLS - 1)
+	var gx: int = clampi(int(floor(raw.x / float(GRID_SIZE))), 0, _get_cols() - 1)
 	var gy: int = clampi(int(round(raw.y / float(GRID_SIZE))), MIN_ROW, MAX_ROW + 1)
 	return Vector2(float(gx * GRID_SIZE + 16), float(gy * GRID_SIZE))
 
 func _snap_player_pos(raw: Vector2) -> Vector2:
-	var gx: int = clampi(int(floor(raw.x / float(GRID_SIZE))), 0, COLS - 1)
+	var gx: int = clampi(int(floor(raw.x / float(GRID_SIZE))), 0, _get_cols() - 1)
 	var gy: int = clampi(int(round(raw.y / float(GRID_SIZE))), MIN_ROW, MAX_ROW + 1)
 	return Vector2(float(gx * GRID_SIZE + 16), float(gy * GRID_SIZE))
 
@@ -820,7 +844,7 @@ func _load_slot(slot: int) -> void:
 	for elem in raw_elements:
 		var gx: int = int(elem.get("gx", int(elem.get("x", 0) / float(GRID_SIZE))))
 		var gy: int = int(elem.get("gy", int(elem.get("y", 0) / float(GRID_SIZE))))
-		gx = clampi(gx, 0, COLS - 1)
+		gx = clampi(gx, 0, _get_cols() - 1)
 		gy = clampi(gy, MIN_ROW, MAX_ROW)
 		var key := "%d_%d" % [gx, gy]
 		var clean_elem: Dictionary = elem.duplicate()

@@ -150,13 +150,15 @@ func load_level_from_data(data: Dictionary) -> void:
 func _spawn_boundary_walls() -> void:
 	# Chap devor
 	var left_wall = solid_platform_scene.instantiate()
+	left_wall.name = "WallLeft"
 	left_wall.position = Vector2(0, 0)
 	if "platform_size" in left_wall:
 		left_wall.platform_size = Vector2(32, 540)
 	platforms_container.add_child(left_wall)
 	
-	# O'ng devor (ekran ichida, 928 da ko'rinib turishi kerak)
+	# O'ng devor
 	var right_wall = solid_platform_scene.instantiate()
+	right_wall.name = "WallRight"
 	right_wall.position = Vector2(928, 0)
 	if "platform_size" in right_wall:
 		right_wall.platform_size = Vector2(32, 540)

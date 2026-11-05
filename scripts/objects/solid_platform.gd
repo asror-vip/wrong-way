@@ -4,42 +4,57 @@ extends StaticBody2D
 @export var platform_size: Vector2 = Vector2(350, 160)
 
 func _ready() -> void:
-	# Chap devor (ekran chap chegarasiga to'liq yopishgan va y=0 dan 540 gacha)
-	if name.begins_with("WallLeft") or (position.x <= 50.0 and platform_size.y > platform_size.x):
-		position.x = 0.0
-		position.y = 0.0
-		platform_size.x = 32.0
-		platform_size.y = 540.0
-	# O'ng devor (ekran o'ng chegarasiga x=928..960 to'liq yopishgan va y=0 dan 540 gacha)
-	elif name.begins_with("WallRight") or ((position.x + platform_size.x) >= 890.0 and platform_size.y > platform_size.x):
-		position.x = 928.0
-		position.y = 0.0
-		platform_size.x = 32.0
-		platform_size.y = 540.0
-	# Shift (Ceiling - ekranning chapdan o'nggacha to'liq, tekis shifti)
-	elif name.to_lower().contains("ceiling") or name.to_lower().contains("shift") or (position.y <= 15.0 and platform_size.y < 150.0):
-		position.x = 0.0
-		position.y = 0.0
-		platform_size.x = 960.0
-		platform_size.y = maxf(platform_size.y, 50.0)
-	else:
-		# Agar chap platforma/pol bo'lsa, x=0 dan boshlab qoplaymiz
-		if position.x <= 40.0:
-			platform_size.x += position.x
-			position.x = 0.0
-		# Agar o'ng platforma/pol bo'lsa, x=960 gacha yetkazamiz
-		if (position.x + platform_size.x) >= 900.0:
-			platform_size.x = 960.0 - position.x
-		# Agar pastki pol bo'lsa, y=540 gacha to'liq qoplaymiz
-		if position.y >= 350.0:
-			platform_size.y = 540.0 - position.y
-		
+	_adapt_to_screen()
 	var col = get_node_or_null("CollisionShape2D")
 	if col:
 		col.shape = RectangleShape2D.new()
 		col.shape.size = platform_size
 		col.position = platform_size / 2.0
 	queue_redraw()
+
+func _adapt_to_screen() -> void:
+	var vp_size := get_viewport_rect().size
+	var vp_w := maxf(960.0, vp_size.x)
+	var vp_h := maxf(540.0, vp_size.y)
+	var screen_left := 480.0 - vp_w / 2.0
+	var screen_right := 480.0 + vp_w / 2.0
+	var screen_top := 270.0 - vp_h / 2.0
+	var screen_bottom := 270.0 + vp_h / 2.0
+
+	var p_name := name.to_lower()
+
+	# 1. Shift (Ceiling)
+	if p_name.contains("ceiling") or p_name.contains("shift") or (position.y <= 25.0 and platform_size.y < 120.0 and platform_size.x >= 500.0):
+		position.x = screen_left - 100.0
+		position.y = screen_top - 100.0
+		platform_size.x = (screen_right - screen_left) + 200.0
+		platform_size.y = (0.0 - screen_top) + 60.0 + 100.0
+
+	# 2. Chap devor (WallLeft)
+	elif p_name.contains("wallleft") or (position.x <= 40.0 and platform_size.y > platform_size.x and platform_size.y >= 300.0):
+		position.x = screen_left
+		position.y = screen_top - 50.0
+		platform_size.x = 32.0
+		platform_size.y = (screen_bottom - screen_top) + 100.0
+
+	# 3. O'ng devor (WallRight)
+	elif p_name.contains("wallright") or ((position.x + platform_size.x) >= 900.0 and platform_size.y > platform_size.x and platform_size.y >= 300.0):
+		platform_size.x = 32.0
+		position.x = screen_right - platform_size.x
+		position.y = screen_top - 50.0
+		platform_size.y = (screen_bottom - screen_top) + 100.0
+
+	# 4. Pol va platformalar
+	else:
+		if position.y >= 260.0:
+			if position.x <= 50.0 and platform_size.x > platform_size.y:
+				var orig_right: float = position.x + platform_size.x
+				position.x = screen_left - 50.0
+				platform_size.x = maxf(orig_right - position.x, 100.0)
+			if (position.x + platform_size.x) >= 890.0 and platform_size.x > platform_size.y:
+				platform_size.x = maxf((screen_right + 50.0) - position.x, 100.0)
+			if (position.y + platform_size.y) >= 480.0:
+				platform_size.y = maxf(platform_size.y, (screen_bottom + 100.0) - position.y)
 
 func _draw() -> void:
 	var is_winter := false
@@ -49,13 +64,17 @@ func _draw() -> void:
 
 	var base_col := Color("#0d131f") if is_winter else Color("#1c1a22")
 	draw_rect(Rect2(Vector2.ZERO, platform_size), base_col, true)
-	
-	# Shift va polni ekran chetlariga to'g'irlash (faqat yuqori va pastki qirralar uchun)
-	if (position.y + platform_size.y) >= 530.0:
-		draw_rect(Rect2(Vector2(0, platform_size.y), Vector2(platform_size.x, 200)), base_col, true)
-	if position.y <= 10.0:
-		draw_rect(Rect2(Vector2(0, -200), Vector2(platform_size.x, 200)), base_col, true)
-		
+
+	var p_name := name.to_lower()
+	if p_name.contains("ceiling") or p_name.contains("shift") or position.y <= 25.0:
+		draw_rect(Rect2(Vector2(0, -300), Vector2(platform_size.x, 300)), base_col, true)
+	if p_name.contains("wallleft") or position.x <= 10.0:
+		draw_rect(Rect2(Vector2(-300, 0), Vector2(300, platform_size.y)), base_col, true)
+	if p_name.contains("wallright") or platform_size.y > 300.0:
+		draw_rect(Rect2(Vector2(platform_size.x, 0), Vector2(300, platform_size.y)), base_col, true)
+	if (position.y + platform_size.y) >= 480.0:
+		draw_rect(Rect2(Vector2(0, platform_size.y), Vector2(platform_size.x, 300)), base_col, true)
+
 	if is_winter:
 		var snow_h := 5.5
 		if platform_size.x > 36.0:
@@ -75,10 +94,7 @@ func _draw() -> void:
 		else:
 			draw_rect(Rect2(Vector2.ZERO, Vector2(2.5, platform_size.y)), Color(0.49, 0.86, 0.99, 0.6), true)
 	else:
-		# Shift bo'lsa pastki qirrasi tekis chiziq bilan belgilanadi, pol bo'lsa ustki qirrasi
-		if position.y <= 10.0:
+		if p_name.contains("ceiling") or p_name.contains("shift") or position.y <= 25.0:
 			draw_rect(Rect2(Vector2(0, platform_size.y - 3.0), Vector2(platform_size.x, 3.0)), Color("#342f3a"), true)
 		else:
 			draw_rect(Rect2(Vector2.ZERO, Vector2(platform_size.x, 3.0)), Color("#342f3a"), true)
-
-
