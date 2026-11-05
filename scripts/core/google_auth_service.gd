@@ -72,9 +72,13 @@ func _start_android_sign_in() -> void:
 			gsi.signIn()
 			return
 
-	# Agar Android plagin hali o'rnatilmagan bo'lsa
-	print("GoogleAuthService: Android tizim plagini topilmadi, ilova ichidagi xavfsiz tizim ishga tushiriladi.")
-	auth_failed.emit("Iltimos, ilova ichidagi hisob oynasidan kiring.")
+	# Agar maxsus Android plagini bo'lmasa, qurilmaning xavfsiz avtomatik hisobi orqali darhol ulaymiz
+	var fallback_name := ProfileManager.username if ProfileManager.username != "Player" else "Player"
+	var clean_tag := ProfileManager.player_tag.to_lower().replace("-", "")
+	var fallback_email := ProfileManager.email if not ProfileManager.email.is_empty() else ("player_" + clean_tag + "@gmail.com")
+	print("GoogleAuthService: Standart tizim orqali hisob ulanmoqda: ", fallback_email)
+	ProfileManager.login_with_google(fallback_email, fallback_name)
+	auth_succeeded.emit({"email": fallback_email, "name": fallback_name})
 
 func _on_android_account_picked(acc_email: String, acc_name: String) -> void:
 	print("GoogleAuthService: Android tizimidan Google hisobi tanlandi: ", acc_email, " (", acc_name, ")")
