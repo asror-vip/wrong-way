@@ -109,10 +109,11 @@ func _update_texts() -> void:
 		btn_friends.text = LocaleManager.t("tab_friends")
 		
 	var display_name := ProfileManager.username
-	if display_name.is_empty() or display_name.to_lower() == "player":
-		display_name = LocaleManager.t("player_you")
+	var you_str := LocaleManager.t("player_you")
+	if display_name.is_empty() or display_name.to_lower() == "player" or display_name.to_lower() == you_str.to_lower() or display_name.to_lower() == "siz":
+		display_name = you_str
 	else:
-		display_name = "%s (%s)" % [display_name, LocaleManager.t("player_you")]
+		display_name = "%s (%s)" % [display_name, you_str]
 		
 	if my_name_label:
 		my_name_label.text = display_name
@@ -223,10 +224,11 @@ func _refresh_list() -> void:
 	var my_deaths: int = SaveManager.get_total_beaten_deaths()
 	
 	var my_display_name := ProfileManager.username
-	if my_display_name.is_empty() or my_display_name.to_lower() == "player":
-		my_display_name = LocaleManager.t("player_you")
+	var my_you_str := LocaleManager.t("player_you")
+	if my_display_name.is_empty() or my_display_name.to_lower() == "player" or my_display_name.to_lower() == my_you_str.to_lower() or my_display_name.to_lower() == "siz":
+		my_display_name = my_you_str
 	else:
-		my_display_name = "%s (%s)" % [my_display_name, LocaleManager.t("player_you")]
+		my_display_name = "%s (%s)" % [my_display_name, my_you_str]
 		
 	var av_keys := ["avatar_player", "avatar_ninja", "avatar_shadow", "avatar_robot", "avatar_pro"]
 	var av_idx := (ProfileManager.avatar_index - 1) % av_keys.size()

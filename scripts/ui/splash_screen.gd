@@ -205,17 +205,11 @@ func _on_start_pressed() -> void:
 
 func _on_switch_account_pressed() -> void:
 	SoundManager.play("click")
-	if auth_modal:
-		auth_modal.open(true)
-	else:
-		GoogleAuthService.start_google_sign_in()
+	GoogleAuthService.start_google_sign_in()
 
 func _on_google_pressed() -> void:
 	SoundManager.play("click")
-	if auth_modal:
-		auth_modal.open(true)
-	else:
-		GoogleAuthService.start_google_sign_in()
+	GoogleAuthService.start_google_sign_in()
 
 func _on_guest_pressed() -> void:
 	SoundManager.play("click")

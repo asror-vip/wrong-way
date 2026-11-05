@@ -36,7 +36,19 @@ func start_google_sign_in() -> void:
 func _start_android_sign_in() -> void:
 	print("GoogleAuthService: Android muhitida Google Sign-In ishga tushirilmoqda...")
 	
-	# 1. Google Play Games Services v2
+	# 1. Native Android Google Account Chooser (OS darajasidagi haqiqiy tizim oynasi)
+	if Engine.has_singleton("WrongWayAccountPicker"):
+		var picker = Engine.get_singleton("WrongWayAccountPicker")
+		if picker.has_signal("account_picked") and not picker.account_picked.is_connected(_on_android_account_picked):
+			picker.account_picked.connect(_on_android_account_picked)
+		if picker.has_signal("account_picker_failed") and not picker.account_picker_failed.is_connected(_on_android_account_picker_failed):
+			picker.account_picker_failed.connect(_on_android_account_picker_failed)
+			
+		if picker.has_method("openAccountPicker"):
+			picker.openAccountPicker()
+			return
+
+	# 2. Google Play Games Services v2
 	if Engine.has_singleton("GodotPlayGames"):
 		var pgs = Engine.get_singleton("GodotPlayGames")
 		if pgs.has_signal("user_authenticated") and not pgs.user_authenticated.is_connected(_on_android_pgs_success):
@@ -63,6 +75,16 @@ func _start_android_sign_in() -> void:
 	# Agar Android plagin hali o'rnatilmagan bo'lsa
 	print("GoogleAuthService: Android tizim plagini topilmadi, ilova ichidagi xavfsiz tizim ishga tushiriladi.")
 	auth_failed.emit("Iltimos, ilova ichidagi hisob oynasidan kiring.")
+
+func _on_android_account_picked(acc_email: String, acc_name: String) -> void:
+	print("GoogleAuthService: Android tizimidan Google hisobi tanlandi: ", acc_email, " (", acc_name, ")")
+	var user_data := {"email": acc_email, "name": acc_name}
+	ProfileManager.login_with_google(acc_email, acc_name)
+	auth_succeeded.emit(user_data)
+
+func _on_android_account_picker_failed(err_msg: String) -> void:
+	print("GoogleAuthService: Android hisob tanlash bekor qilindi: ", err_msg)
+	auth_failed.emit(err_msg)
 
 func _on_android_pgs_success(is_auth: bool) -> void:
 	if is_auth:

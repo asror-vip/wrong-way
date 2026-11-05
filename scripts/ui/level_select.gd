@@ -443,13 +443,20 @@ func _set_btn_active(btn: Button, active: bool) -> void:
 		btn.add_theme_stylebox_override("hover", style_white_hov)
 		btn.add_theme_stylebox_override("pressed", style_white_press)
 		btn.add_theme_stylebox_override("focus", empty_focus)
-		btn.add_theme_color_override("font_color", Color(0.08, 0.08, 0.12))
+		var dark_c := Color(0.08, 0.08, 0.12)
+		btn.add_theme_color_override("font_color", dark_c)
+		btn.add_theme_color_override("font_hover_color", dark_c)
+		btn.add_theme_color_override("font_pressed_color", dark_c)
+		btn.add_theme_color_override("font_focus_color", dark_c)
 	else:
 		btn.add_theme_stylebox_override("normal", style_glass)
 		btn.add_theme_stylebox_override("hover", style_glass_hov)
 		btn.add_theme_stylebox_override("pressed", style_glass_press)
 		btn.add_theme_stylebox_override("focus", empty_focus)
 		btn.add_theme_color_override("font_color", Color(0.85, 0.88, 0.94))
+		btn.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0))
+		btn.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 1.0))
+		btn.add_theme_color_override("font_focus_color", Color(0.85, 0.88, 0.94))
 
 func _on_language_changed(_lang: String) -> void:
 	_update_top_bar_data()
