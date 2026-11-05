@@ -167,13 +167,25 @@ func _update_blur_material() -> void:
 		else:
 			mat.set_shader_parameter("tint_color", Color(0.0, 0.0, 0.0, 0.0))
 
+static var _texture_cache: Dictionary = {}
+
 func set_custom_texture_path(path: String) -> void:
 	_load_texture(path)
 	_update_blur_material()
 
 func _load_texture(path: String) -> void:
+	if _texture_cache.has(path):
+		_texture = _texture_cache[path]
+		if bg_texture_rect:
+			bg_texture_rect.texture = _texture
+			bg_texture_rect.visible = true
+		queue_redraw()
+		return
+
 	if ResourceLoader.exists(path):
 		_texture = load(path)
+		if _texture:
+			_texture_cache[path] = _texture
 		if bg_texture_rect:
 			bg_texture_rect.texture = _texture
 			bg_texture_rect.visible = true

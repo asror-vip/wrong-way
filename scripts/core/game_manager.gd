@@ -58,6 +58,12 @@ func start_game(level_id: int) -> void:
 	level_timer_ms = 0.0
 	level_start_time = Time.get_ticks_msec()
 	is_level_running = true
+
+	var cur_scene = get_tree().current_scene
+	if cur_scene and cur_scene.name == "Gameplay" and cur_scene.has_method("reload_to_level"):
+		cur_scene.reload_to_level(level_id)
+		return
+
 	get_tree().change_scene_to_file("res://scenes/game/gameplay.tscn")
 	level_started.emit(current_level_id)
 

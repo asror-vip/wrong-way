@@ -85,12 +85,14 @@ func _setup_buttons() -> void:
 		guest_btn.pressed.connect(_on_guest_pressed)
 
 	if start_btn:
-		start_btn.icon = IconFactory.get_icon("play_dark", 1.0)
-		start_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		start_btn.icon = null
 		start_btn.pressed.connect(_on_start_pressed)
 
 	if switch_account_btn:
 		switch_account_btn.pressed.connect(_on_switch_account_pressed)
+
+	if auth_modal and auth_modal.has_signal("auth_completed"):
+		auth_modal.auth_completed.connect(_on_auth_completed)
 
 	GoogleAuthService.auth_succeeded.connect(func(_u):
 		ProfileManager.has_chosen_auth = true
@@ -203,11 +205,17 @@ func _on_start_pressed() -> void:
 
 func _on_switch_account_pressed() -> void:
 	SoundManager.play("click")
-	GoogleAuthService.start_google_sign_in()
+	if auth_modal:
+		auth_modal.open(true)
+	else:
+		GoogleAuthService.start_google_sign_in()
 
 func _on_google_pressed() -> void:
 	SoundManager.play("click")
-	GoogleAuthService.start_google_sign_in()
+	if auth_modal:
+		auth_modal.open(true)
+	else:
+		GoogleAuthService.start_google_sign_in()
 
 func _on_guest_pressed() -> void:
 	SoundManager.play("click")

@@ -65,7 +65,6 @@ const CHAPTER_3_POS: Array[Vector2] = UNIFIED_ROAD_POS
 @onready var btn_ch1: Button = $BottomBar/HBox/BtnCh1
 @onready var btn_ch2: Button = $BottomBar/HBox/BtnCh2
 @onready var btn_ch3: Button = get_node_or_null("BottomBar/HBox/BtnCh3")
-@onready var notice_modal: Node = $NoticeModal
 
 var style_white = preload("res://resources/themes/btn_capsule_white.tres")
 var style_white_hov = preload("res://resources/themes/btn_capsule_white_hover.tres")
@@ -683,8 +682,10 @@ func _create_chapter_lock_card(chapter: int) -> Control:
 	card.name = "ChapterLockCard%d" % chapter
 	card.custom_minimum_size = Vector2(card_w, card_h)
 	card.size = Vector2(card_w, card_h)
-	card.position = Vector2((960.0 - card_w) * 0.5, 455.0)
-	card.z_index = 25
+	# Yo'l va daraja doirachalariga xalaqit bermasligi uchun tepada (top-bar ostida)
+	card.position = Vector2((960.0 - card_w) * 0.5, 68.0)
+	card.z_as_relative = false
+	card.z_index = 100
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 	var style := StyleBoxFlat.new()

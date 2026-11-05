@@ -380,8 +380,3 @@ theme_override_font_sizes/font_size = 12
 theme_override_styles/focus = ExtResource("7_focus")
 text = "3-BOB"
 
-[node name="NoticeModal" type="AcceptDialog" parent="."]
-title = "Xabarnoma"
-initial_position = 2
-size = Vector2i(400, 150)
-dialog_text = "Ma'lumot"

@@ -29,7 +29,6 @@ extends Control
 @onready var duel_lobby_modal: Control = get_node_or_null("DuelLobbyModal")
 @onready var incoming_invite_card: Control = get_node_or_null("IncomingInviteCard")
 @onready var invite_text_lbl: Label = get_node_or_null("IncomingInviteCard/HBox/InviteText")
-@onready var ad_chip: Control = get_node_or_null("BottomLeft/AdChip")
 
 var pending_invite_duel_id: String = ""
 

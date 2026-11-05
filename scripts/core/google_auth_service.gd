@@ -60,9 +60,9 @@ func _start_android_sign_in() -> void:
 			gsi.signIn()
 			return
 
-	# Agar Android plagin hali o'rnatilmagan bo'lsa (masalan APK emas, test rejimida)
-	print("GoogleAuthService: Android tizim plagini topilmadi, brauzer orqali rasmiy kirish ochiladi.")
-	_start_desktop_oauth()
+	# Agar Android plagin hali o'rnatilmagan bo'lsa
+	print("GoogleAuthService: Android tizim plagini topilmadi, ilova ichidagi xavfsiz tizim ishga tushiriladi.")
+	auth_failed.emit("Iltimos, ilova ichidagi hisob oynasidan kiring.")
 
 func _on_android_pgs_success(is_auth: bool) -> void:
 	if is_auth:

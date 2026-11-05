@@ -131,9 +131,9 @@ func show_banner() -> void:
 		hide_banner()
 		return
 	is_banner_active = true
+	# Sun'iy mock banner ko'rsatilmaydi - faqat rasmiy AdMob plagini ishlaganda native ko'rinadi
 	if banner_panel:
-		banner_panel.visible = true
-		banner_panel.modulate.a = 1.0
+		banner_panel.visible = false
 	banner_visibility_changed.emit(true)
 	_native_show_banner()
 

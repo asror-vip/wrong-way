@@ -109,7 +109,10 @@ func _on_auth_action_pressed() -> void:
 		_refresh_profile_display()
 		_show_toast("Google hisobidan chiqildi")
 	else:
-		GoogleAuthService.start_google_sign_in()
+		if auth_modal:
+			auth_modal.open(true)
+		else:
+			GoogleAuthService.start_google_sign_in()
 
 func close() -> void:
 	var tween := create_tween()

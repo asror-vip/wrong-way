@@ -6,29 +6,17 @@ uniform float fade_left : hint_range(0.0, 0.5) = 0.0;
 uniform float fade_right : hint_range(0.0, 0.5) = 0.0;
 
 void fragment() {
-	vec4 col = vec4(0.0);
+	vec4 col;
 	if (blur_amount <= 0.01) {
 		col = texture(TEXTURE, UV);
 	} else {
+		// Optimized 5-tap tent filter (mobile-friendly, zero fill-rate lag)
 		vec2 ps = TEXTURE_PIXEL_SIZE * blur_amount;
-		
-		// 17-Tap Circular Bokeh Sampling
-		col = texture(TEXTURE, UV) * 0.16;
-		col += texture(TEXTURE, UV + vec2(ps.x * 1.000, 0.000)) * 0.07;
-		col += texture(TEXTURE, UV + vec2(ps.x * 0.500, ps.y * 0.866)) * 0.07;
-		col += texture(TEXTURE, UV + vec2(-ps.x * 0.500, ps.y * 0.866)) * 0.07;
-		col += texture(TEXTURE, UV + vec2(-ps.x * 1.000, 0.000)) * 0.07;
-		col += texture(TEXTURE, UV + vec2(-ps.x * 0.500, -ps.y * 0.866)) * 0.07;
-		col += texture(TEXTURE, UV + vec2(ps.x * 0.500, -ps.y * 0.866)) * 0.07;
-		
-		col += texture(TEXTURE, UV + vec2(ps.x * 2.000, 0.000)) * 0.0525;
-		col += texture(TEXTURE, UV + vec2(ps.x * 1.414, ps.y * 1.414)) * 0.0525;
-		col += texture(TEXTURE, UV + vec2(0.000, ps.y * 2.000)) * 0.0525;
-		col += texture(TEXTURE, UV + vec2(-ps.x * 1.414, ps.y * 1.414)) * 0.0525;
-		col += texture(TEXTURE, UV + vec2(-ps.x * 2.000, 0.000)) * 0.0525;
-		col += texture(TEXTURE, UV + vec2(-ps.x * 1.414, -ps.y * 1.414)) * 0.0525;
-		col += texture(TEXTURE, UV + vec2(0.000, -ps.y * 2.000)) * 0.0525;
-		col += texture(TEXTURE, UV + vec2(ps.x * 1.414, -ps.y * 1.414)) * 0.0525;
+		col = texture(TEXTURE, UV) * 0.40;
+		col += texture(TEXTURE, UV + vec2(ps.x, ps.y)) * 0.15;
+		col += texture(TEXTURE, UV + vec2(-ps.x, ps.y)) * 0.15;
+		col += texture(TEXTURE, UV + vec2(ps.x, -ps.y)) * 0.15;
+		col += texture(TEXTURE, UV + vec2(-ps.x, -ps.y)) * 0.15;
 		
 		col.rgb = mix(col.rgb, tint_color.rgb, tint_color.a);
 	}

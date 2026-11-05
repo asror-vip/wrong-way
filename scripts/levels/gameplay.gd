@@ -38,6 +38,25 @@ func _on_screen_shake(intensity: float) -> void:
 	shake_intensity = intensity
 
 var level_arena_scene = preload("res://scenes/levels/level_arena.tscn")
+static var _level_cache: Dictionary = {}
+
+func reload_to_level(lvl: int) -> void:
+	get_tree().paused = false
+	var win_overlay = get_node_or_null("CanvasLayer/WinOverlay")
+	if win_overlay:
+		win_overlay.visible = false
+	var pause_modal = get_node_or_null("CanvasLayer/PauseModal")
+	if pause_modal:
+		pause_modal.visible = false
+		
+	GameManager.current_level_id = lvl
+	GameManager.level_deaths = 0
+	GameManager.level_timer_ms = 0.0
+	GameManager.level_start_time = Time.get_ticks_msec()
+	GameManager.is_level_running = true
+	
+	_load_level(lvl)
+	GameManager.level_started.emit(lvl)
 
 func _load_level(lvl: int) -> void:
 	if level_holder:
@@ -45,14 +64,20 @@ func _load_level(lvl: int) -> void:
 	for child in level_holder.get_children():
 		child.queue_free()
 		
-	# 1. Asosiy va eng aniq sozlangan sahna (.tscn) birinchi navbatda yuklanadi
+	# 1. Asosiy va eng aniq sozlangan sahna (.tscn) kesh orqali tezkor yuklanadi
 	var path := "res://scenes/levels/level_%02d.tscn" % lvl
-	if ResourceLoader.exists(path):
-		var lvl_res := load(path)
+	var lvl_res: PackedScene = null
+	if _level_cache.has(path):
+		lvl_res = _level_cache[path]
+	elif ResourceLoader.exists(path):
+		lvl_res = load(path)
 		if lvl_res:
-			var inst: Node2D = lvl_res.instantiate()
-			level_holder.add_child(inst)
-			return
+			_level_cache[path] = lvl_res
+
+	if lvl_res:
+		var inst: Node2D = lvl_res.instantiate()
+		level_holder.add_child(inst)
+		return
 
 	# 2. Agar sahna fayli topilmasa, LevelDatabase dan dinamik arena yuklanadi
 	var ldb = get_node_or_null("/root/LevelDatabase")

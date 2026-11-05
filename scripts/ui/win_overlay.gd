@@ -201,8 +201,8 @@ func _render_win_data() -> void:
 		
 	if next_btn:
 		next_btn.text = "  " + LocaleManager.t("btn_next_lvl")
-		# 2+ yulduz olingan bo'lsa va 20-darajadan kichik bo'lsa keyingi daraja faol
-		next_btn.visible = (last_stars >= 2 and last_lvl < 20)
+		# 2+ yulduz olingan bo'lsa va 60-darajadan kichik bo'lsa keyingi daraja faol
+		next_btn.visible = (last_stars >= 2 and last_lvl < 60)
 		
 	if replay_btn:
 		replay_btn.text = "  " + LocaleManager.t("btn_restart")
