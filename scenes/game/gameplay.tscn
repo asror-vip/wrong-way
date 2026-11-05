@@ -16,6 +16,11 @@ position = Vector2(480, 270)
 layer = -10
 
 [node name="AtmosphericBackdrop" parent="CanvasLayerBG" instance=ExtResource("2_bg")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 show_menu_cliff = false
 blur_amount = 2.8
 

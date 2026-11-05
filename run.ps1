@@ -23,3 +23,4 @@ Write-Host "`n[3/3] Telefonda ishga tushirilmoqda..." -ForegroundColor Green
 & $ADB shell monkey -p com.asror.wrongway -c android.intent.category.LAUNCHER 1
 
 Write-Host "`nO'yin telefoningizda muvaffaqiyatli ishga tushdi!" -ForegroundColor Green
+

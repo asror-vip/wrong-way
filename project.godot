@@ -12,7 +12,7 @@ config_version=5
 
 config/name="WRONG WAY"
 run/main_scene="res://scenes/main/splash_screen.tscn"
-config/features=PackedStringArray("4.7", "Mobile")
+config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.png"
 config/windows_native_icon="res://icon.ico"
 
@@ -85,6 +85,8 @@ pointing/emulate_touch_from_mouse=true
 
 [rendering]
 
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
 textures/canvas_textures/default_texture_filter=0
-environment/defaults/default_clear_color=Color(0.925, 0.898, 0.847, 1)
+environment/defaults/default_clear_color=Color(0.06, 0.08, 0.12, 1)

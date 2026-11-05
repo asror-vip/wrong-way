@@ -97,6 +97,8 @@ func _ready() -> void:
 	_setup_top_bar()
 	_setup_nav_connections()
 	_setup_seamless_backdrop_materials()
+	_setup_widescreen_layout()
+	get_viewport().size_changed.connect(_setup_widescreen_layout)
 		
 	# Boshlang'ich holatda 1, 2 va 3-bob doiralarini yaratish
 	_create_nodes_for_chapter(1)
@@ -108,6 +110,21 @@ func _ready() -> void:
 	# Boshlang'ich bobni animatsiyasiz ko'rsatish
 	switch_to_chapter(1, false)
 
+func _get_step_width() -> float:
+	return maxf(960.0, get_viewport_rect().size.x)
+
+func _setup_widescreen_layout() -> void:
+	var step_w := _get_step_width()
+	if ch1_view:
+		ch1_view.offset_left = 0.0
+		ch1_view.offset_right = 0.0
+	if ch2_view:
+		ch2_view.offset_left = step_w
+		ch2_view.offset_right = step_w
+	if ch3_view:
+		ch3_view.offset_left = step_w * 2.0
+		ch3_view.offset_right = step_w * 2.0
+
 func _setup_seamless_backdrop_materials() -> void:
 	var blur_shader = preload("res://shaders/bokeh_blur.gdshader")
 	
@@ -116,24 +133,27 @@ func _setup_seamless_backdrop_materials() -> void:
 		m1.shader = blur_shader
 		m1.set_shader_parameter("blur_amount", 0.0)
 		m1.set_shader_parameter("fade_left", 0.0)
-		m1.set_shader_parameter("fade_right", 0.035)
+		m1.set_shader_parameter("fade_right", 0.0)
 		backdrop_ch1.material = m1
+		backdrop_ch1.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		
 	if backdrop_ch2:
 		var m2 := ShaderMaterial.new()
 		m2.shader = blur_shader
 		m2.set_shader_parameter("blur_amount", 0.0)
-		m2.set_shader_parameter("fade_left", 0.035)
-		m2.set_shader_parameter("fade_right", 0.035)
+		m2.set_shader_parameter("fade_left", 0.0)
+		m2.set_shader_parameter("fade_right", 0.0)
 		backdrop_ch2.material = m2
+		backdrop_ch2.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		
 	if backdrop_ch3:
 		var m3 := ShaderMaterial.new()
 		m3.shader = blur_shader
 		m3.set_shader_parameter("blur_amount", 0.0)
-		m3.set_shader_parameter("fade_left", 0.035)
+		m3.set_shader_parameter("fade_left", 0.0)
 		m3.set_shader_parameter("fade_right", 0.0)
 		backdrop_ch3.material = m3
+		backdrop_ch3.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 
 func _setup_top_bar() -> void:
 	if back_btn:
@@ -303,8 +323,9 @@ func _input(event: InputEvent) -> void:
 			has_dragged = true
 			
 		if has_dragged:
+			var step_w := _get_step_width()
 			var target_x: float = slider_start_x + dx
-			target_x = clampf(target_x, -2080.0 - 50.0, 50.0)
+			target_x = clampf(target_x, -step_w * 2.0 - 50.0, 50.0)
 			chapter_slider.position.x = target_x
 			_update_realtime_drag_feedback(target_x)
 			get_viewport().set_input_as_handled()
@@ -332,17 +353,19 @@ func _input(event: InputEvent) -> void:
 			has_dragged = true
 			
 		if has_dragged:
+			var step_w := _get_step_width()
 			var target_x: float = slider_start_x + dx
-			target_x = clampf(target_x, -2080.0 - 50.0, 50.0)
+			target_x = clampf(target_x, -step_w * 2.0 - 50.0, 50.0)
 			chapter_slider.position.x = target_x
 			_update_realtime_drag_feedback(target_x)
 			get_viewport().set_input_as_handled()
 
 func _update_realtime_drag_feedback(slider_x: float) -> void:
+	var step_w := _get_step_width()
 	var target_ch: int = 1
-	if slider_x <= -1560.0:
+	if slider_x <= -step_w * 1.5:
 		target_ch = 3
-	elif slider_x <= -520.0:
+	elif slider_x <= -step_w * 0.5:
 		target_ch = 2
 	else:
 		target_ch = 1
@@ -356,30 +379,32 @@ func _update_realtime_drag_feedback(slider_x: float) -> void:
 		elif target_ch == 3: title_key = "chapter_3_title"
 		title_label.text = "< ◇ ── " + LocaleManager.t(title_key).to_upper() + " ── ◇ >"
 	if lock_card_ch2:
-		lock_card_ch2.visible = (!SaveManager.is_chapter_unlocked(2) and slider_x <= -780.0 and slider_x >= -1300.0)
+		lock_card_ch2.visible = (!SaveManager.is_chapter_unlocked(2) and slider_x <= -step_w * 0.75 and slider_x >= -step_w * 1.25)
 	if lock_card_ch3:
-		lock_card_ch3.visible = (!SaveManager.is_chapter_unlocked(3) and slider_x <= -1820.0)
+		lock_card_ch3.visible = (!SaveManager.is_chapter_unlocked(3) and slider_x <= -step_w * 1.75)
 	if pass1 and pass1.has_method("set_card_active"):
-		pass1.set_card_active(slider_x < -150.0 and slider_x > -890.0)
+		pass1.set_card_active(slider_x < -150.0 and slider_x > -step_w + 150.0)
 	if pass2 and pass2.has_method("set_card_active"):
-		pass2.set_card_active(slider_x < -1190.0 and slider_x > -1930.0)
+		pass2.set_card_active(slider_x < -step_w - 150.0 and slider_x > -step_w * 2.0 + 150.0)
 
 func _finish_drag() -> void:
+	var step_w := _get_step_width()
 	var slider_x := chapter_slider.position.x
-	if slider_x <= -1560.0:
+	if slider_x <= -step_w * 1.5:
 		switch_to_chapter(3, true)
-	elif slider_x <= -520.0:
+	elif slider_x <= -step_w * 0.5:
 		switch_to_chapter(2, true)
 	else:
 		switch_to_chapter(1, true)
 
 func switch_to_chapter(target_chapter: int, animated: bool = true) -> void:
 	current_chapter = target_chapter
+	var step_w := _get_step_width()
 	var target_x: float = 0.0
 	if current_chapter == 2:
-		target_x = -1040.0
+		target_x = -step_w
 	elif current_chapter == 3:
-		target_x = -2080.0
+		target_x = -step_w * 2.0
 	
 	if pass1 and pass1.has_method("set_card_active"):
 		pass1.set_card_active(false)

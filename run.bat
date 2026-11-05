@@ -28,3 +28,4 @@ echo [3/3] Telefonda ishga tushirilmoqda...
 echo ========================================================
 echo   O'yin telefonda muvaffaqiyatli ishga tushdi!
 echo ========================================================
+

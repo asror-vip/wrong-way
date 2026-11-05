@@ -50,15 +50,11 @@ func _draw() -> void:
 	var base_col := Color("#0d131f") if is_winter else Color("#1c1a22")
 	draw_rect(Rect2(Vector2.ZERO, platform_size), base_col, true)
 	
-	# Har qanday telefon ekranida (hatto ultra-keng 20:9 bo'lsa ham) chetlarda oraliq qolmasligi uchun
-	if (position.x + platform_size.x) >= 950.0:
-		draw_rect(Rect2(Vector2(platform_size.x, 0), Vector2(400, platform_size.y + 100)), base_col, true)
-	if position.x <= 0.0:
-		draw_rect(Rect2(Vector2(-400, 0), Vector2(400, platform_size.y + 100)), base_col, true)
+	# Shift va polni ekran chetlariga to'g'irlash (faqat yuqori va pastki qirralar uchun)
 	if (position.y + platform_size.y) >= 530.0:
 		draw_rect(Rect2(Vector2(0, platform_size.y), Vector2(platform_size.x, 200)), base_col, true)
 	if position.y <= 10.0:
-		draw_rect(Rect2(Vector2(-400, -200), Vector2(platform_size.x + 800, 200)), base_col, true)
+		draw_rect(Rect2(Vector2(0, -200), Vector2(platform_size.x, 200)), base_col, true)
 		
 	if is_winter:
 		var snow_h := 5.5

@@ -66,7 +66,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_bg_tex")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
 modulate = Color(0.38, 0.42, 0.50, 1)
 
 [node name="PlaytestWorld" type="Node2D" parent="."]

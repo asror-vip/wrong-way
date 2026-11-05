@@ -141,7 +141,13 @@ func _apply_profile_dict(data: Dictionary) -> void:
 	if avatar_index < 1 or avatar_index > 5:
 		avatar_index = 1
 		
-	if data.has("auth_provider"): auth_provider = str(data["auth_provider"])
+	if data.has("auth_provider"):
+		var server_provider := str(data["auth_provider"])
+		# Agar lokal holatda mehmonga chiqilgan bo'lsa, serverdagi eski Google ma'lumoti uni bosib ketmasligi kerak
+		if auth_provider == "guest" and email.is_empty() and server_provider == "google":
+			pass
+		else:
+			auth_provider = server_provider
 	
 	if data.has("has_chosen_auth"):
 		has_chosen_auth = bool(data["has_chosen_auth"])
@@ -282,7 +288,18 @@ func logout_to_guest() -> void:
 	username = "Player"
 	avatar_index = 1
 	has_chosen_auth = false
+	
+	# Yangi toza mehmon sessiyasi yaratish (Google hisobi bilan aralashib ketmasligi uchun)
+	device_id = "dev_" + str(Time.get_unix_time_from_system()) + "_" + str(randi() % 100000)
+	var f := FileAccess.open(DEVICE_ID_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(device_id)
+		f.close()
+		
+	player_id = ""
+	player_tag = "WW-" + str(randi_range(1000, 9999))
 	_save_local_cache(get_profile_dict())
+	_update_corner_id_text()
 	profile_updated.emit(get_profile_dict())
 	sync_with_supabase()
 

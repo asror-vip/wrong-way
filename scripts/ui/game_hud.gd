@@ -25,6 +25,7 @@ func _ready() -> void:
 	GameManager.player_died.connect(_on_player_died)
 	GameManager.level_started.connect(_on_level_started)
 	SaveManager.touch_layout_changed.connect(_apply_custom_touch_layout)
+	get_viewport().size_changed.connect(_apply_custom_touch_layout)
 	
 	_apply_custom_touch_layout()
 	_setup_icons()
@@ -37,10 +38,11 @@ func _ready() -> void:
 
 func _apply_custom_touch_layout() -> void:
 	var sm = get_node_or_null("/root/SaveManager")
-	var def_left = Vector2(32, 452)
-	var def_right = Vector2(112, 452)
-	var def_dash = Vector2(780, 452)
-	var def_jump = Vector2(860, 448)
+	var screen_w := maxf(960.0, get_viewport_rect().size.x)
+	var def_left := Vector2(32.0, 452.0)
+	var def_right := Vector2(112.0, 452.0)
+	var def_dash := Vector2(screen_w - 180.0, 452.0)
+	var def_jump := Vector2(screen_w - 100.0, 448.0)
 	if sm:
 		if left_btn: left_btn.position = sm.get_touch_pos("left", def_left)
 		if right_btn: right_btn.position = sm.get_touch_pos("right", def_right)

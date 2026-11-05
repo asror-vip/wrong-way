@@ -71,7 +71,18 @@ var _particles: Array = []
 
 func _ready() -> void:
 	mouse_filter = MOUSE_FILTER_IGNORE
-	anchors_preset = PRESET_FULL_RECT
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+	anchor_right = 1.0
+	anchor_bottom = 1.0
+	offset_right = 0.0
+	offset_bottom = 0.0
+	if bg_texture_rect:
+		bg_texture_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg_texture_rect.anchor_right = 1.0
+		bg_texture_rect.anchor_bottom = 1.0
+		bg_texture_rect.offset_right = 0.0
+		bg_texture_rect.offset_bottom = 0.0
+		bg_texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	
 	if show_particles:
 		_init_particles()
@@ -193,75 +204,87 @@ func _load_texture(path: String) -> void:
 
 func _init_particles() -> void:
 	_particles.clear()
-	var count := 65 if _current_theme == "frost_peak" else 28
+	var screen_w := maxf(1200.0, get_viewport_rect().size.x if is_inside_tree() else 1200.0)
+	var is_mob := OS.has_feature("mobile")
+	var count := (30 if _current_theme == "frost_peak" else 16) if is_mob else (65 if _current_theme == "frost_peak" else 28)
 	for i in range(count):
 		match _current_theme:
 			"frost_peak":
 				# Qor parchalari
 				_particles.append({
-					"x": randf_range(0, 960),
+					"x": randf_range(0, screen_w),
 					"y": randf_range(0, 540),
-					"sz": randf_range(1.2, 3.4),
-					"speed": randf_range(35.0, 85.0),
-					"alpha": randf_range(0.45, 0.95),
+					"sz": randf_range(1.2, 3.0),
+					"speed": randf_range(35.0, 80.0),
+					"alpha": randf_range(0.45, 0.90),
 					"offset": randf_range(0, TAU)
 				})
 			"inferno_abyss":
 				# Olovli cho'g' va uchqunlar (tezroq yuqoriga uchadi)
 				_particles.append({
-					"x": randf_range(0, 960),
+					"x": randf_range(0, screen_w),
 					"y": randf_range(100, 540),
-					"sz": randf_range(1.4, 3.2),
-					"speed": randf_range(25.0, 65.0),
-					"alpha": randf_range(0.4, 0.9),
+					"sz": randf_range(1.4, 2.8),
+					"speed": randf_range(25.0, 60.0),
+					"alpha": randf_range(0.4, 0.85),
 					"offset": randf_range(0, TAU)
 				})
 			"golden_canyon":
 				# Oltin chang va quyosh nurlari zarrachalari
 				_particles.append({
-					"x": randf_range(0, 960),
+					"x": randf_range(0, screen_w),
 					"y": randf_range(40, 500),
-					"sz": randf_range(1.2, 2.6),
-					"speed": randf_range(8.0, 20.0),
-					"alpha": randf_range(0.3, 0.7),
+					"sz": randf_range(1.2, 2.4),
+					"speed": randf_range(8.0, 18.0),
+					"alpha": randf_range(0.3, 0.65),
 					"offset": randf_range(0, TAU)
 				})
 			"emerald_woods":
 				# Yashil o'rmon sporalari
 				_particles.append({
-					"x": randf_range(0, 960),
+					"x": randf_range(0, screen_w),
 					"y": randf_range(40, 500),
-					"sz": randf_range(1.4, 2.8),
-					"speed": randf_range(7.0, 20.0),
-					"alpha": randf_range(0.3, 0.75),
+					"sz": randf_range(1.4, 2.6),
+					"speed": randf_range(7.0, 18.0),
+					"alpha": randf_range(0.3, 0.70),
 					"offset": randf_range(0, TAU)
 				})
 			_:
 				# 1-Bob: Havoda suzuvchi tuman sporalari
 				_particles.append({
-					"x": randf_range(0, 960),
+					"x": randf_range(0, screen_w),
 					"y": randf_range(50, 480),
-					"sz": randf_range(1.2, 2.5),
-					"speed": randf_range(6.0, 18.0),
-					"alpha": randf_range(0.2, 0.6),
+					"sz": randf_range(1.2, 2.3),
+					"speed": randf_range(6.0, 16.0),
+					"alpha": randf_range(0.2, 0.55),
 					"offset": randf_range(0, TAU)
 				})
+
+var _redraw_skip: int = 0
 
 func _process(delta: float) -> void:
 	_time += delta
 	if show_particles:
+		var screen_w := maxf(1200.0, get_viewport_rect().size.x if is_inside_tree() else 1200.0)
 		for p in _particles:
 			if _current_theme == "frost_peak":
 				p.y += delta * p.speed
 				if p.y > 540.0:
 					p.y = -10.0
-					p.x = randf_range(0, 960)
+					p.x = randf_range(0, screen_w)
 			else:
 				p.y -= delta * p.speed
 				if p.y < 20.0:
 					p.y = 520.0
-					p.x = randf_range(0, 960)
-		queue_redraw()
+					p.x = randf_range(0, screen_w)
+		
+		# Mobil qurilmada 60 FPS silliqlikni saqlash uchun redraw optimallashtiriladi
+		if OS.has_feature("mobile"):
+			_redraw_skip += 1
+			if _redraw_skip % 2 == 0:
+				queue_redraw()
+		else:
+			queue_redraw()
 
 func _draw() -> void:
 	var w: float = size.x if size.x > 0 else 960.0
