@@ -32,12 +32,12 @@ func _ready() -> void:
 
 func _on_player_died() -> void:
 	if traps_container:
-		traps_container.process_mode = Node.PROCESS_MODE_DISABLED
+		traps_container.set_deferred("process_mode", Node.PROCESS_MODE_DISABLED)
 
 func _on_player_respawned() -> void:
 	reset_level_traps()
 	if traps_container:
-		traps_container.process_mode = Node.PROCESS_MODE_INHERIT
+		traps_container.set_deferred("process_mode", Node.PROCESS_MODE_INHERIT)
 
 func reset_level_traps() -> void:
 	if exit_door:

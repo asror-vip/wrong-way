@@ -5,7 +5,7 @@ const MIN_ROW: int = 2 # y = 64px (TopBar osti)
 const MAX_ROW: int = 14 # y = 448px (BottomPalette usti)
 
 func _get_canvas_width() -> float:
-	return maxf(960.0, get_viewport_rect().size.x)
+	return get_viewport_rect().size.x
 
 func _get_cols() -> int:
 	return int(_get_canvas_width() / float(GRID_SIZE))

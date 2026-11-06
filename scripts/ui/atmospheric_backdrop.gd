@@ -87,6 +87,10 @@ func _ready() -> void:
 	if show_particles:
 		_init_particles()
 		
+	if show_menu_cliff:
+		_align_menu_cliff()
+		get_viewport().size_changed.connect(_align_menu_cliff)
+		
 	# Gameplay fonida o'yinchi chalg'imasligi uchun avtomatik Bokeh Blur (2.8)
 	if not is_ui_background and not show_menu_cliff and not is_map_background:
 		if blur_amount <= 0.01:
@@ -106,6 +110,28 @@ func _ready() -> void:
 			set_level_background(gm.current_level_id)
 		else:
 			set_level_background(1)
+
+func _align_menu_cliff() -> void:
+	if not bg_texture_rect or not show_menu_cliff or not is_inside_tree():
+		return
+	var vp := get_viewport_rect().size
+	var aspect: float = 960.0 / 540.0
+	if vp.y > 0.0 and (vp.x / vp.y) < aspect:
+		bg_texture_rect.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		var target_h: float = vp.y
+		var target_w: float = vp.y * aspect
+		bg_texture_rect.position = Vector2.ZERO
+		bg_texture_rect.size = Vector2(target_w, target_h)
+		bg_texture_rect.stretch_mode = TextureRect.STRETCH_SCALE
+	else:
+		bg_texture_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		bg_texture_rect.anchor_right = 1.0
+		bg_texture_rect.anchor_bottom = 1.0
+		bg_texture_rect.offset_left = 0.0
+		bg_texture_rect.offset_top = 0.0
+		bg_texture_rect.offset_right = 0.0
+		bg_texture_rect.offset_bottom = 0.0
+		bg_texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 
 var _current_theme := "twilight_mist"
 
@@ -287,8 +313,9 @@ func _process(delta: float) -> void:
 			queue_redraw()
 
 func _draw() -> void:
-	var w: float = size.x if size.x > 0 else 960.0
-	var h: float = size.y if size.y > 0 else 540.0
+	var vp := get_viewport_rect().size
+	var w: float = maxf(size.x, vp.x)
+	var h: float = maxf(size.y, vp.y)
 
 	if _current_theme == "frost_peak" and (bg_texture_rect == null or not bg_texture_rect.visible):
 		draw_rect(Rect2(0, 0, w, h), Color("#060b14"), true)

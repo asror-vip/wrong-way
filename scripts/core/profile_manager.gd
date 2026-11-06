@@ -356,37 +356,8 @@ func get_known_google_accounts() -> Array:
 			if parsed is Array:
 				accounts = parsed
 
-	# Haqiqiy Google hisobini tizimdan aniqlash
-	var real_email := ""
-	var real_name := ""
-	
-	var git_out := []
-	if OS.execute("git", ["config", "user.email"], git_out) == 0 and not git_out.is_empty():
-		var e := str(git_out[0]).strip_edges().to_lower()
-		if e.contains("@"):
-			real_email = e
-			
-	var name_out := []
-	if OS.execute("git", ["config", "user.name"], name_out) == 0 and not name_out.is_empty():
-		var n := str(name_out[0]).strip_edges()
-		if not n.is_empty():
-			real_name = n.capitalize()
-			
-	if not real_email.is_empty():
-		var has_real := false
-		for acc in accounts:
-			if acc is Dictionary and acc.get("email", "").to_lower() == real_email:
-				has_real = true
-				break
-				
-		if not has_real:
-			accounts.insert(0, {
-				"email": real_email,
-				"name": real_name if not real_name.is_empty() else "Google Player",
-				"avatar": "av_1"
-			})
-		
-	if not email.is_empty() and email != real_email and email.contains("@"):
+	# Joriy hisobni ro'yxatda aks ettirish (foydalanuvchi ma'lumotlari uchun)
+	if not email.is_empty() and email.contains("@"):
 		var found_saved := false
 		for acc in accounts:
 			if acc is Dictionary and acc.get("email", "").to_lower() == email.to_lower():
@@ -458,11 +429,17 @@ func _on_update_completed(_result: int, response_code: int, _headers: PackedStri
 	if response_code in [200, 204]:
 		print("ProfileManager: Profil Supabase'da yangilandi!")
 
+func _write_json_atomic(path: String, text: String) -> void:
+	var tmp := path + ".tmp"
+	var f := FileAccess.open(tmp, FileAccess.WRITE)
+	if not f:
+		return
+	f.store_string(text)
+	f.close()
+	DirAccess.rename_absolute(ProjectSettings.globalize_path(tmp), ProjectSettings.globalize_path(path))
+
 func _save_local_cache(data: Dictionary) -> void:
-	var f := FileAccess.open(PROFILE_CACHE_PATH, FileAccess.WRITE)
-	if f:
-		f.store_string(JSON.stringify(data))
-		f.close()
+	_write_json_atomic(PROFILE_CACHE_PATH, JSON.stringify(data))
 
 # -------------------------------------------------------------
 # Do'stlar va So'nggi Raqiblar (Quick Friends System)
@@ -478,10 +455,7 @@ func _load_saved_friends() -> void:
 				saved_friends = parsed
 
 func save_friends_cache() -> void:
-	var f := FileAccess.open(FRIENDS_CACHE_PATH, FileAccess.WRITE)
-	if f:
-		f.store_string(JSON.stringify(saved_friends))
-		f.close()
+	_write_json_atomic(FRIENDS_CACHE_PATH, JSON.stringify(saved_friends))
 
 func add_recent_friend(tag: String, friend_name: String = "", av_url: String = "") -> void:
 	var clean_tag := tag.strip_edges().to_upper()

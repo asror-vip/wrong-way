@@ -19,8 +19,9 @@ var shake_enabled: bool = true
 var current_language: String = "uz"
 var custom_touch_layout: Dictionary = {}
 
-# Developer / Test rejimi: barcha daraja va boblarni sinov uchun ochiq qilish
-var debug_unlock_all: bool = true
+# Developer / Test rejimi: barcha daraja va boblarni sinov uchun ochiq qilish.
+# Relizda doim false bo'lishi shart; F10 bilan vaqtinchalik yoqiladi va saqlanadi.
+var debug_unlock_all: bool = false
 
 # Ad-unlock & Navigation Context
 var ad_unlocked_levels: Array[int] = []
@@ -37,6 +38,8 @@ func _ready() -> void:
 func load_data() -> void:
 	var config := ConfigFile.new()
 	var err := config.load(SAVE_PATH)
+	if err != OK:
+		err = config.load(SAVE_PATH + ".bak")
 	if err == OK:
 		unlocked_levels = Array(config.get_value("progress", "unlocked_levels", [1]), TYPE_INT, "", null)
 		level_stars = config.get_value("progress", "level_stars", {})
@@ -54,7 +57,11 @@ func load_data() -> void:
 		shake_enabled = config.get_value("settings", "shake_enabled", true)
 		current_language = config.get_value("settings", "current_language", "uz")
 		custom_touch_layout = config.get_value("settings", "custom_touch_layout", {})
-	
+		debug_unlock_all = config.get_value("settings", "debug_unlock_all", false)
+
+	if not OS.has_feature("editor"):
+		debug_unlock_all = false
+
 	if not unlocked_levels.has(1):
 		unlocked_levels.push_front(1)
 
@@ -76,7 +83,26 @@ func save_data() -> void:
 	config.set_value("settings", "shake_enabled", shake_enabled)
 	config.set_value("settings", "current_language", current_language)
 	config.set_value("settings", "custom_touch_layout", custom_touch_layout)
-	config.save(SAVE_PATH)
+	config.set_value("settings", "debug_unlock_all", debug_unlock_all)
+	_write_config_atomic(config)
+
+func _write_config_atomic(config: ConfigFile) -> void:
+	# Atomik saqlash: avval .tmp faylga yoziladi, so'ng eski fayl .bak'ga ko'chiriladi
+	# va .tmp asosiy fayl ustiga rename qilinadi. Crash/disk to'lishida progress yo'qolmaydi.
+	var tmp_path := SAVE_PATH + ".tmp"
+	var bak_path := SAVE_PATH + ".bak"
+	var err := config.save(tmp_path)
+	if err != OK:
+		push_error("SaveManager: saqlashda xatolik (kod %d): %s" % [err, tmp_path])
+		return
+	var abs_save := ProjectSettings.globalize_path(SAVE_PATH)
+	var abs_tmp := ProjectSettings.globalize_path(tmp_path)
+	var abs_bak := ProjectSettings.globalize_path(bak_path)
+	if FileAccess.file_exists(SAVE_PATH):
+		DirAccess.copy_absolute(abs_save, abs_bak)
+	var ren_err := DirAccess.rename_absolute(abs_tmp, abs_save)
+	if ren_err != OK:
+		push_error("SaveManager: atomik o'zgartirishda xatolik (kod %d)" % ren_err)
 
 func get_touch_pos(btn_name: String, default_val: Vector2) -> Vector2:
 	if custom_touch_layout.has(btn_name):
@@ -142,7 +168,7 @@ func record_result(lvl: int, time_ms: float, deaths: int) -> int:
 
 	if stars >= 2:
 		var next_lvl := lvl + 1
-		if next_lvl <= 40 and not unlocked_levels.has(next_lvl):
+		if next_lvl <= 60 and not unlocked_levels.has(next_lvl):
 			unlocked_levels.append(next_lvl)
 
 	save_data()
@@ -243,14 +269,14 @@ func record_level_attempt(lvl: int) -> void:
 # 3. Bitta daraja oralab (cheriz) reklama ruxsat beriladi (masalan 2 dan o'tolmasa 3 ni reklama bilan ochadi, 4 da bu yo'q, 5 da bor va h.k.).
 # -------------------------------------------------------------
 func is_level_ad_unlockable(lvl: int) -> bool:
-	if lvl <= 1 or lvl > 40:
+	if lvl <= 1 or lvl > 60:
 		return false
 	if is_level_unlocked(lvl):
 		return false
 		
 	# 1. Faqat eng birinchi qulflangan daraja bo'lishi kerak
 	var first_locked := -1
-	for l in range(1, 41):
+	for l in range(1, 61):
 		if not is_level_unlocked(l):
 			first_locked = l
 			break
@@ -270,7 +296,7 @@ func is_level_ad_unlockable(lvl: int) -> bool:
 
 func get_lock_reason_dialog(lvl: int) -> Dictionary:
 	var first_locked := -1
-	for l in range(1, 41):
+	for l in range(1, 61):
 		if not is_level_unlocked(l):
 			first_locked = l
 			break
@@ -315,7 +341,7 @@ func get_highest_completed_level() -> int:
 	for k in level_stars:
 		var lvl := int(k)
 		if int(level_stars[k]) > 0 and lvl > highest:
-			if lvl <= 40 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
+			if lvl <= 60 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
 				highest = lvl
 	return highest
 
@@ -324,14 +350,14 @@ func get_completed_level_count() -> int:
 	for k in level_stars:
 		var lvl := int(k)
 		if int(level_stars[k]) > 0:
-			if lvl <= 40 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
+			if lvl <= 60 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
 				count += 1
 	return count
 
 func get_unlocked_count() -> int:
 	var count := 0
 	for lvl in unlocked_levels:
-		if lvl <= 40 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
+		if lvl <= 60 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
 			count += 1
 	return count
 
@@ -343,7 +369,7 @@ func get_level_best_deaths(lvl: int) -> int:
 
 func get_total_beaten_deaths() -> int:
 	var total: int = 0
-	for lvl in range(1, 41):
+	for lvl in range(1, 61):
 		var str_lvl := str(lvl)
 		if is_level_completed(lvl) and level_best_deaths.has(str_lvl):
 			total += int(level_best_deaths[str_lvl])

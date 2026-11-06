@@ -14,6 +14,7 @@ extends Control
 @onready var right_btn: Button = get_node_or_null("TouchControls/RightBtn")
 @onready var dash_btn: Button = get_node_or_null("TouchControls/DashBtn")
 @onready var jump_btn: Button = get_node_or_null("TouchControls/JumpBtn")
+@onready var touch_controls: Control = get_node_or_null("TouchControls")
 
 @onready var countdown_box: CenterContainer = get_node_or_null("CountdownBox")
 @onready var countdown_label: Label = get_node_or_null("CountdownBox/CountdownLabel")
@@ -35,24 +36,37 @@ func _ready() -> void:
 	if right_btn: _setup_touch_btn(right_btn, "move_right")
 	if dash_btn: _setup_touch_btn(dash_btn, "dash")
 	if jump_btn: _setup_touch_btn(jump_btn, "jump")
+	_update_touch_visibility()
+
+func _update_touch_visibility() -> void:
+	# Touch boshqaruv tugmalari faqat sensorli qurilmalarda ko'rsatiladi.
+	var is_touch: bool = DisplayServer.is_touchscreen_available() or OS.has_feature("mobile") or OS.has_feature("android") or OS.has_feature("ios")
+	if touch_controls:
+		touch_controls.visible = is_touch
 
 func _apply_custom_touch_layout() -> void:
+	var def_positions := UIResponsive.get_default_touch_positions(self)
+	var insets := UIResponsive.get_safe_insets(self)
+	
+	if pause_btn:
+		pause_btn.position = Vector2(20.0 + insets["left"], 16.0 + insets["top"])
+		
+	var right_box: Control = get_node_or_null("TopHUD/RightBox")
+	if right_box:
+		var vp := UIResponsive.get_viewport_size(self)
+		right_box.position = Vector2(vp.x - right_box.size.x - 20.0 - insets["right"], 16.0 + insets["top"])
+	
 	var sm = get_node_or_null("/root/SaveManager")
-	var screen_w := maxf(960.0, get_viewport_rect().size.x)
-	var def_left := Vector2(32.0, 452.0)
-	var def_right := Vector2(112.0, 452.0)
-	var def_dash := Vector2(screen_w - 180.0, 452.0)
-	var def_jump := Vector2(screen_w - 100.0, 448.0)
 	if sm:
-		if left_btn: left_btn.position = sm.get_touch_pos("left", def_left)
-		if right_btn: right_btn.position = sm.get_touch_pos("right", def_right)
-		if dash_btn: dash_btn.position = sm.get_touch_pos("dash", def_dash)
-		if jump_btn: jump_btn.position = sm.get_touch_pos("jump", def_jump)
+		if left_btn: left_btn.position = sm.get_touch_pos("left", def_positions["left"])
+		if right_btn: right_btn.position = sm.get_touch_pos("right", def_positions["right"])
+		if dash_btn: dash_btn.position = sm.get_touch_pos("dash", def_positions["dash"])
+		if jump_btn: jump_btn.position = sm.get_touch_pos("jump", def_positions["jump"])
 	else:
-		if left_btn: left_btn.position = def_left
-		if right_btn: right_btn.position = def_right
-		if dash_btn: dash_btn.position = def_dash
-		if jump_btn: jump_btn.position = def_jump
+		if left_btn: left_btn.position = def_positions["left"]
+		if right_btn: right_btn.position = def_positions["right"]
+		if dash_btn: dash_btn.position = def_positions["dash"]
+		if jump_btn: jump_btn.position = def_positions["jump"]
 
 func _process(_delta: float) -> void:
 	if time_label:
@@ -87,6 +101,14 @@ func _setup_icons() -> void:
 		jump_btn.icon = IconFactory.get_icon("circle_btn_jump", 1.0)
 		jump_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		jump_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+
+	# TouchControls faqat mobil qurilmalar uchun ko'rsatiladi
+	var touch_controls = get_node_or_null("TouchControls")
+	if touch_controls:
+		if OS.has_feature("mobile") or OS.has_feature("android") or OS.has_feature("web_android") or OS.has_feature("web_ios"):
+			touch_controls.visible = true
+		else:
+			touch_controls.visible = false
 
 func _on_language_changed(_lang: String) -> void:
 	_update_texts()

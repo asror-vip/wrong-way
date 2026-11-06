@@ -5,6 +5,7 @@ class_name InvisibleBlock
 @export var persist_revealed: bool = true
 
 var is_revealed: bool = false
+var tw: Tween
 var original_pos: Vector2
 
 @onready var col_shape: CollisionShape2D = $CollisionShape2D
@@ -45,13 +46,17 @@ func reveal(player: Node2D = null) -> void:
 			player.velocity.y = 140.0
 			
 	# Blok tepaga 6px sakrab joyiga qaytish animatsiyasi
-	var tween := create_tween()
-	tween.tween_property(self, "position:y", original_pos.y - 8.0, 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(self, "position:y", original_pos.y, 0.08).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	if tw and tw.is_valid():
+		tw.kill()
+	tw = create_tween()
+	tw.tween_property(self, "position:y", original_pos.y - 8.0, 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "position:y", original_pos.y, 0.08).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	
 	queue_redraw()
 
 func reset_trap() -> void:
+	if tw and tw.is_valid():
+		tw.kill()
 	# Agar persist_revealed false bo'lsa qayta ko'rinmas bo'ladi,
 	# lekin adolatli troll o'yinlarida bir marta urilgach ko'rinib turishi o'tishni o'rgatadi
 	if not persist_revealed:

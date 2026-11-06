@@ -6,7 +6,9 @@
 *.translation
 export_presets.cfg
 
-# Secrets & Environment variables
+# IDE & local editor configs
+.idea/
+*.iml
 .env
 .env.*
 *.secret

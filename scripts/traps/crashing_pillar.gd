@@ -50,9 +50,18 @@ func _physics_process(delta: float) -> void:
 		crash_velocity += 2400.0 * delta
 		position.y += crash_velocity * delta
 		
-		# Polga urilish (taxminan 380 y balandlikda to'xtash)
-		if position.y >= original_pos.y + 190.0:
-			position.y = original_pos.y + 190.0
+		# Polga urilish (yerni topsin)
+		# Qattiq 190.0 o'rniga parametr orqali
+		var drop_dist = 190.0
+		if "drop_distance" in self:
+			drop_dist = float(self.get("drop_distance"))
+		elif "platform_size" in self:
+			drop_dist = float(self.get("platform_size").y)
+		else:
+			drop_dist = maxf(190.0, 500.0 - original_pos.y)
+
+		if position.y >= original_pos.y + drop_dist:
+			position.y = original_pos.y + drop_dist
 			is_grounded = true
 			crash_velocity = 0.0
 			SoundManager.play("trap")

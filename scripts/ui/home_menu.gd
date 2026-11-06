@@ -1,7 +1,7 @@
 extends Control
 
 # Wrong Way — Home Menu
-# Top right shows overall best record from SaveSystem.
+# Top right shows overall best record from SaveManager.
 # Center has vertically stacked buttons: PLAY, LEADERBOARD, MULTIPLAYER.
 
 @onready var record_label: Label = $TopBar/RecordLabel
@@ -28,7 +28,7 @@ func _ready() -> void:
 	update_best_record()
 
 func update_best_record() -> void:
-	var save_sys = get_node_or_null("/root/SaveSystem")
+	var save_sys = get_node_or_null("/root/SaveManager")
 	if save_sys and save_sys.has_method("get_overall_best_text"):
 		record_label.text = "Oxirgi rekord: %s" % save_sys.get_overall_best_text()
 	else:
@@ -40,7 +40,7 @@ func _on_back_pressed() -> void:
 
 func _on_play_pressed() -> void:
 	_play_click()
-	var save_sys = get_node_or_null("/root/SaveSystem")
+	var save_sys = get_node_or_null("/root/SaveManager")
 	if save_sys:
 		save_sys.navigation_source = "home_menu"
 		save_sys.should_restore_result_modal = false

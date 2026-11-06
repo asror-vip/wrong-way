@@ -64,7 +64,19 @@ func _ready() -> void:
 	_setup_buttons()
 	_update_hint(0)
 	_start_background_drift()
+	_apply_safe_insets()
+	get_viewport().size_changed.connect(_apply_safe_insets)
 	_run_loading_flow()
+
+func _apply_safe_insets() -> void:
+	var insets := UIResponsive.get_safe_insets(self)
+	var b_margin: float = float(insets.get("bottom", 0.0))
+	if bottom_box:
+		bottom_box.offset_bottom = -30.0 - b_margin
+	if auth_box:
+		auth_box.offset_bottom = -25.0 - b_margin
+	if start_box:
+		start_box.offset_bottom = -25.0 - b_margin
 
 func _unhandled_input(event: InputEvent) -> void:
 	if start_box and start_box.visible and not is_transitioning:

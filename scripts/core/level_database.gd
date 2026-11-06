@@ -42,7 +42,7 @@ func load_local_levels() -> void:
 				_populate_cache(u_parsed)
 			else:
 				# Eski keshni butunlay tozalab tashlaymiz
-				DirAccess.remove_absolute(CACHE_FILE_PATH)
+				DirAccess.remove_absolute(ProjectSettings.globalize_path(CACHE_FILE_PATH))
 			
 	is_loaded = true
 	print("LevelDatabase: %d ta daraja muvaffaqiyatli yuklandi!" % _levels_cache.size())

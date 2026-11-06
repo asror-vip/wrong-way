@@ -77,8 +77,40 @@ func _ready() -> void:
 	if duel_lobby_modal:
 		duel_lobby_modal.duel_started.connect(_on_duel_started)
 		
+	get_viewport().size_changed.connect(_apply_responsive_layout)
+	_apply_responsive_layout()
+		
 	SoundManager.set_gameplay_mode(false)
 	SoundManager.play_music()
+
+func _apply_responsive_layout() -> void:
+	var insets := UIResponsive.get_safe_insets(self)
+	var vp := UIResponsive.get_viewport_size(self)
+	
+	if settings_top_btn:
+		settings_top_btn.position.x = 24.0 + insets["left"]
+		settings_top_btn.position.y = 20.0 + insets["top"]
+	if quit_top_btn:
+		quit_top_btn.position.x = 24.0 + insets["left"]
+		quit_top_btn.position.y = 74.0 + insets["top"]
+		
+	var best_badge = get_node_or_null("TopBar/BestBadge")
+	if best_badge:
+		best_badge.position.x = vp.x - 288.0 - insets["right"]
+		best_badge.position.y = 17.0 + insets["top"]
+	if profile_top_btn:
+		profile_top_btn.position.x = vp.x - 174.0 - insets["right"]
+		profile_top_btn.position.y = 14.0 + insets["top"]
+		
+	var header = get_node_or_null("Header")
+	if header:
+		header.position.x = 72.0 + insets["left"]
+	if menu_character:
+		menu_character.position.x = 78.0 + insets["left"]
+		
+	var menu_stack = get_node_or_null("MenuStack")
+	if menu_stack:
+		menu_stack.position.x = vp.x - 380.0 - insets["right"]
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:

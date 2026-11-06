@@ -111,7 +111,13 @@ func _ready() -> void:
 	switch_to_chapter(1, false)
 
 func _get_step_width() -> float:
-	return maxf(960.0, get_viewport_rect().size.x)
+	return get_viewport_rect().size.x
+
+func _get_map_offset() -> Vector2:
+	var vp := get_viewport_rect().size
+	var ox := (vp.x - 960.0) * 0.5
+	var oy := (vp.y - 540.0) * 0.5
+	return Vector2(ox, oy)
 
 func _setup_widescreen_layout() -> void:
 	var step_w := _get_step_width()
@@ -124,6 +130,41 @@ func _setup_widescreen_layout() -> void:
 	if ch3_view:
 		ch3_view.offset_left = step_w * 2.0
 		ch3_view.offset_right = step_w * 2.0
+		
+	var insets := UIResponsive.get_safe_insets(self)
+	if back_btn:
+		back_btn.position.x = 20.0 + insets["left"]
+	if total_stars_chip:
+		total_stars_chip.position.x = step_w - total_stars_chip.size.x - 20.0 - insets["right"]
+	if side_nav_right:
+		side_nav_right.position.x = step_w - side_nav_right.size.x - 16.0 - insets["right"]
+	if side_nav_left:
+		side_nav_left.position.x = 16.0 + insets["left"]
+		
+	if toast_panel and toast_panel.visible:
+		toast_panel.position.x = (step_w - toast_panel.size.x) * 0.5
+		
+	_reposition_all_chapter_nodes()
+
+func _reposition_all_chapter_nodes() -> void:
+	_position_nodes(1, node_layer1)
+	_position_nodes(2, node_layer2)
+	_position_nodes(3, node_layer3)
+
+func _position_nodes(chapter: int, container: Control) -> void:
+	if not container or not is_inside_tree():
+		return
+	var positions := CHAPTER_1_POS
+	if chapter == 2:
+		positions = CHAPTER_2_POS
+	elif chapter == 3:
+		positions = CHAPTER_3_POS
+	var offset := _get_map_offset()
+	var children := container.get_children()
+	for i in range(mini(children.size(), positions.size())):
+		var btn = children[i] as Control
+		if btn:
+			btn.position = positions[i] + offset - Vector2(18, 18)
 
 func _setup_seamless_backdrop_materials() -> void:
 	var blur_shader = preload("res://shaders/bokeh_blur.gdshader")
@@ -135,7 +176,7 @@ func _setup_seamless_backdrop_materials() -> void:
 		m1.set_shader_parameter("fade_left", 0.0)
 		m1.set_shader_parameter("fade_right", 0.0)
 		backdrop_ch1.material = m1
-		backdrop_ch1.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		backdrop_ch1.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
 	if backdrop_ch2:
 		var m2 := ShaderMaterial.new()
@@ -144,7 +185,7 @@ func _setup_seamless_backdrop_materials() -> void:
 		m2.set_shader_parameter("fade_left", 0.0)
 		m2.set_shader_parameter("fade_right", 0.0)
 		backdrop_ch2.material = m2
-		backdrop_ch2.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		backdrop_ch2.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		
 	if backdrop_ch3:
 		var m3 := ShaderMaterial.new()
@@ -153,7 +194,7 @@ func _setup_seamless_backdrop_materials() -> void:
 		m3.set_shader_parameter("fade_left", 0.0)
 		m3.set_shader_parameter("fade_right", 0.0)
 		backdrop_ch3.material = m3
-		backdrop_ch3.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		backdrop_ch3.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 func _setup_top_bar() -> void:
 	if back_btn:
@@ -217,7 +258,7 @@ func _setup_toast_ui() -> void:
 	toast_panel.name = "FloatingToast"
 	toast_panel.custom_minimum_size = Vector2(380, 56)
 	toast_panel.size = Vector2(380, 56)
-	toast_panel.position = Vector2((960.0 - 380.0) * 0.5, 75.0)
+	toast_panel.position = Vector2((get_viewport_rect().size.x - 380.0) * 0.5, 75.0)
 	toast_panel.z_index = 100
 	toast_panel.visible = false
 	toast_panel.modulate.a = 0.0
@@ -534,7 +575,7 @@ func _create_nodes_for_chapter(chapter: int) -> void:
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(36, 36)
 		btn.size = Vector2(36, 36)
-		btn.position = pos - Vector2(18, 18)
+		btn.position = pos + _get_map_offset() - Vector2(18, 18)
 		btn.focus_mode = Control.FOCUS_NONE
 		
 		var style := StyleBoxFlat.new()
@@ -567,7 +608,7 @@ func _create_nodes_for_chapter(chapter: int) -> void:
 			star_box.alignment = BoxContainer.ALIGNMENT_CENTER
 			star_box.custom_minimum_size = Vector2(36, 12)
 			star_box.size = Vector2(36, 12)
-			star_box.position = pos + Vector2(-18, -32) # Doira tepasida
+			star_box.position = Vector2(0, -14) # Doira tepasida
 			star_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			star_box.add_theme_constant_override("separation", 2)
 			
@@ -575,7 +616,7 @@ func _create_nodes_for_chapter(chapter: int) -> void:
 				var star_key := "star_gold" if s < stars else "star_dim"
 				var star_icon := IconFactory.create_texture_rect(star_key, Vector2(10, 10), 0.52)
 				star_box.add_child(star_icon)
-			container.add_child(star_box)
+			btn.add_child(star_box)
 			
 			btn.pressed.connect(func(): _on_level_btn_pressed(lvl))
 		else:
@@ -715,7 +756,7 @@ func _create_chapter_lock_card(chapter: int) -> Control:
 	card.custom_minimum_size = Vector2(card_w, card_h)
 	card.size = Vector2(card_w, card_h)
 	# Yo'l va daraja doirachalariga xalaqit bermasligi uchun tepada (top-bar ostida)
-	card.position = Vector2((960.0 - card_w) * 0.5, 68.0)
+	card.position = Vector2((get_viewport_rect().size.x - card_w) * 0.5, 68.0)
 	card.z_as_relative = false
 	card.z_index = 100
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE

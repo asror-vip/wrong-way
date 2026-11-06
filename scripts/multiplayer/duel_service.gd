@@ -37,11 +37,14 @@ var bot_elapsed_time: float = 0.0
 
 func _ready() -> void:
 	# Bosh menyuda turganida ham kelayotgan takliflarni tekshirish uchun fon taymeri
-	var bg_timer := Timer.new()
-	bg_timer.wait_time = 3.0
-	bg_timer.autostart = true
-	bg_timer.timeout.connect(_check_pending_invitations)
-	add_child(bg_timer)
+	# TAVSIYA: Agar multiplayer hozirgi relizda shart bo'lmasa, batareya va internetni
+	# asrash maqsadida 3 soniyalik doimiy background polling to'xtatib qo'yildi.
+	pass
+	# var bg_timer := Timer.new()
+	# bg_timer.wait_time = 3.0
+	# bg_timer.autostart = true
+	# bg_timer.timeout.connect(_check_pending_invitations)
+	# add_child(bg_timer)
 
 func _process(delta: float) -> void:
 	if is_bot_duel and bot_timer_active and GameManager.is_duel_mode and GameManager.is_level_running:
@@ -404,10 +407,16 @@ func leave_active_duel() -> void:
 	is_bot_duel = false
 	bot_timer_active = false
 
+var is_poll_request_pending: bool = false
+
 func _poll_active_duel() -> void:
+	if is_poll_request_pending:
+		return
+	is_poll_request_pending = true
 	var http := HTTPRequest.new()
 	add_child(http)
 	http.request_completed.connect(func(_res, code, _h, body):
+		is_poll_request_pending = false
 		http.queue_free()
 		if code == 200:
 			var arr = JSON.parse_string(body.get_string_from_utf8())

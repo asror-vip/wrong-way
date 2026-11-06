@@ -158,15 +158,17 @@ func _on_body_entered(body: Node2D) -> void:
 		return
 	if body is PlayerController and not is_sinking:
 		is_sinking = true
+		monitoring = false
 		SoundManager.play("win")
 		body.enter_door(global_position + Vector2(0.0, -20.0))
 		show_triangle = false
+		GameManager.is_level_running = false # Level shu ondayoq yutildi
 		queue_redraw()
-		await get_tree().create_timer(0.18).timeout
+
+		# Qisqa pauzasiz to'g'ridan-to'g'ri tushishni boshlash (xavfsizroq)
 		_sink_door()
 
 func _sink_door() -> void:
-	# Eshik shaffof bo'lib xira yo'qolmaydi, balki to'liq pol/yer ichiga birdan tezda kirib ketadi!
 	var tween := create_tween()
 	tween.tween_method(func(val: float):
 		sink_amount = val
@@ -174,6 +176,8 @@ func _sink_door() -> void:
 	, 0.0, door_size.y + 2.0, 0.32).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	
 	await tween.finished
+	if not is_instance_valid(self) or not is_inside_tree():
+		return
 	visible = false
 	door_sunk_completely.emit()
 	GameManager.complete_level()
@@ -187,10 +191,10 @@ func reset_door() -> void:
 	is_sinking = false
 	sink_amount = 0.0
 	show_triangle = true
-	position.x = initial_x
-	position.y = initial_y
+	global_position = Vector2(initial_x, initial_y)
 	has_run_away = false
 	modulate.a = 1.0
 	visible = true
 	reset_cooldown = 0.40
+	monitoring = true
 	queue_redraw()

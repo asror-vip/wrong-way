@@ -7,6 +7,7 @@ class_name FakeDoorTrap
 var start_pos: Vector2
 var is_triggered: bool = false
 var pulse_time: float = 0.0
+var runaway_tween: Tween = null
 
 @onready var col_shape: CollisionShape2D = $CollisionShape2D
 
@@ -39,10 +40,10 @@ func _run_away(_player: Node2D) -> void:
 		sm.play("trap")
 	
 	# Eshik pastga pol ichiga tushib yo'qoladi (Falls down and vanishes)
-	var tween := create_tween()
-	tween.tween_property(self, "position:y", start_pos.y - 3.0, 0.05)
-	tween.tween_property(self, "position:y", start_pos.y + 120.0, 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.tween_callback(func():
+	runaway_tween = create_tween()
+	runaway_tween.tween_property(self, "position:y", start_pos.y - 3.0, 0.05)
+	runaway_tween.tween_property(self, "position:y", start_pos.y + 120.0, 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	runaway_tween.tween_callback(func():
 		visible = false
 		if col_shape:
 			col_shape.disabled = true
@@ -117,6 +118,8 @@ func _on_body_entered(body: Node2D) -> void:
 			body.kill()
 
 func reset_trap() -> void:
+	if runaway_tween and runaway_tween.is_valid():
+		runaway_tween.kill()
 	global_position = start_pos
 	rotation = 0.0
 	is_triggered = false

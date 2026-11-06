@@ -9,7 +9,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_create_procedural_sounds()
 	_setup_music_player()
-	
+	# GameManager autoload tartibda keyinroq yuklanadi, shuning uchun deferred ulaymiz.
+	_connect_gameplay_mode.call_deferred()
+
+func _connect_gameplay_mode() -> void:
 	var gm = get_node_or_null("/root/GameManager")
 	if gm:
 		gm.level_started.connect(func(_lvl): set_gameplay_mode(true))

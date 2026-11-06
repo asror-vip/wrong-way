@@ -58,6 +58,14 @@ func _physics_process(delta: float) -> void:
 			
 	if col_shape:
 		col_shape.disabled = not is_active
+		if is_active:
+			# Collision balandligi ko'rinadigan tikan balandligiga mos bo'lsin,
+			# biroq o'yinchi "havoda" o'lmasligi uchun bir oz (masalan, 6px) pastroq hitbox olinadi
+			var rect := col_shape.shape as RectangleShape2D
+			if rect:
+				var hit_h := maxf(current_height - 6.0, 4.0)
+				rect.size = Vector2(spike_width, hit_h)
+				col_shape.position = Vector2(spike_width / 2.0, -hit_h / 2.0)
 	queue_redraw()
 
 func _trigger() -> void:

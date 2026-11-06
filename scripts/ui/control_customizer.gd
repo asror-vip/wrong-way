@@ -7,6 +7,7 @@ signal layout_saved
 @onready var drag_left: Control = $DragLeft
 @onready var drag_right: Control = $DragRight
 @onready var drag_jump: Control = $DragJump
+@onready var drag_dash: Control = get_node_or_null("DragDash")
 
 @onready var reset_btn: Button = $TopBar/BtnBox/ResetBtn
 @onready var save_btn: Button = $TopBar/BtnBox/SaveBtn
@@ -14,39 +15,15 @@ signal layout_saved
 @onready var title_lbl: Label = $TopBar/TitleBox/TitleLbl
 @onready var subtitle_lbl: Label = $TopBar/TitleBox/SubtitleLbl
 
-const DEF_LEFT := Vector2(32, 452)
-const DEF_RIGHT := Vector2(112, 452)
-const DEF_JUMP := Vector2(860, 448)
-
-var dragging_node: Control = null
-var drag_touch_offset: Vector2 = Vector2.ZERO
-
-func _ready() -> void:
-	visible = false
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	
-	_setup_drag_widget(drag_left, "circle_btn_left", Vector2(64, 64))
-	_setup_drag_widget(drag_right, "circle_btn_right", Vector2(64, 64))
-	_setup_drag_widget(drag_jump, "circle_btn_jump", Vector2(68, 68))
-	
-	if reset_btn: reset_btn.pressed.connect(_on_reset_pressed)
-	if save_btn: save_btn.pressed.connect(_on_save_pressed)
-	if close_btn: close_btn.pressed.connect(_on_close_pressed)
-
-func open() -> void:
-	_load_current_positions()
-	_update_texts()
-	visible = true
-	SoundManager.play("click")
-
-func close() -> void:
-	visible = false
-	closed.emit()
+func _get_default_positions() -> Dictionary:
+	return UIResponsive.get_default_touch_positions(self)
 
 func _load_current_positions() -> void:
-	if drag_left: drag_left.position = SaveManager.get_touch_pos("left", DEF_LEFT)
-	if drag_right: drag_right.position = SaveManager.get_touch_pos("right", DEF_RIGHT)
-	if drag_jump: drag_jump.position = SaveManager.get_touch_pos("jump", DEF_JUMP)
+	var defs := _get_default_positions()
+	if drag_left: drag_left.position = SaveManager.get_touch_pos("left", defs["left"])
+	if drag_right: drag_right.position = SaveManager.get_touch_pos("right", defs["right"])
+	if drag_jump: drag_jump.position = SaveManager.get_touch_pos("jump", defs["jump"])
+	if drag_dash: drag_dash.position = SaveManager.get_touch_pos("dash", defs["dash"])
 
 func _update_texts() -> void:
 	if title_lbl:
@@ -75,22 +52,42 @@ func _setup_drag_widget(node: Control, icon_name: String, sz: Vector2) -> void:
 	node.add_child(icon_rect)
 	
 	node.gui_input.connect(func(event: InputEvent):
+		var is_press := false
+		var is_release := false
+		var is_drag := false
+		var local_pos := Vector2.ZERO
 		if event is InputEventMouseButton:
 			var mb := event as InputEventMouseButton
 			if mb.button_index == MOUSE_BUTTON_LEFT:
-				if mb.pressed:
-					dragging_node = node
-					drag_touch_offset = mb.position
-					node.queue_redraw()
-				else:
-					if dragging_node == node:
-						dragging_node = null
-						node.queue_redraw()
-		elif event is InputEventMouseMotion and dragging_node == node:
-			var mm := event as InputEventMouseMotion
-			var new_pos = node.position + mm.position - drag_touch_offset
-			var max_x = 960.0 - node.size.x - 10.0
-			var max_y = 540.0 - node.size.y - 10.0
+				is_press = mb.pressed
+				is_release = not mb.pressed
+				local_pos = mb.position
+		elif event is InputEventMouseMotion:
+			if dragging_node == node:
+				is_drag = true
+				local_pos = (event as InputEventMouseMotion).position
+		elif event is InputEventScreenTouch:
+			var st := event as InputEventScreenTouch
+			is_press = st.pressed
+			is_release = not st.pressed
+			local_pos = st.position
+		elif event is InputEventScreenDrag:
+			if dragging_node == node:
+				is_drag = true
+				local_pos = (event as InputEventScreenDrag).position
+
+		if is_press:
+			dragging_node = node
+			drag_touch_offset = local_pos
+			node.queue_redraw()
+		elif is_release and dragging_node == node:
+			dragging_node = null
+			node.queue_redraw()
+		elif is_drag:
+			var new_pos := node.position + local_pos - drag_touch_offset
+			var vp := get_viewport_rect().size
+			var max_x := maxf(10.0, vp.x - node.size.x - 10.0)
+			var max_y := maxf(64.0, vp.y - node.size.y - 10.0)
 			node.position = Vector2(clampf(new_pos.x, 10.0, max_x), clampf(new_pos.y, 64.0, max_y))
 	)
 	
@@ -103,11 +100,45 @@ func _setup_drag_widget(node: Control, icon_name: String, sz: Vector2) -> void:
 		node.draw_rect(r, c, false, 1.5 if is_act else 1.0)
 	)
 
+var dragging_node: Control = null
+var drag_touch_offset: Vector2 = Vector2.ZERO
+
+func _ready() -> void:
+	visible = false
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	_setup_drag_widget(drag_left, "circle_btn_left", Vector2(64, 64))
+	_setup_drag_widget(drag_right, "circle_btn_right", Vector2(64, 64))
+	_setup_drag_widget(drag_jump, "circle_btn_jump", Vector2(68, 68))
+	if not drag_dash:
+		var dd := Control.new()
+		dd.name = "DragDash"
+		dd.mouse_filter = Control.MOUSE_FILTER_STOP
+		add_child(dd)
+		drag_dash = dd
+	_setup_drag_widget(drag_dash, "circle_btn_dash", Vector2(64, 64))
+	
+	if reset_btn: reset_btn.pressed.connect(_on_reset_pressed)
+	if save_btn: save_btn.pressed.connect(_on_save_pressed)
+	if close_btn: close_btn.pressed.connect(_on_close_pressed)
+
+func open() -> void:
+	_load_current_positions()
+	_update_texts()
+	visible = true
+	SoundManager.play("click")
+
+func close() -> void:
+	visible = false
+	closed.emit()
+
 func _on_reset_pressed() -> void:
 	SoundManager.play("click")
-	if drag_left: drag_left.position = DEF_LEFT
-	if drag_right: drag_right.position = DEF_RIGHT
-	if drag_jump: drag_jump.position = DEF_JUMP
+	var defs := _get_default_positions()
+	if drag_left: drag_left.position = defs["left"]
+	if drag_right: drag_right.position = defs["right"]
+	if drag_jump: drag_jump.position = defs["jump"]
+	if drag_dash: drag_dash.position = defs["dash"]
 	SaveManager.reset_touch_layout()
 
 func _on_save_pressed() -> void:
@@ -115,6 +146,7 @@ func _on_save_pressed() -> void:
 	if drag_left: SaveManager.set_touch_pos("left", drag_left.position)
 	if drag_right: SaveManager.set_touch_pos("right", drag_right.position)
 	if drag_jump: SaveManager.set_touch_pos("jump", drag_jump.position)
+	if drag_dash: SaveManager.set_touch_pos("dash", drag_dash.position)
 	layout_saved.emit()
 	close()
 

@@ -63,7 +63,7 @@ func _setup_icons() -> void:
 
 func _on_spotlight_draw() -> void:
 	if not spotlight_fx: return
-	var center_x := 480.0
+	var center_x := spotlight_fx.size.x * 0.5
 	
 	# Yumshoq spotlight nuri (tepadan pastga kengayuvchi)
 	var top_w := 60.0
@@ -88,9 +88,9 @@ func _on_spotlight_draw() -> void:
 	
 	# Yulduzlar atrofidagi olmos uchqunlari (reference rasmdagidek)
 	var diamonds := [
-		Vector2(330, 160), Vector2(630, 150),
-		Vector2(300, 240), Vector2(660, 245),
-		Vector2(350, 280), Vector2(610, 285)
+		Vector2(center_x - 150.0, 160.0), Vector2(center_x + 150.0, 150.0),
+		Vector2(center_x - 180.0, 240.0), Vector2(center_x + 180.0, 245.0),
+		Vector2(center_x - 130.0, 280.0), Vector2(center_x + 130.0, 285.0)
 	]
 	for pt in diamonds:
 		_draw_diamond(spotlight_fx, pt, 3.5, Color(1, 1, 1, 0.35))
@@ -248,7 +248,7 @@ func _on_map_pressed() -> void:
 		sm.navigation_source = "result_modal"
 		sm.return_level_num = last_lvl
 		sm.should_restore_result_modal = true
-		sm.saved_result_data = {
+		sm.pending_result_data = {
 			"lvl": last_lvl,
 			"time_ms": last_time_ms,
 			"deaths": last_deaths,

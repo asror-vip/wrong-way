@@ -21,6 +21,7 @@ func _ready() -> void:
 		col_shape.position = zone_size / 2.0
 		
 	body_entered.connect(_on_body_entered)
+	body_exited.connect(_on_body_exited)
 
 func _process(delta: float) -> void:
 	pulse_time += delta * 4.0
@@ -35,8 +36,16 @@ func _on_body_entered(body: Node2D) -> void:
 			SoundManager.play("trap")
 			GameManager.request_screen_shake.emit(5.0)
 
+func _on_body_exited(body: Node2D) -> void:
+	if body is PlayerController or body.is_in_group("player"):
+		if "controls_inverted" in body:
+			body.controls_inverted = false
+
 func reset_trap() -> void:
 	is_triggered = false
+	var player := get_tree().get_first_node_in_group("player") as Node2D
+	if player and "controls_inverted" in player:
+		player.controls_inverted = false
 	queue_redraw()
 
 func _draw() -> void:

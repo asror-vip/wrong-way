@@ -42,11 +42,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			restart_current_level()
 		elif event.keycode == KEY_F11:
 			toggle_fullscreen()
-		elif event.keycode == KEY_F10:
+		elif event.keycode == KEY_F10 and OS.has_feature("editor"):
 			var sm = get_node_or_null("/root/SaveManager")
-			if sm and "debug_unlock_all" in sm:
-				sm.debug_unlock_all = not sm.debug_unlock_all
-				print("SaveManager: debug_unlock_all = ", sm.debug_unlock_all)
+			if sm:
+				var new_val: bool = not bool(sm.get("debug_unlock_all"))
+				sm.set("debug_unlock_all", new_val)
+				if sm.has_method("save_data"):
+					sm.save_data()
+				print("SaveManager: debug_unlock_all = ", new_val)
 
 
 func start_game(level_id: int) -> void:
@@ -65,7 +68,8 @@ func start_game(level_id: int) -> void:
 		return
 
 	get_tree().change_scene_to_file("res://scenes/game/gameplay.tscn")
-	level_started.emit(current_level_id)
+	# change_scene_to_file is deferred, so we shouldn't emit level_started here.
+	# The gameplay.gd's _ready will call _load_level directly.
 
 func start_duel_game(level_id: int, random_seed_num: int = 0) -> void:
 	is_duel_mode = true
@@ -79,7 +83,7 @@ func start_duel_game(level_id: int, random_seed_num: int = 0) -> void:
 	level_start_time = Time.get_ticks_msec()
 	is_level_running = false
 	get_tree().change_scene_to_file("res://scenes/game/gameplay.tscn")
-	level_started.emit(current_level_id)
+	# Deferred change, gameplay.gd will handle it.
 
 func record_death() -> void:
 	if is_custom_editor_mode:

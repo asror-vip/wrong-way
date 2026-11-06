@@ -274,9 +274,7 @@ func _update_avatar_preview() -> void:
 		avatar_preview.texture = IconFactory.get_icon(av_key, 1.0)
 
 func _load_stats() -> void:
-	var save_sys = get_node_or_null("/root/SaveSystem")
-	if not save_sys:
-		save_sys = get_node_or_null("/root/SaveManager")
+	var save_sys = get_node_or_null("/root/SaveManager")
 	if save_sys:
 		if stars_label and save_sys.has_method("get_total_stars"):
 			stars_label.text = "%d Yulduz" % save_sys.get_total_stars()

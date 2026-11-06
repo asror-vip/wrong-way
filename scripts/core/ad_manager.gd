@@ -11,6 +11,12 @@ const ADMOB_BANNER_ID := "ca-app-pub-9009277559004471/5320968143"
 const ADMOB_INTERSTITIAL_ID := "ca-app-pub-9009277559004471/1106390961"
 const ADMOB_REWARDED_ID := "ca-app-pub-9009277559004471/5903035034"
 
+# RELIZ UCHUN MUHIM:
+# 1) Haqiqiy AdMob plaginini (GodotAdMob yoki PoingGodotAdMob) loyihaga o'rnatish shart — hozir
+#    loyihada native plagin YO'Q, shuning uchun banner/interstitial/rewarded faqat mahalliy mock overlay.
+# 2) UMP (User Messaging Platform) consent dialogi ulanishi va set_consent() orqali uzatilishi shart (GDPR/COPPA).
+# 3) Reward berish native "rewarded completed" callback'iga bog'lanishi kerak (hozir mock taymer bilan beriladi).
+
 signal banner_visibility_changed(is_visible: bool)
 signal rewarded_ad_started
 signal rewarded_ad_completed(reward_granted: bool)
@@ -23,6 +29,9 @@ var banner_panel: Panel = null
 var banner_label: Label = null
 var is_banner_active: bool = false
 var banner_enabled: bool = true
+
+# GDPR/UMP roziligi. Relizgacha UMP consent dialogi bilan bog'lanishi va set_consent() orqali uzatilishi shart.
+var consent_granted: bool = true
 
 # Rewarded UI
 var rewarded_overlay: Control = null
@@ -145,7 +154,12 @@ func hide_banner() -> void:
 	_native_hide_banner()
 
 func is_banner_visible() -> bool:
-	return is_banner_active and banner_panel != null and banner_panel.visible
+	return is_banner_active
+
+func set_consent(granted: bool) -> void:
+	consent_granted = granted
+	if not consent_granted:
+		hide_banner()
 
 # -------------------------------------------------------------
 # 2. INTERSTITIAL AD (To'liq ekranli oraliq reklama)
@@ -536,11 +550,17 @@ func _native_show_interstitial() -> void:
 			admob.showInterstitial()
 
 func _native_show_rewarded() -> void:
+	var admob_instance = null
 	if Engine.has_singleton("PoingGodotAdMob"):
-		var admob = Engine.get_singleton("PoingGodotAdMob")
-		if admob.has_method("show_rewarded_video"):
-			admob.show_rewarded_video()
+		admob_instance = Engine.get_singleton("PoingGodotAdMob")
 	elif Engine.has_singleton("GodotAdMob"):
-		var admob = Engine.get_singleton("GodotAdMob")
-		if admob.has_method("showRewardedVideo"):
-			admob.showRewardedVideo()
+		admob_instance = Engine.get_singleton("GodotAdMob")
+
+	if admob_instance and admob_instance.has_method("show_rewarded_video"):
+		admob_instance.show_rewarded_video()
+	elif admob_instance and admob_instance.has_method("showRewardedVideo"):
+		admob_instance.showRewardedVideo()
+	else:
+		# Reliz vaqtida agar plugin yo'q bo'lsa darhol yutuq beriladi
+		if not OS.has_feature("editor") and not OS.has_feature("debug"):
+			call_deferred("_on_claim_reward_pressed")

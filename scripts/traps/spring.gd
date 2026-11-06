@@ -7,6 +7,7 @@ class_name SpringTrap
 @onready var col_shape: CollisionShape2D = $CollisionShape2D
 
 var is_springing: bool = false
+var tw: Tween
 var compression: float = 1.0
 
 func _ready() -> void:
@@ -67,18 +68,24 @@ func _trigger_launch(body: Node2D) -> void:
 		body.apply_impulse(Vector2(0, launch_velocity))
 		
 	# Siqilish va sakrash animatsiyasi
-	var tw := create_tween()
+	if tw and tw.is_valid():
+		tw.kill()
+	tw = create_tween()
 	tw.tween_property(self, "compression", 0.45, 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "compression", 1.25, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "compression", 1.0, 0.15)
-	await tw.finished
-	is_springing = false
+
+	tw.finished.connect(func():
+		is_springing = false
+	)
 
 func _process(_delta: float) -> void:
 	if is_springing:
 		queue_redraw()
 
 func reset_trap() -> void:
+	if tw and tw.is_valid():
+		tw.kill()
 	is_springing = false
 	compression = 1.0
 	queue_redraw()

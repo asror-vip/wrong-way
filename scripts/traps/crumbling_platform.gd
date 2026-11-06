@@ -14,6 +14,8 @@ var is_falling: bool = false
 var original_pos: Vector2
 var fall_velocity: float = 0.0
 var crack_progress: float = 0.0
+var shake_tw: Tween
+var crack_tw: Tween
 
 @onready var col_shape: CollisionShape2D = $CollisionShape2D
 @onready var step_area: Area2D = $StepArea
@@ -68,22 +70,29 @@ func trigger_crumble() -> void:
 	GameManager.request_screen_shake.emit(4.0)
 	
 	# Platforma qaltiraydi va yoriladi
-	var tw := create_tween()
+	if shake_tw and shake_tw.is_valid(): shake_tw.kill()
+	shake_tw = create_tween().set_loops()
 	for i in range(4):
-		var ox := randf_range(-3.0, 3.0)
-		tw.tween_property(self, "position:x", original_pos.x + ox, collapse_delay / 8.0)
-		tw.tween_property(self, "position:x", original_pos.x, collapse_delay / 8.0)
+		shake_tw.tween_property(self, "position:x", original_pos.x + 3.0, collapse_delay / 8.0)
+		shake_tw.tween_property(self, "position:x", original_pos.x - 3.0, collapse_delay / 8.0)
+		shake_tw.tween_property(self, "position:x", original_pos.x, collapse_delay / 8.0)
 	
 	# Yoriqlar chuqurlashadi
-	var tw_crack := create_tween()
-	tw_crack.tween_property(self, "crack_progress", 1.0, collapse_delay)
+	if crack_tw and crack_tw.is_valid(): crack_tw.kill()
+	crack_tw = create_tween()
+	crack_tw.tween_property(self, "crack_progress", 1.0, collapse_delay)
 	
-	await get_tree().create_timer(collapse_delay).timeout
-	if is_instance_valid(self) and is_triggered:
-		is_falling = true
-		GameManager.request_screen_shake.emit(6.0)
+	crack_tw.finished.connect(func():
+		if is_instance_valid(self) and is_triggered:
+			is_falling = true
+			if shake_tw and shake_tw.is_valid(): shake_tw.kill()
+			position = original_pos
+			GameManager.request_screen_shake.emit(6.0)
+	)
 
 func reset_trap() -> void:
+	if shake_tw and shake_tw.is_valid(): shake_tw.kill()
+	if crack_tw and crack_tw.is_valid(): crack_tw.kill()
 	is_triggered = false
 	is_falling = false
 	fall_velocity = 0.0

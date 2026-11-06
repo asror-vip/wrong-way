@@ -127,6 +127,9 @@ func _physics_process(delta: float) -> void:
 
 	# Gravitatsiya va shaklni asl holatiga qaytarish (lerp)
 	velocity.y += GRAVITY * delta
+	# Terminal velocity (yorib o'tishni oldini olish)
+	velocity.y = minf(velocity.y, 1200.0)
+
 	if visual:
 		visual.scale = visual.scale.lerp(Vector2.ONE, delta * 10.0)
 
@@ -134,8 +137,15 @@ func _physics_process(delta: float) -> void:
 	if visual:
 		visual.queue_redraw()
 
-	# Original: player.y > H + 50 (540 + 50 = 590)
-	if global_position.y > 590.0:
+	# O'lim tekisligi config'dan o'qiladi yoki dinamik hisoblanadi
+	var death_y: float = 750.0
+	var trap_cfg = get_node_or_null("/root/TrapConfig")
+	if trap_cfg and "death_plane_y" in trap_cfg:
+		death_y = float(trap_cfg.death_plane_y)
+	else:
+		death_y = maxf(get_viewport_rect().size.y, 540.0) + 210.0
+
+	if global_position.y > death_y:
 		kill()
 
 func kill() -> void:

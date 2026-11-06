@@ -16,6 +16,7 @@ var initial_position: Vector2
 var speed: float = 0.0
 var timer: float = 0.0
 var player_ref: Node2D = null
+var has_crushed: bool = false
 
 var is_triggered: bool:
 	get: return state != State.IDLE
@@ -36,6 +37,8 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	match state:
 		State.IDLE:
+			if has_crushed:
+				return
 			if player_ref == null:
 				player_ref = get_tree().get_first_node_in_group("player") as Node2D
 			if player_ref != null and is_instance_valid(player_ref):
@@ -64,6 +67,7 @@ func _physics_process(delta: float) -> void:
 					state = State.WAITING_BOTTOM
 					timer = wait_at_bottom
 				else:
+					has_crushed = true
 					state = State.IDLE
 		
 		State.WAITING_BOTTOM:
@@ -101,6 +105,7 @@ func reset_trap() -> void:
 	state = State.IDLE
 	speed = 0.0
 	timer = 0.0
+	has_crushed = false
 	global_position = initial_position
 
 func _draw() -> void:

@@ -16,33 +16,45 @@ var front_puffs: Array[Vector3] = []
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	custom_minimum_size = Vector2(960, 100)
+	custom_minimum_size = Vector2(0, 100)
 	
 	_generate_cloud_puffs()
 	_setup_coming_soon_badge()
 	
 	LocaleManager.language_changed.connect(_on_language_changed)
+	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	_update_badge_text()
+
+func _on_viewport_size_changed() -> void:
+	_generate_cloud_puffs()
+	if badge_panel:
+		var cur_w: float = maxf(size.x, get_viewport_rect().size.x)
+		badge_panel.position.x = (cur_w - 230.0) * 0.5
 
 
 func _generate_cloud_puffs() -> void:
+	var max_w: float = maxf(size.x, maxf(get_viewport_rect().size.x, 1400.0))
+	back_puffs.clear()
+	mid_puffs.clear()
+	front_puffs.clear()
+	
 	# Orqa qatlam bulutlari (to'qroq krem)
-	var x: float = -30.0
-	while x <= 990.0:
+	var x: float = -40.0
+	while x <= max_w + 60.0:
 		var r := randf_range(45.0, 65.0)
 		back_puffs.append(Vector3(x, 50.0, r))
 		x += randf_range(40.0, 60.0)
 		
 	# O'rta qatlam bulutlari
-	x = -20.0
-	while x <= 980.0:
+	x = -30.0
+	while x <= max_w + 50.0:
 		var r := randf_range(38.0, 56.0)
 		mid_puffs.append(Vector3(x, 60.0, r))
 		x += randf_range(35.0, 55.0)
 
 	# Old qatlam bulutlari (oppoq va yorqin)
-	x = -15.0
-	while x <= 975.0:
+	x = -20.0
+	while x <= max_w + 40.0:
 		var r := randf_range(32.0, 48.0)
 		front_puffs.append(Vector3(x, 70.0, r))
 		x += randf_range(30.0, 45.0)
@@ -51,7 +63,8 @@ func _setup_coming_soon_badge() -> void:
 	badge_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	badge_panel.custom_minimum_size = Vector2(230, 28)
 	badge_panel.size = Vector2(230, 28)
-	badge_panel.position = Vector2(365, 62)
+	var max_w: float = maxf(size.x, get_viewport_rect().size.x)
+	badge_panel.position = Vector2((max_w - 230.0) * 0.5, 62.0)
 	
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.20, 0.18, 0.24, 0.85)
@@ -118,4 +131,5 @@ func _draw() -> void:
 		draw_circle(Vector2(p.x, p.y + dy), p.z, col_front)
 
 	# 4. Pastki qismni to'liq qoplovchi qatlam
-	draw_rect(Rect2(-50.0, 75.0, 1060.0, 150.0), col_front, true)
+	var fill_w: float = maxf(size.x, maxf(get_viewport_rect().size.x, 1400.0)) + 100.0
+	draw_rect(Rect2(-50.0, 75.0, fill_w, 150.0), col_front, true)

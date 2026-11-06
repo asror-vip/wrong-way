@@ -10,6 +10,7 @@ signal auth_failed(error_message: String)
 
 const LOOPBACK_PORT: int = 8943
 const REDIRECT_URI: String = "http://127.0.0.1:8943/callback"
+const REFRESH_TOKEN_PATH := "user://google_refresh_token.txt"
 
 var tcp_server: TCPServer
 var is_listening: bool = false
@@ -72,13 +73,8 @@ func _start_android_sign_in() -> void:
 			gsi.signIn()
 			return
 
-	# Agar maxsus Android plagini bo'lmasa, qurilmaning xavfsiz avtomatik hisobi orqali darhol ulaymiz
-	var fallback_name := ProfileManager.username if ProfileManager.username != "Player" else "Player"
-	var clean_tag := ProfileManager.player_tag.to_lower().replace("-", "")
-	var fallback_email := ProfileManager.email if not ProfileManager.email.is_empty() else ("player_" + clean_tag + "@gmail.com")
-	print("GoogleAuthService: Standart tizim orqali hisob ulanmoqda: ", fallback_email)
-	ProfileManager.login_with_google(fallback_email, fallback_name)
-	auth_succeeded.emit({"email": fallback_email, "name": fallback_name})
+	# Android'da Google plagin mavjud bo'lmasa, soxta hisob yaratmasdan xato qaytaramiz.
+	auth_failed.emit("Google orqali kirish bu qurilmada mavjud emas.")
 
 func _on_android_account_picked(acc_email: String, acc_name: String) -> void:
 	print("GoogleAuthService: Android tizimidan Google hisobi tanlandi: ", acc_email, " (", acc_name, ")")
@@ -180,7 +176,6 @@ func _handle_http_client(peer: StreamPeerTCP) -> void:
 		return
 		
 	var request_line := lines[0] # masalan: GET /callback?code=... HTTP/1.1 yoki GET /callback#...
-	print("GoogleAuthService: HTTP so'rov qabul qilindi: ", request_line)
 	
 	# Brauzerga qaytariladigan nafis HTML sahifa
 	var html_body := """<!DOCTYPE html>
@@ -300,6 +295,8 @@ func _parse_auth_request(req_line: String) -> void:
 	# Supabase Access Token orqali haqiqiy Google profilini olish
 	if query_params.has("access_token"):
 		var token: String = query_params["access_token"]
+		if query_params.has("refresh_token"):
+			_store_refresh_token(str(query_params["refresh_token"]))
 		_fetch_supabase_user(token)
 		return
 
@@ -354,6 +351,14 @@ func _on_user_info_completed(_result: int, response_code: int, _headers: PackedS
 	print("GoogleAuthService: User info olishda xatolik (HTTP %d)" % response_code)
 	_bring_game_window_to_front()
 	auth_failed.emit("Google hisob ma'lumotlarini olishda xatolik yuz berdi (HTTP %d)" % response_code)
+
+func _store_refresh_token(token: String) -> void:
+	if token.is_empty():
+		return
+	var f := FileAccess.open(REFRESH_TOKEN_PATH, FileAccess.WRITE)
+	if f:
+		f.store_string(token)
+		f.close()
 
 func _bring_game_window_to_front() -> void:
 	if OS.has_feature("pc"):
