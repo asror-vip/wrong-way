@@ -126,8 +126,12 @@ func _setup_signals() -> void:
 		customize_controls_btn.pressed.connect(func():
 			SoundManager.play("click")
 			if control_customizer:
+				if card: card.visible = false
+				if backdrop: backdrop.visible = false
 				control_customizer.open()
 		)
+	if control_customizer and not control_customizer.closed.is_connected(_on_customizer_closed):
+		control_customizer.closed.connect(_on_customizer_closed)
 		
 	if close_btn:
 		close_btn.pressed.connect(func():
@@ -194,8 +198,14 @@ func _update_platform_controls() -> void:
 		customize_controls_btn.visible = is_mob
 
 func close() -> void:
+	if card: card.visible = true
+	if backdrop: backdrop.visible = true
 	visible = false
 	closed.emit()
+
+func _on_customizer_closed() -> void:
+	if card: card.visible = true
+	if backdrop: backdrop.visible = true
 
 func _select_language(lang: String) -> void:
 	SoundManager.play("click")

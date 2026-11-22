@@ -321,8 +321,10 @@ const SVG_ICONS = {
 		<circle cx="22" cy="23" r="19" fill="#000000" opacity="0.38"/>
 		<circle cx="22" cy="22" r="19" fill="#0c1018" fill-opacity="0.80" stroke="#36435c" stroke-width="1.6"/>
 		<circle cx="22" cy="22" r="17.8" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-opacity="0.12"/>
-		<circle cx="22" cy="22" r="4" fill="none" stroke="#f8fafc" stroke-width="2.2"/>
-		<path d="M22 13v2m0 14v2m9-9h-2m-14 0H9m15.2-6.2l-1.4 1.4m-9.6 9.6l-1.4 1.4m0-12.4l1.4 1.4m9.6 9.6l1.4 1.4" stroke="#f8fafc" stroke-width="2.2" stroke-linecap="round"/>
+		<g transform="translate(10, 10)">
+			<circle cx="12" cy="12" r="3.2" fill="none" stroke="#f8fafc" stroke-width="2.1"/>
+			<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" fill="none" stroke="#f8fafc" stroke-width="2.0" stroke-linejoin="round"/>
+		</g>
 	</svg>""",
 
 	"circle_btn_back": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="44" height="44">

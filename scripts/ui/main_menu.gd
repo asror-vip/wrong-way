@@ -111,24 +111,27 @@ func _apply_responsive_layout() -> void:
 		ox = 0.0
 		oy = (vp.y - 540.0 * s) * 0.5
 
+	var left_pad: float = clampf(float(insets["left"]) * 0.45 + 16.0, 20.0, 34.0)
+	var right_pad: float = maxf(28.0, float(insets["right"]) + 24.0)
+
 	if settings_top_btn:
-		settings_top_btn.position.x = 24.0 + insets["left"]
-		settings_top_btn.position.y = 20.0 + insets["top"]
+		settings_top_btn.position.x = left_pad
+		settings_top_btn.position.y = 20.0 + float(insets["top"])
 	if quit_top_btn:
-		quit_top_btn.position.x = 24.0 + insets["left"]
-		quit_top_btn.position.y = 74.0 + insets["top"]
+		quit_top_btn.position.x = left_pad
+		quit_top_btn.position.y = 74.0 + float(insets["top"])
 		
 	if profile_top_btn:
-		profile_top_btn.position.x = vp.x - 174.0 - insets["right"]
-		profile_top_btn.position.y = 14.0 + insets["top"]
+		profile_top_btn.position.x = vp.x - 160.0 - right_pad
+		profile_top_btn.position.y = 14.0 + float(insets["top"])
 	var best_badge = get_node_or_null("TopBar/BestBadge")
 	if best_badge:
-		best_badge.position.x = vp.x - 302.0 - insets["right"]
-		best_badge.position.y = 17.0 + insets["top"]
+		best_badge.position.x = vp.x - 280.0 - right_pad
+		best_badge.position.y = 17.0 + float(insets["top"])
 		
-	var cliff_x: float = 78.0 * s + ox + insets["left"]
+	var cliff_x: float = 78.0 * s + ox + left_pad - 20.0
 	var cliff_y: float = 265.0 * s + oy
-	var title_x: float = 72.0 * s + ox + insets["left"]
+	var title_x: float = 72.0 * s + ox + left_pad - 14.0
 	var title_y: float = 100.0 * s + oy
 
 	var header = get_node_or_null("Header")
@@ -142,10 +145,10 @@ func _apply_responsive_layout() -> void:
 	var menu_stack = get_node_or_null("MenuStack")
 	if menu_stack:
 		menu_stack.scale = Vector2(s, s)
-		var stack_w: float = 300.0 * s
-		var centered_x: float = (vp.x - stack_w) * 0.5
-		var min_x: float = title_x + 250.0 * s
-		menu_stack.position.x = maxf(centered_x, min_x)
+		var target_x: float = vp.x - (340.0 * s) - right_pad
+		if target_x < title_x + (240.0 * s):
+			target_x = maxf(280.0, vp.x - (310.0 * s) - right_pad)
+		menu_stack.position.x = target_x
 		menu_stack.position.y = maxf(84.0, (vp.y - (menu_stack.size.y * s)) * 0.5)
 
 func _unhandled_input(event: InputEvent) -> void:

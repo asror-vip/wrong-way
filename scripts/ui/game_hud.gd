@@ -70,20 +70,25 @@ func _apply_custom_touch_layout() -> void:
 		var rx: float = vp.x - right_box.size.x - 20.0 - float(insets["right"])
 		right_box.position = Vector2(rx, 16.0 + float(insets["top"]))
 
-	if left_btn:
-		left_btn.custom_minimum_size = Vector2(82, 82)
-		left_btn.size = Vector2(82, 82)
-	if right_btn:
-		right_btn.custom_minimum_size = Vector2(82, 82)
-		right_btn.size = Vector2(82, 82)
-	if dash_btn:
-		dash_btn.custom_minimum_size = Vector2(78, 78)
-		dash_btn.size = Vector2(78, 78)
-	if jump_btn:
-		jump_btn.custom_minimum_size = Vector2(88, 88)
-		jump_btn.size = Vector2(88, 88)
-	
 	var sm = get_node_or_null("/root/SaveManager")
+	var btn_sc: float = float(sm.touch_button_scale) if sm else 1.0
+	var sz_lr := Vector2(82.0, 82.0) * btn_sc
+	var sz_dash := Vector2(78.0, 78.0) * btn_sc
+	var sz_jump := Vector2(88.0, 88.0) * btn_sc
+
+	if left_btn:
+		left_btn.custom_minimum_size = sz_lr
+		left_btn.size = sz_lr
+	if right_btn:
+		right_btn.custom_minimum_size = sz_lr
+		right_btn.size = sz_lr
+	if dash_btn:
+		dash_btn.custom_minimum_size = sz_dash
+		dash_btn.size = sz_dash
+	if jump_btn:
+		jump_btn.custom_minimum_size = sz_jump
+		jump_btn.size = sz_jump
+	
 	if sm and not sm.custom_touch_layout.is_empty():
 		if left_btn: left_btn.position = sm.get_touch_pos("left", def_positions["left"])
 		if right_btn: right_btn.position = sm.get_touch_pos("right", def_positions["right"])

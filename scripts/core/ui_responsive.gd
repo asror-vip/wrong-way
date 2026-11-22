@@ -51,12 +51,18 @@ static func get_default_touch_positions(caller: Control = null) -> Dictionary:
 	var margin_r: float = 42.0 + insets["right"]
 	var margin_b: float = 30.0 + insets["bottom"]
 	
-	var btn_w: float = 82.0
-	var btn_h: float = 82.0
-	var dash_w: float = 78.0
-	var dash_h: float = 78.0
-	var jump_w: float = 88.0
-	var jump_h: float = 88.0
+	var sc: float = 1.0
+	if Engine.get_main_loop() and Engine.get_main_loop().root:
+		var sm = Engine.get_main_loop().root.get_node_or_null("/root/SaveManager")
+		if sm and "touch_button_scale" in sm:
+			sc = float(sm.touch_button_scale)
+
+	var btn_w: float = 82.0 * sc
+	var btn_h: float = 82.0 * sc
+	var dash_w: float = 78.0 * sc
+	var dash_h: float = 78.0 * sc
+	var jump_w: float = 88.0 * sc
+	var jump_h: float = 88.0 * sc
 	var gap: float = 24.0
 	
 	var base_y := vp.y - margin_b - btn_h

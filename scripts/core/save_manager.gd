@@ -18,6 +18,7 @@ var sfx_volume: float = 1.0
 var shake_enabled: bool = true
 var current_language: String = "uz"
 var custom_touch_layout: Dictionary = {}
+var touch_button_scale: float = 1.0
 
 # Developer / Test rejimi: barcha daraja va boblarni sinov uchun ochiq qilish.
 # Relizda doim false bo'lishi shart; F10 bilan vaqtinchalik yoqiladi va saqlanadi.
@@ -57,6 +58,11 @@ func load_data() -> void:
 		shake_enabled = config.get_value("settings", "shake_enabled", true)
 		current_language = config.get_value("settings", "current_language", "uz")
 		custom_touch_layout = config.get_value("settings", "custom_touch_layout", {})
+		touch_button_scale = clampf(
+			float(config.get_value("settings", "touch_button_scale", 1.0)),
+			0.65,
+			1.45
+		)
 		debug_unlock_all = config.get_value("settings", "debug_unlock_all", false)
 
 	if not OS.has_feature("editor"):
@@ -83,6 +89,7 @@ func save_data() -> void:
 	config.set_value("settings", "shake_enabled", shake_enabled)
 	config.set_value("settings", "current_language", current_language)
 	config.set_value("settings", "custom_touch_layout", custom_touch_layout)
+	config.set_value("settings", "touch_button_scale", touch_button_scale)
 	config.set_value("settings", "debug_unlock_all", debug_unlock_all)
 	_write_config_atomic(config)
 
@@ -118,8 +125,14 @@ func set_touch_pos(btn_name: String, pos: Vector2) -> void:
 	save_data()
 	touch_layout_changed.emit()
 
+func set_touch_scale(sc: float) -> void:
+	touch_button_scale = clampf(sc, 0.65, 1.45)
+	save_data()
+	touch_layout_changed.emit()
+
 func reset_touch_layout() -> void:
 	custom_touch_layout.clear()
+	touch_button_scale = 1.0
 	save_data()
 	touch_layout_changed.emit()
 
