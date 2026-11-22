@@ -96,7 +96,21 @@ func _ready() -> void:
 func _apply_responsive_layout() -> void:
 	var insets := UIResponsive.get_safe_insets(self)
 	var vp := UIResponsive.get_viewport_size(self)
+	var aspect: float = 960.0 / 540.0
 	
+	var s: float = 1.0
+	var ox: float = 0.0
+	var oy: float = 0.0
+	
+	if vp.y > 0.0 and (vp.x / vp.y) < aspect:
+		s = vp.y / 540.0
+		ox = 0.0
+		oy = 0.0
+	else:
+		s = vp.x / 960.0
+		ox = 0.0
+		oy = (vp.y - 540.0 * s) * 0.5
+
 	if settings_top_btn:
 		settings_top_btn.position.x = 24.0 + insets["left"]
 		settings_top_btn.position.y = 20.0 + insets["top"]
@@ -104,23 +118,35 @@ func _apply_responsive_layout() -> void:
 		quit_top_btn.position.x = 24.0 + insets["left"]
 		quit_top_btn.position.y = 74.0 + insets["top"]
 		
-	var best_badge = get_node_or_null("TopBar/BestBadge")
-	if best_badge:
-		best_badge.position.x = vp.x - 288.0 - insets["right"]
-		best_badge.position.y = 17.0 + insets["top"]
 	if profile_top_btn:
 		profile_top_btn.position.x = vp.x - 174.0 - insets["right"]
 		profile_top_btn.position.y = 14.0 + insets["top"]
+	var best_badge = get_node_or_null("TopBar/BestBadge")
+	if best_badge:
+		best_badge.position.x = vp.x - 302.0 - insets["right"]
+		best_badge.position.y = 17.0 + insets["top"]
 		
+	var cliff_x: float = 78.0 * s + ox + insets["left"]
+	var cliff_y: float = 265.0 * s + oy
+	var title_x: float = 72.0 * s + ox + insets["left"]
+	var title_y: float = 100.0 * s + oy
+
 	var header = get_node_or_null("Header")
 	if header:
-		header.position.x = 72.0 + insets["left"]
+		header.position = Vector2(title_x, title_y)
+		header.scale = Vector2(s, s)
 	if menu_character:
-		menu_character.position.x = 78.0 + insets["left"]
+		menu_character.position = Vector2(cliff_x, cliff_y)
+		menu_character.scale = Vector2(s, s)
 		
 	var menu_stack = get_node_or_null("MenuStack")
 	if menu_stack:
-		menu_stack.position.x = vp.x - 380.0 - insets["right"]
+		menu_stack.scale = Vector2(s, s)
+		var stack_w: float = 300.0 * s
+		var centered_x: float = (vp.x - stack_w) * 0.5
+		var min_x: float = title_x + 250.0 * s
+		menu_stack.position.x = maxf(centered_x, min_x)
+		menu_stack.position.y = maxf(84.0, (vp.y - (menu_stack.size.y * s)) * 0.5)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:

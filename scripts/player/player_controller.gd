@@ -11,7 +11,7 @@ const DASH_DURATION: float = 0.16
 const DASH_COOLDOWN: float = 0.40
 const JUMP_VELOCITY: float = -560.0
 const GRAVITY: float = 1450.0
-const MAX_SHORT_JUMP_FALL: float = -280.0
+const MAX_SHORT_JUMP_FALL: float = -500.0
 
 var coyote_timer: float = 0.0
 var jump_buffer: float = 0.0
@@ -141,8 +141,15 @@ func _physics_process(delta: float) -> void:
 			if sm and sm.has_method("play"):
 				sm.play("jump")
 
-	# Sakrash tugmasi erta qo'yib yuborilganda pastga tortish
-	if Input.is_action_just_released("jump") and velocity.y < MAX_SHORT_JUMP_FALL:
+	# Sakrash tugmasi erta qo'yib yuborilganda pastga tortish (faqat klaviaturada;
+	# mobilda har bir sakrash bosilganda to'liq balandlikka sakraydi)
+	var is_mob := (
+		OS.has_feature("android")
+		or OS.has_feature("ios")
+		or OS.has_feature("mobile")
+	)
+	if not is_mob and Input.is_action_just_released("jump") \
+			and velocity.y < MAX_SHORT_JUMP_FALL:
 		velocity.y = MAX_SHORT_JUMP_FALL
 
 	# Gravitatsiya va shaklni asl holatiga qaytarish (lerp)

@@ -47,23 +47,26 @@ static func get_default_touch_positions(caller: Control = null) -> Dictionary:
 	var vp := get_viewport_size(caller)
 	var insets := get_safe_insets(caller)
 	
-	var margin_l: float = 24.0 + insets["left"]
-	var margin_r: float = 24.0 + insets["right"]
-	var margin_b: float = 20.0 + insets["bottom"]
+	var margin_l: float = 42.0 + insets["left"]
+	var margin_r: float = 42.0 + insets["right"]
+	var margin_b: float = 30.0 + insets["bottom"]
 	
-	var btn_w: float = 64.0
-	var btn_h: float = 64.0
-	var jump_w: float = 68.0
-	var jump_h: float = 68.0
-	var gap: float = 16.0
+	var btn_w: float = 82.0
+	var btn_h: float = 82.0
+	var dash_w: float = 78.0
+	var dash_h: float = 78.0
+	var jump_w: float = 88.0
+	var jump_h: float = 88.0
+	var gap: float = 24.0
 	
 	var base_y := vp.y - margin_b - btn_h
 	var jump_y := vp.y - margin_b - jump_h
+	var dash_y := vp.y - margin_b - dash_h
 	
 	var pos_left := Vector2(margin_l, base_y)
 	var pos_right := Vector2(margin_l + btn_w + gap, base_y)
 	var pos_jump := Vector2(vp.x - margin_r - jump_w, jump_y)
-	var pos_dash := Vector2(pos_jump.x - gap - btn_w, base_y)
+	var pos_dash := Vector2(pos_jump.x - gap - dash_w, dash_y)
 	
 	return {
 		"left": pos_left,

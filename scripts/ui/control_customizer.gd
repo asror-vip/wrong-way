@@ -107,16 +107,16 @@ func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
-	_setup_drag_widget(drag_left, "circle_btn_left", Vector2(64, 64))
-	_setup_drag_widget(drag_right, "circle_btn_right", Vector2(64, 64))
-	_setup_drag_widget(drag_jump, "circle_btn_jump", Vector2(68, 68))
+	_setup_drag_widget(drag_left, "circle_btn_left", Vector2(82, 82))
+	_setup_drag_widget(drag_right, "circle_btn_right", Vector2(82, 82))
+	_setup_drag_widget(drag_jump, "circle_btn_jump", Vector2(88, 88))
 	if not drag_dash:
 		var dd := Control.new()
 		dd.name = "DragDash"
 		dd.mouse_filter = Control.MOUSE_FILTER_STOP
 		add_child(dd)
 		drag_dash = dd
-	_setup_drag_widget(drag_dash, "circle_btn_dash", Vector2(64, 64))
+	_setup_drag_widget(drag_dash, "circle_btn_dash", Vector2(78, 78))
 	
 	if reset_btn: reset_btn.pressed.connect(_on_reset_pressed)
 	if save_btn: save_btn.pressed.connect(_on_save_pressed)

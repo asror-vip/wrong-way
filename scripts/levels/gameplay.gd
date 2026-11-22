@@ -24,8 +24,11 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_adapt_arena_boundaries)
 
 	var adm = get_node_or_null("/root/AdManager")
-	if adm and adm.has_method("hide_banner"):
-		adm.hide_banner()
+	if adm:
+		if is_desktop_pc and adm.has_method("show_banner"):
+			adm.show_banner()
+		elif adm.has_method("hide_banner"):
+			adm.hide_banner()
 	GameManager.request_screen_shake.connect(_on_screen_shake)
 	GameManager.level_started.connect(_load_level)
 	_load_level(GameManager.current_level_id)

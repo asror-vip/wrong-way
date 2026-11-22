@@ -60,17 +60,31 @@ func _update_touch_visibility() -> void:
 func _apply_custom_touch_layout() -> void:
 	var def_positions := UIResponsive.get_default_touch_positions(self)
 	var insets := UIResponsive.get_safe_insets(self)
+	var vp := UIResponsive.get_viewport_size(self)
 	
 	if pause_btn:
 		pause_btn.position = Vector2(20.0 + insets["left"], 16.0 + insets["top"])
 		
 	var right_box: Control = get_node_or_null("TopHUD/RightBox")
 	if right_box:
-		var vp := UIResponsive.get_viewport_size(self)
-		right_box.position = Vector2(vp.x - right_box.size.x - 20.0 - insets["right"], 16.0 + insets["top"])
+		var rx: float = vp.x - right_box.size.x - 20.0 - float(insets["right"])
+		right_box.position = Vector2(rx, 16.0 + float(insets["top"]))
+
+	if left_btn:
+		left_btn.custom_minimum_size = Vector2(82, 82)
+		left_btn.size = Vector2(82, 82)
+	if right_btn:
+		right_btn.custom_minimum_size = Vector2(82, 82)
+		right_btn.size = Vector2(82, 82)
+	if dash_btn:
+		dash_btn.custom_minimum_size = Vector2(78, 78)
+		dash_btn.size = Vector2(78, 78)
+	if jump_btn:
+		jump_btn.custom_minimum_size = Vector2(88, 88)
+		jump_btn.size = Vector2(88, 88)
 	
 	var sm = get_node_or_null("/root/SaveManager")
-	if sm:
+	if sm and not sm.custom_touch_layout.is_empty():
 		if left_btn: left_btn.position = sm.get_touch_pos("left", def_positions["left"])
 		if right_btn: right_btn.position = sm.get_touch_pos("right", def_positions["right"])
 		if dash_btn: dash_btn.position = sm.get_touch_pos("dash", def_positions["dash"])
@@ -99,19 +113,19 @@ func _setup_icons() -> void:
 	if skull_icon:
 		skull_icon.texture = IconFactory.get_icon("skull_white", 0.8)
 	if left_btn:
-		left_btn.icon = IconFactory.get_icon("circle_btn_left", 1.0)
+		left_btn.icon = IconFactory.get_icon("circle_btn_left", 1.25)
 		left_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		left_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 	if right_btn:
-		right_btn.icon = IconFactory.get_icon("circle_btn_right", 1.0)
+		right_btn.icon = IconFactory.get_icon("circle_btn_right", 1.25)
 		right_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		right_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 	if dash_btn:
-		dash_btn.icon = IconFactory.get_icon("circle_btn_dash", 1.0)
+		dash_btn.icon = IconFactory.get_icon("circle_btn_dash", 1.20)
 		dash_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		dash_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 	if jump_btn:
-		jump_btn.icon = IconFactory.get_icon("circle_btn_jump", 1.0)
+		jump_btn.icon = IconFactory.get_icon("circle_btn_jump", 1.30)
 		jump_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		jump_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 
@@ -202,16 +216,17 @@ func _input(event: InputEvent) -> void:
 					_touch_fingers[sd.index] = new_act
 					_sync_touch_actions()
 
-func _get_touch_action_at(pos: Vector2) -> String:
-	var pad := 12.0
-	if left_btn and left_btn.get_global_rect().grow(pad).has_point(pos):
-		return "move_left"
-	if right_btn and right_btn.get_global_rect().grow(pad).has_point(pos):
-		return "move_right"
-	if jump_btn and jump_btn.get_global_rect().grow(pad).has_point(pos):
+func _get_touch_action_at(screen_pos: Vector2) -> String:
+	var local_pos := get_global_transform_with_canvas().affine_inverse() * screen_pos
+	var pad := 16.0
+	if jump_btn and Rect2(jump_btn.position, jump_btn.size).grow(pad).has_point(local_pos):
 		return "jump"
-	if dash_btn and dash_btn.get_global_rect().grow(pad).has_point(pos):
+	if dash_btn and Rect2(dash_btn.position, dash_btn.size).grow(pad).has_point(local_pos):
 		return "dash"
+	if left_btn and Rect2(left_btn.position, left_btn.size).grow(pad).has_point(local_pos):
+		return "move_left"
+	if right_btn and Rect2(right_btn.position, right_btn.size).grow(pad).has_point(local_pos):
+		return "move_right"
 	return ""
 
 func _sync_touch_actions() -> void:

@@ -25,6 +25,8 @@ var consent_granted: bool = true
 
 var _admob_initialized: bool = false
 var _ad_view: AdView = null
+var _pc_banner_layer: CanvasLayer = null
+var _pc_banner_panel: Panel = null
 
 var _interstitial_ad: InterstitialAd = null
 var _interstitial_loading: bool = false
@@ -41,6 +43,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	if _is_mobile_admob_supported():
 		_init_admob()
+	elif not OS.has_feature("web"):
+		_setup_pc_banner_ui()
 
 func _exit_tree() -> void:
 	if _ad_view != null:
@@ -89,12 +93,16 @@ func show_banner() -> void:
 		return
 	is_banner_active = true
 	banner_visibility_changed.emit(true)
+	if _pc_banner_panel != null:
+		_pc_banner_panel.visible = true
 	if _admob_initialized:
 		_create_and_load_banner()
 
 func hide_banner() -> void:
 	is_banner_active = false
 	banner_visibility_changed.emit(false)
+	if _pc_banner_panel != null:
+		_pc_banner_panel.visible = false
 	if _ad_view != null:
 		_ad_view.hide()
 
@@ -105,6 +113,54 @@ func set_consent(granted: bool) -> void:
 	consent_granted = granted
 	if not consent_granted:
 		hide_banner()
+
+func _setup_pc_banner_ui() -> void:
+	_pc_banner_layer = CanvasLayer.new()
+	_pc_banner_layer.layer = 120
+	_pc_banner_layer.name = "PcAdLayer"
+	add_child(_pc_banner_layer)
+
+	_pc_banner_panel = Panel.new()
+	_pc_banner_panel.name = "TopBannerPanel"
+	_pc_banner_panel.custom_minimum_size = Vector2(340, 36)
+	_pc_banner_panel.size = Vector2(340, 36)
+	_pc_banner_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pc_banner_panel.anchors_preset = Control.PRESET_TOP_WIDE
+	_pc_banner_panel.anchor_left = 0.5
+	_pc_banner_panel.anchor_right = 0.5
+	_pc_banner_panel.offset_left = -170.0
+	_pc_banner_panel.offset_right = 170.0
+	_pc_banner_panel.offset_top = 8.0
+	_pc_banner_panel.offset_bottom = 44.0
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.10, 0.15, 0.92)
+	style.border_color = Color(0.24, 0.32, 0.45, 0.75)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(8)
+	_pc_banner_panel.add_theme_stylebox_override("panel", style)
+
+	var hbox := HBoxContainer.new()
+	hbox.anchors_preset = Control.PRESET_FULL_RECT
+	hbox.add_theme_constant_override("separation", 8)
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pc_banner_panel.add_child(hbox)
+
+	var tag := Label.new()
+	tag.text = "AD"
+	tag.add_theme_color_override("font_color", Color(1.0, 0.82, 0.25, 1.0))
+	tag.add_theme_font_size_override("font_size", 10)
+	hbox.add_child(tag)
+
+	var lbl := Label.new()
+	lbl.text = "WRONG WAY • DESKTOP SPONSOR BANNER"
+	lbl.add_theme_color_override("font_color", Color(0.85, 0.90, 0.98, 0.88))
+	lbl.add_theme_font_size_override("font_size", 11)
+	hbox.add_child(lbl)
+
+	_pc_banner_layer.add_child(_pc_banner_panel)
+	_pc_banner_panel.visible = is_banner_active
 
 func _create_and_load_banner() -> void:
 	if not _is_mobile_admob_supported() or not _admob_initialized:
