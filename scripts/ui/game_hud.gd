@@ -20,6 +20,8 @@ extends Control
 @onready var countdown_label: Label = get_node_or_null("CountdownBox/CountdownLabel")
 
 var current_deaths: int = 0
+var _touch_fingers: Dictionary = {}
+var _active_touch_actions: Dictionary = {}
 
 func _ready() -> void:
 	LocaleManager.language_changed.connect(_on_language_changed)
@@ -32,17 +34,28 @@ func _ready() -> void:
 	_setup_icons()
 	_update_texts()
 	
-	if left_btn: _setup_touch_btn(left_btn, "move_left")
-	if right_btn: _setup_touch_btn(right_btn, "move_right")
-	if dash_btn: _setup_touch_btn(dash_btn, "dash")
-	if jump_btn: _setup_touch_btn(jump_btn, "jump")
+	if left_btn: _setup_touch_btn(left_btn)
+	if right_btn: _setup_touch_btn(right_btn)
+	if dash_btn: _setup_touch_btn(dash_btn)
+	if jump_btn: _setup_touch_btn(jump_btn)
 	_update_touch_visibility()
 
+func _exit_tree() -> void:
+	_release_all_touch_actions()
+
 func _update_touch_visibility() -> void:
-	# Touch boshqaruv tugmalari faqat sensorli qurilmalarda ko'rsatiladi.
-	var is_touch: bool = DisplayServer.is_touchscreen_available() or OS.has_feature("mobile") or OS.has_feature("android") or OS.has_feature("ios")
+	# Sensorli tugmalar faqat mobil qurilmalarda ko'rsatiladi (PC da doim yashirin).
+	var is_mob := (
+		OS.has_feature("android")
+		or OS.has_feature("ios")
+		or OS.has_feature("mobile")
+		or OS.has_feature("web_android")
+		or OS.has_feature("web_ios")
+	)
 	if touch_controls:
-		touch_controls.visible = is_touch
+		touch_controls.visible = is_mob
+		if not is_mob:
+			_release_all_touch_actions()
 
 func _apply_custom_touch_layout() -> void:
 	var def_positions := UIResponsive.get_default_touch_positions(self)
@@ -102,14 +115,6 @@ func _setup_icons() -> void:
 		jump_btn.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		jump_btn.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
 
-	# TouchControls faqat mobil qurilmalar uchun ko'rsatiladi
-	var touch_controls = get_node_or_null("TouchControls")
-	if touch_controls:
-		if OS.has_feature("mobile") or OS.has_feature("android") or OS.has_feature("web_android") or OS.has_feature("web_ios"):
-			touch_controls.visible = true
-		else:
-			touch_controls.visible = false
-
 func _on_language_changed(_lang: String) -> void:
 	_update_texts()
 
@@ -166,21 +171,69 @@ func _update_deaths_display() -> void:
 	if deaths_label:
 		deaths_label.text = "%d" % current_deaths
 
-func _setup_touch_btn(btn: Button, action: String) -> void:
-	btn.gui_input.connect(func(event: InputEvent):
-		if event is InputEventScreenTouch:
-			var st := event as InputEventScreenTouch
-			if st.pressed:
-				Input.action_press(action)
-			else:
-				Input.action_release(action)
-	)
-	btn.button_down.connect(func(): Input.action_press(action))
-	btn.button_up.connect(func(): Input.action_release(action))
-	btn.mouse_exited.connect(func():
-		if Input.is_action_pressed(action):
-			Input.action_release(action)
-	)
+func _setup_touch_btn(btn: Button) -> void:
+	btn.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	btn.focus_mode = Control.FOCUS_NONE
+
+func _input(event: InputEvent) -> void:
+	if not touch_controls or not touch_controls.visible or get_tree().paused:
+		if not _active_touch_actions.is_empty():
+			_release_all_touch_actions()
+		return
+
+	if event is InputEventScreenTouch:
+		var st := event as InputEventScreenTouch
+		if st.pressed:
+			var act := _get_touch_action_at(st.position)
+			if not act.is_empty():
+				_touch_fingers[st.index] = act
+				_sync_touch_actions()
+		elif _touch_fingers.has(st.index):
+			_touch_fingers.erase(st.index)
+			_sync_touch_actions()
+	elif event is InputEventScreenDrag:
+		var sd := event as InputEventScreenDrag
+		if _touch_fingers.has(sd.index):
+			var cur_act := str(_touch_fingers[sd.index])
+			if cur_act == "move_left" or cur_act == "move_right":
+				var new_act := _get_touch_action_at(sd.position)
+				if (new_act == "move_left" or new_act == "move_right") \
+						and new_act != cur_act:
+					_touch_fingers[sd.index] = new_act
+					_sync_touch_actions()
+
+func _get_touch_action_at(pos: Vector2) -> String:
+	var pad := 12.0
+	if left_btn and left_btn.get_global_rect().grow(pad).has_point(pos):
+		return "move_left"
+	if right_btn and right_btn.get_global_rect().grow(pad).has_point(pos):
+		return "move_right"
+	if jump_btn and jump_btn.get_global_rect().grow(pad).has_point(pos):
+		return "jump"
+	if dash_btn and dash_btn.get_global_rect().grow(pad).has_point(pos):
+		return "dash"
+	return ""
+
+func _sync_touch_actions() -> void:
+	var next_actions: Dictionary = {}
+	for act in _touch_fingers.values():
+		next_actions[str(act)] = true
+
+	for act in _active_touch_actions.keys():
+		if not next_actions.has(act):
+			Input.action_release(str(act))
+
+	for act in next_actions.keys():
+		if not _active_touch_actions.has(act):
+			Input.action_press(str(act))
+
+	_active_touch_actions = next_actions
+
+func _release_all_touch_actions() -> void:
+	_touch_fingers.clear()
+	for act in _active_touch_actions.keys():
+		Input.action_release(str(act))
+	_active_touch_actions.clear()
 
 func _on_pause_btn_pressed() -> void:
 	SoundManager.play("click")

@@ -49,7 +49,15 @@ func _enter_tree() -> void:
 	if get_tree() and get_tree().root:
 		get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 		get_tree().root.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
-		get_tree().root.content_scale_size = Vector2i(960, 540)
+		var is_mob := (
+			OS.has_feature("mobile")
+			or OS.has_feature("android")
+			or OS.has_feature("ios")
+		)
+		if is_mob or OS.has_feature("web"):
+			get_tree().root.content_scale_size = Vector2i(960, 540)
+		else:
+			get_tree().root.content_scale_size = Vector2i(1200, 675)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
