@@ -22,11 +22,11 @@ var levels_beaten_this_session: int = 0
 func get_chapter_for_level(lvl: int) -> int:
 	if lvl <= 20:
 		return 1
-	elif lvl <= 40:
+	if lvl <= 40:
 		return 2
-	elif lvl <= 60:
+	if lvl <= 60:
 		return 3
-	elif lvl <= 80:
+	if lvl <= 80:
 		return 4
 	return 5
 
