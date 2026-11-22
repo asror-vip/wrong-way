@@ -15,36 +15,11 @@ const CYCLE_INTERVAL: float = 4.2
 var fetch_timer: float = 0.0
 const FETCH_INTERVAL: float = 18.0
 
-# Baza bo'sh bo'lganda yoki oflaynda aylanib turish uchun namunaviy duellar
-const DEFAULT_SAMPLE_DUELS: Array = [
-	{
-		"winner_name": "AlphaPlayer",
-		"loser_name": "BetaRacer",
-		"zone_id": 1,
-		"level_id": 20
-	},
-	{
-		"winner_name": "ShadowNinja",
-		"loser_name": "SpeedRunner",
-		"zone_id": 1,
-		"level_id": 15
-	},
-	{
-		"winner_name": "Champion",
-		"loser_name": "GhostHunter",
-		"zone_id": 2,
-		"level_id": 5
-	}
-]
-
 func _ready() -> void:
 	if container:
 		container.add_theme_constant_override("separation", 8)
 		
-	feed_items = DEFAULT_SAMPLE_DUELS.duplicate()
 	fetch_feed()
-	# Birinchi kartani darhol ko'rsatish
-	_show_next_card()
 
 func _process(delta: float) -> void:
 	cycle_timer += delta
@@ -65,9 +40,15 @@ func fetch_feed() -> void:
 		if code == 200:
 			var txt: String = body.get_string_from_utf8()
 			var parsed = JSON.parse_string(txt)
-			if parsed is Array and parsed.size() > 0:
-				feed_items = parsed
-				current_feed_idx = current_feed_idx % feed_items.size()
+			if parsed is Array:
+				if parsed.size() > 0:
+					var was_empty := feed_items.is_empty()
+					feed_items = parsed
+					current_feed_idx = current_feed_idx % feed_items.size()
+					if was_empty:
+						_show_next_card()
+				else:
+					feed_items.clear()
 	)
 	var url: String = Env.get_supabase_url() + "/rest/v1/rpc/get_global_duel_feed"
 	var anon_key: String = Env.get_supabase_anon_key()
