@@ -31,7 +31,7 @@ platform_size = Vector2(210, 30)
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
-platform_size = Vector2(960, 50)
+platform_size = Vector2(960, 70)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -59,29 +59,30 @@ orbit_radius = 36
 orbit_speed = -2.2
 
 [node name="StalactiteUnder1" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(440, 50)
+position = Vector2(440, 70)
 trigger_distance = 240
 shake_duration = 0.35
 
 [node name="StalactiteUnder2" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(500, 50)
+position = Vector2(500, 70)
 trigger_distance = 240
 shake_duration = 0.35
 
 [node name="RollingBoulderLower" parent="Traps" instance=ExtResource("8_tr")]
-position = Vector2(620, 350)
-roll_direction = -1
-roll_speed = 340
-trigger_distance = 220
+position = Vector2(200, 350)
+roll_direction = 1
+roll_speed = 250
+trigger_distance = 60
 
 [node name="SpringToUpper" parent="Traps" instance=ExtResource("9_tr")]
 position = Vector2(670, 380)
 spring_size = Vector2(40, 16)
-bounce_force = 620
+launch_velocity = -800
+bounce_force = 0
 
 [node name="FakeDoorUpper" parent="Traps" instance=ExtResource("10_tr")]
 position = Vector2(810, 230)
-door_size = Vector2(32, 64)
+door_size = Vector2(44, 58)
 run_away_distance = 85
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]

@@ -30,12 +30,12 @@ position = Vector2(640, 380)
 platform_size = Vector2(70, 160)
 
 [node name="UpperBridge" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(680, 230)
-platform_size = Vector2(280, 30)
+position = Vector2(705, 230)
+platform_size = Vector2(255, 30)
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
-platform_size = Vector2(960, 50)
+platform_size = Vector2(960, 70)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -89,13 +89,13 @@ roll_speed = 320
 trigger_distance = 220
 
 [node name="BoulderBack" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(100, 350)
+position = Vector2(25, 350)
 roll_direction = 1
 roll_speed = 280
 trigger_distance = 200
 
 [node name="CrusherMid" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(470, 140)
+position = Vector2(470, 6)
 crusher_size = Vector2(68, 64)
 target_y = 320
 
@@ -112,20 +112,21 @@ shake_duration = 0.18
 [node name="SpringToSky" parent="Traps" instance=ExtResource("10_tr")]
 position = Vector2(655, 380)
 spring_size = Vector2(40, 16)
-bounce_force = 620
+launch_velocity = -740
+bounce_force = 0
 
 [node name="StalactiteSky1" parent="Traps" instance=ExtResource("11_tr")]
-position = Vector2(710, 50)
+position = Vector2(710, 70)
 trigger_distance = 240
 shake_duration = 0.35
 
 [node name="StalactiteSky2" parent="Traps" instance=ExtResource("11_tr")]
-position = Vector2(750, 50)
+position = Vector2(750, 70)
 trigger_distance = 240
 shake_duration = 0.35
 
 [node name="StalactiteSky3" parent="Traps" instance=ExtResource("11_tr")]
-position = Vector2(790, 50)
+position = Vector2(790, 70)
 trigger_distance = 240
 shake_duration = 0.35
 
@@ -137,7 +138,7 @@ inactive_time = 1.2
 
 [node name="FakeDoorSky" parent="Traps" instance=ExtResource("13_tr")]
 position = Vector2(840, 230)
-door_size = Vector2(32, 64)
+door_size = Vector2(44, 58)
 run_away_distance = 85
 
 [node name="SpikesFinal" parent="Traps" instance=ExtResource("14_tr")]
@@ -148,4 +149,4 @@ spike_size = Vector2(28, 32)
 position = Vector2(900, 230)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
-position = Vector2(60, 380)
+position = Vector2(80, 380)

@@ -5,7 +5,7 @@ signal died
 signal respawned
 signal entered_exit
 
-const SPEED: float = 320.0
+const SPEED: float = 280.0
 const DASH_SPEED: float = 660.0
 const DASH_DURATION: float = 0.16
 const DASH_COOLDOWN: float = 0.40
@@ -20,6 +20,7 @@ var is_dead: bool = false
 var is_entering_door: bool = false
 var spawn_position: Vector2
 var controls_inverted: bool = false
+var active_inverters: Dictionary = {}
 var is_invulnerable: bool = false
 var invulnerable_timer: float = 0.0
 
@@ -30,6 +31,10 @@ var dash_cooldown_timer: float = 0.0
 var dash_dir: float = 1.0
 var ghost_trail_timer: float = 0.0
 
+const DashGhostScript = preload("res://scripts/player/dash_ghost.gd")
+const DeathParticlesScene = preload("res://scenes/player/death_particles.tscn")
+var _ghost_pool: Array[Node2D] = []
+
 @onready var visual: Node2D = $Visual
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
@@ -38,9 +43,23 @@ func _ready() -> void:
 	spawn_position = global_position
 	if not InputMap.has_action("dash"):
 		InputMap.add_action("dash")
-		var ev := InputEventKey.new()
-		ev.keycode = KEY_SHIFT
-		InputMap.action_add_event("dash", ev)
+	# Shift va J tugmalarining ikkalasi ham Dash uchun to'liq ishlashini kafolatlaymiz
+	var has_shift := false
+	var has_j := false
+	for ev in InputMap.action_get_events("dash"):
+		if ev is InputEventKey:
+			if ev.keycode == KEY_SHIFT or ev.physical_keycode == KEY_SHIFT:
+				has_shift = true
+			if ev.keycode == KEY_J or ev.physical_keycode == KEY_J:
+				has_j = true
+	if not has_shift:
+		var ev_shift := InputEventKey.new()
+		ev_shift.physical_keycode = KEY_SHIFT
+		InputMap.action_add_event("dash", ev_shift)
+	if not has_j:
+		var ev_j := InputEventKey.new()
+		ev_j.physical_keycode = KEY_J
+		InputMap.action_add_event("dash", ev_j)
 
 func _physics_process(delta: float) -> void:
 	if is_dead or is_entering_door or GameManager.is_countdown_active:
@@ -80,7 +99,8 @@ func _physics_process(delta: float) -> void:
 		move_dir = -move_dir
 
 	# Dash faollashtirish (Faqat bir marta bosilganda - Genshin Impact uslubida)
-	# QAT'IY QOIDA: is_action_just_pressed ishlatiladi, shuning uchun Shift bosib turilsa tez yururmaydi!
+	# QAT'IY QOIDA: is_action_just_pressed ishlatiladi,
+	# shuning uchun Shift bosib turilsa tez yururmaydi!
 	if Input.is_action_just_pressed("dash") and not is_dashing and dash_cooldown_timer <= 0.0:
 		var target_dir := move_dir
 		if target_dir == 0.0:
@@ -152,6 +172,7 @@ func kill() -> void:
 	if is_dead or is_entering_door or is_invulnerable:
 		return
 	is_dead = true
+	clear_inverter_zones()
 	is_dashing = false
 	dash_timer = 0.0
 	dash_cooldown_timer = 0.0
@@ -173,8 +194,8 @@ func kill() -> void:
 	# O'lik gavdani xaritadagi tuzoqlar zonasidan chetga olamiz
 	global_position = Vector2(-9999, -9999)
 	
-	# Original: setTimeout(() => resetPlayer(), 340)
-	await get_tree().create_timer(0.34).timeout
+	# O'yin pauza qilinganda taymer to'xtab turishi uchun false (process_always = false) qo'shildi
+	await get_tree().create_timer(0.34, false).timeout
 	if is_instance_valid(self):
 		respawn()
 
@@ -189,7 +210,7 @@ func respawn(at_position: Vector2 = spawn_position) -> void:
 	dash_timer = 0.0
 	dash_cooldown_timer = 0.0
 	is_entering_door = false
-	controls_inverted = false
+	clear_inverter_zones()
 	is_invulnerable = true
 	invulnerable_timer = 0.22 # 220ms spawn protection (takroriy o'limni oldini oladi)
 	coyote_timer = 0.0
@@ -200,6 +221,31 @@ func respawn(at_position: Vector2 = spawn_position) -> void:
 	if visual:
 		visual.scale = Vector2.ONE
 	respawned.emit()
+	var gm = get_node_or_null("/root/GameManager")
+	if gm:
+		if gm.has_signal("player_respawned"):
+			gm.player_respawned.emit()
+
+		# Qayta tirilgandan SO'NG (xavfsiz holatda) 10-chi o'lim reklamasini ko'rsatamiz
+		if gm.level_deaths > 0 and gm.level_deaths % 10 == 0:
+			var adm = get_node_or_null("/root/AdManager")
+			if adm and adm.has_method("show_interstitial_ad"):
+				get_tree().paused = true
+				adm.show_interstitial_ad(func():
+					get_tree().paused = false
+				)
+
+func add_inverter_zone(zone: Node) -> void:
+	active_inverters[zone] = true
+	controls_inverted = true
+
+func remove_inverter_zone(zone: Node) -> void:
+	active_inverters.erase(zone)
+	controls_inverted = not active_inverters.is_empty()
+
+func clear_inverter_zones() -> void:
+	active_inverters.clear()
+	controls_inverted = false
 
 func enter_door(target_pos: Vector2) -> void:
 	if is_entering_door or is_dead:
@@ -220,18 +266,40 @@ func enter_finish(target_pos: Vector2) -> void:
 	enter_door(target_pos)
 
 func _spawn_particles() -> void:
-	var p_scene: PackedScene = load("res://scenes/player/death_particles.tscn")
-	if p_scene:
-		var p: CPUParticles2D = p_scene.instantiate()
+	if DeathParticlesScene:
+		var p: CPUParticles2D = DeathParticlesScene.instantiate()
 		p.global_position = global_position - Vector2(0, 16)
 		get_parent().add_child(p)
 
 func _spawn_dash_ghost() -> void:
 	if not is_inside_tree() or not get_parent():
 		return
-	var ghost := Node2D.new()
+
+	var ghost: Node2D = null
+
+	# Hovuzdan bo'sh (yashiringan) sharpani qidiramiz
+	for g in _ghost_pool:
+		if is_instance_valid(g) and not g.visible:
+			ghost = g
+			break
+
+	# Agar topilmasa va hovuzda 8 tadan kam bo'lsa, yangi yaratamiz
+	if ghost == null:
+		if _ghost_pool.size() < 8:
+			ghost = Node2D.new()
+			ghost.set_script(DashGhostScript)
+			get_parent().add_child(ghost)
+			_ghost_pool.append(ghost)
+		else:
+			return
+
+	# Ota tuguni o'zgargan bo'lsa to'g'rilaymiz
+	if ghost.get_parent() != get_parent():
+		ghost.reparent(get_parent())
+
 	ghost.global_position = global_position
 	if visual:
 		ghost.scale = visual.scale
-	ghost.set_script(load("res://scripts/player/dash_ghost.gd"))
-	get_parent().add_child(ghost)
+
+	if ghost.has_method("play_effect"):
+		ghost.play_effect()

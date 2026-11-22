@@ -164,7 +164,8 @@ func record_result(lvl: int, time_ms: float, deaths: int) -> int:
 
 	if time_ms < overall_best_ms:
 		overall_best_ms = time_ms
-		overall_best_text = "%.2fs (%d-lvl)" % [time_ms / 1000.0, lvl]
+		var lvl_str := LocaleManager.t("level_header", [lvl])
+		overall_best_text = "%.2fs (%s)" % [time_ms / 1000.0, lvl_str]
 
 	if stars >= 2:
 		var next_lvl := lvl + 1
@@ -255,6 +256,9 @@ func get_level_stars(lvl: int) -> int:
 	return int(level_stars.get(str(lvl), 0))
 
 func get_overall_best_text() -> String:
+	if overall_best_ms >= 999999000.0 or overall_best_text == "Mavjud emas" \
+			or overall_best_text.is_empty():
+		return LocaleManager.t("not_available")
 	return overall_best_text
 
 func record_level_attempt(lvl: int) -> void:
@@ -428,15 +432,24 @@ func get_chapter_total_time_sec(chapter: int) -> int:
 			total_sec += sec
 	return total_sec
 
+func get_chapter_target_stars(chapter: int) -> int:
+	if chapter == 1:
+		return 50
+	elif chapter == 2:
+		return 55
+	return 60
+
 func is_chapter_unlocked(chapter: int) -> bool:
 	if debug_unlock_all:
-		return true
+		return chapter >= 1 and chapter <= 3
 	if chapter == 1:
 		return true
 	elif chapter == 2:
-		return is_level_completed(20) or unlocked_levels.has(21) or ad_unlocked_levels.has(21)
+		return get_chapter_stars(1) >= 50 or ad_unlocked_levels.has(21)
 	elif chapter == 3:
-		return is_level_completed(40) or unlocked_levels.has(41) or ad_unlocked_levels.has(41)
+		return get_chapter_stars(2) >= 55 or ad_unlocked_levels.has(41)
+	elif chapter >= 4:
+		return get_chapter_stars(chapter - 1) >= 60
 	return false
 
 func get_level_time_text(lvl: int) -> String:

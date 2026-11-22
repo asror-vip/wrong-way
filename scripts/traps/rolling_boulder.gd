@@ -14,6 +14,7 @@ class_name RollingBoulder
 
 var is_triggered: bool = false
 var is_rolling: bool = false
+var has_fallen: bool = false
 var roll_delay_timer: float = 0.0
 var original_pos: Vector2
 var roll_rotation: float = 0.0
@@ -32,6 +33,16 @@ func _ready() -> void:
 		kill_area.body_entered.connect(_on_kill_entered)
 
 func _physics_process(delta: float) -> void:
+	if has_fallen:
+		return
+
+	# Qoyaga tushib ketsa
+	if global_position.y > 650.0:
+		has_fallen = true
+		is_rolling = false
+		velocity = Vector2.ZERO
+		return
+
 	if not is_triggered:
 		_check_player_trigger()
 		return
@@ -60,21 +71,61 @@ func _physics_process(delta: float) -> void:
 	
 	move_and_slide()
 	queue_redraw()
+
+	# Devorga yetganda tosh yo'lni to'sib qolmasligi uchun to'xtaydi
+	var wall_in_front := false
+	if is_on_wall():
+		for i in get_slide_collision_count():
+			var collision := get_slide_collision(i)
+			var normal := collision.get_normal()
+			# Normal harakat yo'nalishiga qarama-qarshi bo'lsagina haqiqiy devor hisoblanadi
+			if (roll_direction > 0 and normal.x < -0.5) or (roll_direction < 0 and normal.x > 0.5):
+				wall_in_front = true
+				break
+
+	if wall_in_front and absf(global_position.x - original_pos.x) > 60.0:
+		has_fallen = true
+		is_rolling = false
+		velocity = Vector2.ZERO
+		if col_shape:
+			col_shape.set_deferred("disabled", true)
+		if kill_area:
+			kill_area.set_deferred("monitoring", false)
+			kill_area.set_deferred("monitorable", false)
+		var tw := create_tween()
+		tw.tween_property(self, "modulate:a", 0.0, 0.25)
+		tw.tween_callback(func(): visible = false)
+		return
 	
 	# Qoyaga tushib ketsa
 	if global_position.y > 650.0:
-		is_triggered = false
+		has_fallen = true
 		is_rolling = false
 		velocity = Vector2.ZERO
+		return
 
 func _check_player_trigger() -> void:
-	var player = get_tree().get_first_node_in_group("player")
-	if not player:
+	var player = get_tree().get_first_node_in_group("player") as Node2D
+	if not player or not is_instance_valid(player):
+		return
+	if "is_dead" in player and player.is_dead:
 		return
 		
-	var dist: float = global_position.distance_to(player.global_position)
-	if dist <= trigger_distance:
-		trigger_boulder()
+	var dx: float = player.global_position.x - global_position.x
+	var dy: float = absf(player.global_position.y - global_position.y)
+	if dy > 120.0:
+		return
+		
+	if roll_direction > 0:
+		# Orqadan quvuvchi arra/tosh: Faqat o'yinchi oldinga yetarlicha yurganidagina ishga tushadi
+		if dx >= trigger_distance:
+			trigger_boulder()
+	else:
+		# Oldindan keluvchi tosh: o'yinchi yaqinlashganda
+		if dx <= 0.0 and absf(dx) <= trigger_distance:
+			trigger_boulder()
+		elif absf(dx) <= 60.0:
+			trigger_boulder()
 
 func trigger_boulder() -> void:
 	if is_triggered:
@@ -97,16 +148,57 @@ func _on_kill_entered(body: Node2D) -> void:
 			body.die()
 
 func reset_trap() -> void:
+	has_fallen = false
 	is_triggered = false
+	is_rolling = false
+	roll_delay_timer = 0.0
 	global_position = original_pos
 	velocity = Vector2.ZERO
 	roll_rotation = 0.0
+	modulate.a = 1.0
+	visible = true
+	if col_shape:
+		col_shape.set_deferred("disabled", false)
+	if kill_area:
+		kill_area.set_deferred("monitoring", true)
+		kill_area.set_deferred("monitorable", true)
 	queue_redraw()
 
 func _draw() -> void:
 	draw_set_transform(Vector2.ZERO, roll_rotation, Vector2.ONE)
-	
-	# 1. Shar atrofidagi o'tkir metall-qizil tikanlar (Spikes around boulder)
+
+	var ch: int = 1
+	var gm = get_node_or_null("/root/GameManager")
+	if gm and gm.has_method("get_current_chapter"):
+		ch = gm.get_current_chapter()
+
+	var base_col := Color(0.08, 0.10, 0.15, 1.0)
+	var edge_col := Color(0.35, 0.45, 0.60, 0.9)
+	var crack_col := Color(0.03, 0.04, 0.07, 0.95)
+	var spike_col := Color("#2a2536")
+
+	if ch == 2:
+		base_col = Color("#0f172a") # To'q qor/muz shar
+		edge_col = Color("#e0f2fe")
+		crack_col = Color("#1e293b")
+		spike_col = Color("#0284c7")
+	elif ch == 3:
+		base_col = Color("#064e3b") # Zaharli log
+		edge_col = Color("#4ade80")
+		crack_col = Color("#14532d")
+		spike_col = Color("#166534")
+	elif ch == 4:
+		base_col = Color("#78350f") # Qadimgi g'isht
+		edge_col = Color("#fcd34d")
+		crack_col = Color("#451a03")
+		spike_col = Color("#b45309")
+	elif ch == 5:
+		base_col = Color("#450a0a") # Lovullagan meteor
+		edge_col = Color("#f97316")
+		crack_col = Color("#7f1d1d")
+		spike_col = Color("#ef4444")
+
+	# 1. Shar atrofidagi o'tkir metall/tosh tikanlar
 	var num_spikes := 8
 	for i in range(num_spikes):
 		var ang := float(i) * (TAU / float(num_spikes))
@@ -115,27 +207,24 @@ func _draw() -> void:
 		var base1 := dir * (boulder_radius - 2.0) - norm * 6.0
 		var base2 := dir * (boulder_radius - 2.0) + norm * 6.0
 		var tip := dir * (boulder_radius + 12.0)
-		draw_colored_polygon(PackedVector2Array([base1, tip, base2]), Color("#1e1b26"))
-		draw_colored_polygon(PackedVector2Array([base1 + norm * 2.0, tip, base2]), Color("#2a2536"))
-		draw_line(base1, tip, Color("#ffffff"), 1.4)
-		draw_line(tip, base2, Color("#5c566a"), 1.2)
-		draw_circle(tip, 1.5, Color.WHITE)
+		draw_colored_polygon(PackedVector2Array([base1 + norm * 2.0, tip, base2]), spike_col)
 
 	# 2. Asosiy obsidian qoya toshi tanasi
-	draw_circle(Vector2.ZERO, boulder_radius, Color(0.08, 0.10, 0.15, 1.0))
+	draw_circle(Vector2.ZERO, boulder_radius, base_col)
 	# Qoya xoshiyasi
-	draw_arc(Vector2.ZERO, boulder_radius, -PI, PI, 32, Color(0.35, 0.45, 0.60, 0.9), 2.0)
+	draw_arc(Vector2.ZERO, boulder_radius, -PI, PI, 32, edge_col, 2.0)
 	
-	# 3. Ichki tosh qatlamlari va yoriqlari (Limbo silhouette rock cracks)
-	draw_line(Vector2(-16, -10), Vector2(4, -4), Color(0.03, 0.04, 0.07, 0.95), 2.5)
-	draw_line(Vector2(4, -4), Vector2(16, -14), Color(0.03, 0.04, 0.07, 0.95), 2.0)
-	draw_line(Vector2(4, -4), Vector2(0, 15), Color(0.03, 0.04, 0.07, 0.95), 2.2)
-	draw_line(Vector2(0, 15), Vector2(-12, 18), Color(0.03, 0.04, 0.07, 0.95), 1.8)
+	# 3. Ichki tosh qatlamlari va yoriqlari
+	draw_line(Vector2(-16, -10), Vector2(4, -4), crack_col, 2.5)
+	draw_line(Vector2(4, -4), Vector2(16, -14), crack_col, 2.0)
+	draw_line(Vector2(4, -4), Vector2(0, 15), crack_col, 2.2)
+	draw_line(Vector2(0, 15), Vector2(-12, 18), crack_col, 1.8)
 	
 	# Markaziy temir yadrosi
 	draw_circle(Vector2.ZERO, 6.0, Color("#36435c"))
 	draw_circle(Vector2.ZERO, 3.0, Color.WHITE)
 	
 	# Nozik tosh yorug'lik aksi
-	draw_arc(Vector2.ZERO, boulder_radius - 4.0, -PI * 0.7, -PI * 0.2, 16, Color(0.40, 0.50, 0.65, 0.40), 1.5)
+	var arc_col := Color(0.40, 0.50, 0.65, 0.40)
+	draw_arc(Vector2.ZERO, boulder_radius - 4.0, -PI * 0.7, -PI * 0.2, 16, arc_col, 1.5)
 

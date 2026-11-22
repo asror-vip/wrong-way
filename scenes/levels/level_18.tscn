@@ -32,7 +32,7 @@ platform_size = Vector2(380, 160)
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
-platform_size = Vector2(960, 60)
+platform_size = Vector2(960, 70)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -63,9 +63,9 @@ position = Vector2(410, 348)
 spike_size = Vector2(40, 32)
 
 [node name="CrusherMid" parent="Traps" instance=ExtResource("8_tr")]
-position = Vector2(480, 140)
+position = Vector2(480, 6)
 crusher_size = Vector2(64, 64)
-target_y = 320
+target_y = 304
 
 [node name="RollingBoulderMid" parent="Traps" instance=ExtResource("9_tr")]
 position = Vector2(650, 350)
@@ -80,7 +80,7 @@ orbit_speed = 2.4
 
 [node name="FakeDoorBeforeEnd" parent="Traps" instance=ExtResource("11_tr")]
 position = Vector2(780, 380)
-door_size = Vector2(32, 64)
+door_size = Vector2(44, 58)
 run_away_distance = 90
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]

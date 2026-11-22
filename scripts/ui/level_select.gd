@@ -78,6 +78,13 @@ var current_chapter: int = 1
 var is_animating: bool = false
 var star_chip_icon: TextureRect
 
+var ch4_view: Control = null
+var ch5_view: Control = null
+var backdrop_ch4: TextureRect = null
+var backdrop_ch5: TextureRect = null
+var lock_card_ch4: Control = null
+var lock_card_ch5: Control = null
+
 # Jonli interaktiv surish (Continuous Drag & Halfway Snap)
 var is_dragging: bool = false
 var has_dragged: bool = false
@@ -94,6 +101,7 @@ func _ready() -> void:
 	SoundManager.set_gameplay_mode(false)
 	SoundManager.play_music()
 	
+	_setup_coming_soon_views()
 	_setup_top_bar()
 	_setup_nav_connections()
 	_setup_seamless_backdrop_materials()
@@ -107,17 +115,178 @@ func _ready() -> void:
 	
 	_update_chapter_locks()
 	
-	# Boshlang'ich bobni animatsiyasiz ko'rsatish
-	switch_to_chapter(1, false)
+	# Boshlang'ich bobni tanlash va animatsiyasiz ko'rsatish
+	var target_chapter: int = 1
+	var sm = get_node_or_null("/root/SaveManager")
+	var is_from_level: bool = sm and (
+		sm.navigation_source == "game_pause" or sm.navigation_source == "result_modal"
+	)
+	if is_from_level:
+		var lvl: int = sm.return_level_num
+		if lvl <= 0:
+			lvl = GameManager.current_level_id
+		target_chapter = GameManager.get_chapter_for_level(lvl)
+		sm.navigation_source = "home_menu"
+
+	if sm and not sm.is_chapter_unlocked(target_chapter):
+		target_chapter = 1
+
+	switch_to_chapter(target_chapter, false)
+
+func _setup_coming_soon_views() -> void:
+	if not chapter_slider:
+		return
+
+	var blur_shader = preload("res://shaders/bokeh_blur.gdshader")
+
+	# 4-BOB (Sahro / Oltin Kanyon)
+	ch4_view = chapter_slider.get_node_or_null("Chapter4View")
+	if not ch4_view:
+		ch4_view = Control.new()
+		ch4_view.name = "Chapter4View"
+		ch4_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		chapter_slider.add_child(ch4_view)
+
+		backdrop_ch4 = TextureRect.new()
+		backdrop_ch4.name = "BackdropCh4"
+		backdrop_ch4.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		backdrop_ch4.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		var tex4 = load("res://assets/images/maps-images/4.jpg")
+		if tex4:
+			backdrop_ch4.texture = tex4
+
+		var m4 := ShaderMaterial.new()
+		m4.shader = blur_shader
+		m4.set_shader_parameter("blur_amount", 0.0)
+		backdrop_ch4.material = m4
+		ch4_view.add_child(backdrop_ch4)
+
+		lock_card_ch4 = _create_coming_soon_card(
+			4,
+			LocaleManager.t("chapter_4_title"),
+			LocaleManager.t("chapter_4_desc")
+		)
+		ch4_view.add_child(lock_card_ch4)
+
+	# 5-BOB (Lava / Olovli Abiss)
+	ch5_view = chapter_slider.get_node_or_null("Chapter5View")
+	if not ch5_view:
+		ch5_view = Control.new()
+		ch5_view.name = "Chapter5View"
+		ch5_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		chapter_slider.add_child(ch5_view)
+
+		backdrop_ch5 = TextureRect.new()
+		backdrop_ch5.name = "BackdropCh5"
+		backdrop_ch5.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		backdrop_ch5.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		var tex5 = load("res://assets/images/maps-images/5.jpg")
+		if not tex5:
+			tex5 = load("res://assets/images/maps-images/5.png")
+		if tex5:
+			backdrop_ch5.texture = tex5
+
+		var m5 := ShaderMaterial.new()
+		m5.shader = blur_shader
+		m5.set_shader_parameter("blur_amount", 0.0)
+		backdrop_ch5.material = m5
+		ch5_view.add_child(backdrop_ch5)
+
+		lock_card_ch5 = _create_coming_soon_card(
+			5,
+			LocaleManager.t("chapter_5_title"),
+			LocaleManager.t("chapter_5_desc")
+		)
+		ch5_view.add_child(lock_card_ch5)
+
+func _create_coming_soon_card(chapter: int, title_str: String, desc_str: String) -> Control:
+	var card_w: float = 380.0
+	var card_h: float = 90.0
+
+	var card := PanelContainer.new()
+	card.name = "ComingSoonCard%d" % chapter
+	card.custom_minimum_size = Vector2(card_w, card_h)
+	card.size = Vector2(card_w, card_h)
+	card.position = Vector2(
+		(get_viewport_rect().size.x - card_w) * 0.5,
+		(get_viewport_rect().size.y - card_h) * 0.5
+	)
+	card.z_index = 100
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.08, 0.14, 0.94)
+	style.border_color = Color("#f59e0b")
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(16)
+	style.shadow_color = Color(0, 0, 0, 0.75)
+	style.shadow_size = 16
+	style.content_margin_left = 16.0
+	style.content_margin_right = 16.0
+	style.content_margin_top = 12.0
+	style.content_margin_bottom = 12.0
+	card.add_theme_stylebox_override("panel", style)
+
+	var vbox := VBoxContainer.new()
+	vbox.name = "VBox"
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 6)
+	card.add_child(vbox)
+
+	var hbox := HBoxContainer.new()
+	hbox.name = "HBox"
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 8)
+	vbox.add_child(hbox)
+
+	var lock_icon := IconFactory.create_texture_rect("lock", Vector2(22, 22), 0.9)
+	hbox.add_child(lock_icon)
+
+	var lbl_title := Label.new()
+	lbl_title.name = "Title"
+	lbl_title.text = title_str.to_upper()
+	lbl_title.add_theme_font_size_override("font_size", 16)
+	lbl_title.add_theme_color_override("font_color", Color(0.98, 0.90, 0.55))
+	hbox.add_child(lbl_title)
+
+	var lbl_sub := Label.new()
+	lbl_sub.name = "Sub"
+	var coming_soon_tag := "✦  " + LocaleManager.t("coming_soon_caps") + "  ✦\n"
+	lbl_sub.text = coming_soon_tag + desc_str
+	lbl_sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl_sub.add_theme_font_size_override("font_size", 12)
+	lbl_sub.add_theme_color_override("font_color", Color(0.85, 0.90, 0.98))
+	vbox.add_child(lbl_sub)
+
+	return card
+
+func _refresh_coming_soon_cards() -> void:
+	if lock_card_ch4:
+		var t4: Label = lock_card_ch4.get_node_or_null("VBox/HBox/Title")
+		var s4: Label = lock_card_ch4.get_node_or_null("VBox/Sub")
+		if t4: t4.text = LocaleManager.t("chapter_4_title").to_upper()
+		if s4:
+			var p4 := "✦  " + LocaleManager.t("coming_soon_caps") + "  ✦\n"
+			s4.text = p4 + LocaleManager.t("chapter_4_desc")
+	if lock_card_ch5:
+		var t5: Label = lock_card_ch5.get_node_or_null("VBox/HBox/Title")
+		var s5: Label = lock_card_ch5.get_node_or_null("VBox/Sub")
+		if t5: t5.text = LocaleManager.t("chapter_5_title").to_upper()
+		if s5:
+			var p5 := "✦  " + LocaleManager.t("coming_soon_caps") + "  ✦\n"
+			s5.text = p5 + LocaleManager.t("chapter_5_desc")
 
 func _get_step_width() -> float:
 	return get_viewport_rect().size.x
 
-func _get_map_offset() -> Vector2:
+func _get_map_transform() -> Dictionary:
 	var vp := get_viewport_rect().size
-	var ox := (vp.x - 960.0) * 0.5
-	var oy := (vp.y - 540.0) * 0.5
-	return Vector2(ox, oy)
+	var s: float = maxf(vp.x / 960.0, vp.y / 540.0)
+	var ox: float = (vp.x - 960.0 * s) * 0.5
+	var oy: float = (vp.y - 540.0 * s) * 0.5
+	return {"scale": s, "offset": Vector2(ox, oy)}
+
+func _get_map_offset() -> Vector2:
+	return _get_map_transform()["offset"]
 
 func _setup_widescreen_layout() -> void:
 	var step_w := _get_step_width()
@@ -130,7 +299,17 @@ func _setup_widescreen_layout() -> void:
 	if ch3_view:
 		ch3_view.offset_left = step_w * 2.0
 		ch3_view.offset_right = step_w * 2.0
-		
+	if ch4_view:
+		ch4_view.offset_left = step_w * 3.0
+		ch4_view.offset_right = step_w * 3.0
+		if lock_card_ch4:
+			lock_card_ch4.position = Vector2((step_w - lock_card_ch4.size.x) * 0.5, (get_viewport_rect().size.y - lock_card_ch4.size.y) * 0.5)
+	if ch5_view:
+		ch5_view.offset_left = step_w * 4.0
+		ch5_view.offset_right = step_w * 4.0
+		if lock_card_ch5:
+			lock_card_ch5.position = Vector2((step_w - lock_card_ch5.size.x) * 0.5, (get_viewport_rect().size.y - lock_card_ch5.size.y) * 0.5)
+
 	var insets := UIResponsive.get_safe_insets(self)
 	if back_btn:
 		back_btn.position.x = 20.0 + insets["left"]
@@ -143,7 +322,10 @@ func _setup_widescreen_layout() -> void:
 		
 	if toast_panel and toast_panel.visible:
 		toast_panel.position.x = (step_w - toast_panel.size.x) * 0.5
-		
+
+	if chapter_slider and not is_animating:
+		chapter_slider.position.x = -step_w * (current_chapter - 1)
+
 	_reposition_all_chapter_nodes()
 
 func _reposition_all_chapter_nodes() -> void:
@@ -159,12 +341,15 @@ func _position_nodes(chapter: int, container: Control) -> void:
 		positions = CHAPTER_2_POS
 	elif chapter == 3:
 		positions = CHAPTER_3_POS
-	var offset := _get_map_offset()
+	var t := _get_map_transform()
+	var s: float = t["scale"]
+	var offset: Vector2 = t["offset"]
 	var children := container.get_children()
 	for i in range(mini(children.size(), positions.size())):
 		var btn = children[i] as Control
 		if btn:
-			btn.position = positions[i] + offset - Vector2(18, 18)
+			btn.position = positions[i] * s + offset - Vector2(19.0 * s, 19.0 * s)
+			btn.scale = Vector2(s, s)
 
 func _setup_seamless_backdrop_materials() -> void:
 	var blur_shader = preload("res://shaders/bokeh_blur.gdshader")
@@ -176,7 +361,7 @@ func _setup_seamless_backdrop_materials() -> void:
 		m1.set_shader_parameter("fade_left", 0.0)
 		m1.set_shader_parameter("fade_right", 0.0)
 		backdrop_ch1.material = m1
-		backdrop_ch1.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		backdrop_ch1.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		
 	if backdrop_ch2:
 		var m2 := ShaderMaterial.new()
@@ -185,7 +370,7 @@ func _setup_seamless_backdrop_materials() -> void:
 		m2.set_shader_parameter("fade_left", 0.0)
 		m2.set_shader_parameter("fade_right", 0.0)
 		backdrop_ch2.material = m2
-		backdrop_ch2.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		backdrop_ch2.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		
 	if backdrop_ch3:
 		var m3 := ShaderMaterial.new()
@@ -194,7 +379,7 @@ func _setup_seamless_backdrop_materials() -> void:
 		m3.set_shader_parameter("fade_left", 0.0)
 		m3.set_shader_parameter("fade_right", 0.0)
 		backdrop_ch3.material = m3
-		backdrop_ch3.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		backdrop_ch3.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 
 func _setup_top_bar() -> void:
 	if back_btn:
@@ -234,10 +419,8 @@ func _setup_nav_connections() -> void:
 		side_nav_left.add_theme_stylebox_override("hover", solid_box)
 		side_nav_left.add_theme_stylebox_override("pressed", solid_box)
 		side_nav_left.pressed.connect(func():
-			if current_chapter == 3:
-				switch_to_chapter(2, true)
-			elif current_chapter == 2:
-				switch_to_chapter(1, true)
+			if current_chapter > 1:
+				switch_to_chapter(current_chapter - 1, true)
 		)
 	if btn_ch1:
 		btn_ch1.pressed.connect(func(): switch_to_chapter(1, true))
@@ -331,10 +514,8 @@ func _show_notice(title_text: String, message_text: String) -> void:
 	toast_tween.chain().tween_callback(func(): toast_panel.visible = false)
 
 func _on_side_nav_right_pressed() -> void:
-	if current_chapter == 1:
-		switch_to_chapter(2, true)
-	elif current_chapter == 2:
-		switch_to_chapter(3, true)
+	if current_chapter < 5:
+		switch_to_chapter(current_chapter + 1, true)
 
 func _input(event: InputEvent) -> void:
 	if is_animating:
@@ -366,7 +547,7 @@ func _input(event: InputEvent) -> void:
 		if has_dragged:
 			var step_w := _get_step_width()
 			var target_x: float = slider_start_x + dx
-			target_x = clampf(target_x, -step_w * 2.0 - 50.0, 50.0)
+			target_x = clampf(target_x, -step_w * 4.0 - 50.0, 50.0)
 			chapter_slider.position.x = target_x
 			_update_realtime_drag_feedback(target_x)
 			get_viewport().set_input_as_handled()
@@ -396,7 +577,7 @@ func _input(event: InputEvent) -> void:
 		if has_dragged:
 			var step_w := _get_step_width()
 			var target_x: float = slider_start_x + dx
-			target_x = clampf(target_x, -step_w * 2.0 - 50.0, 50.0)
+			target_x = clampf(target_x, -step_w * 4.0 - 50.0, 50.0)
 			chapter_slider.position.x = target_x
 			_update_realtime_drag_feedback(target_x)
 			get_viewport().set_input_as_handled()
@@ -404,7 +585,11 @@ func _input(event: InputEvent) -> void:
 func _update_realtime_drag_feedback(slider_x: float) -> void:
 	var step_w := _get_step_width()
 	var target_ch: int = 1
-	if slider_x <= -step_w * 1.5:
+	if slider_x <= -step_w * 3.5:
+		target_ch = 5
+	elif slider_x <= -step_w * 2.5:
+		target_ch = 4
+	elif slider_x <= -step_w * 1.5:
 		target_ch = 3
 	elif slider_x <= -step_w * 0.5:
 		target_ch = 2
@@ -415,10 +600,10 @@ func _update_realtime_drag_feedback(slider_x: float) -> void:
 		_set_btn_active(btn_ch2, target_ch == 2)
 		if btn_ch3: _set_btn_active(btn_ch3, target_ch == 3)
 	if title_label:
-		var title_key := "chapter_1_title"
-		if target_ch == 2: title_key = "chapter_2_title"
-		elif target_ch == 3: title_key = "chapter_3_title"
-		title_label.text = "< ◇ ── " + LocaleManager.t(title_key).to_upper() + " ── ◇ >"
+		var title_key := "chapter_%d_title" % target_ch
+		var title_str := LocaleManager.t(title_key)
+		title_label.text = "< ◇ ── " + title_str.to_upper() + " ── ◇ >"
+
 	if lock_card_ch2:
 		lock_card_ch2.visible = (!SaveManager.is_chapter_unlocked(2) and slider_x <= -step_w * 0.75 and slider_x >= -step_w * 1.25)
 	if lock_card_ch3:
@@ -431,7 +616,11 @@ func _update_realtime_drag_feedback(slider_x: float) -> void:
 func _finish_drag() -> void:
 	var step_w := _get_step_width()
 	var slider_x := chapter_slider.position.x
-	if slider_x <= -step_w * 1.5:
+	if slider_x <= -step_w * 3.5:
+		switch_to_chapter(5, true)
+	elif slider_x <= -step_w * 2.5:
+		switch_to_chapter(4, true)
+	elif slider_x <= -step_w * 1.5:
 		switch_to_chapter(3, true)
 	elif slider_x <= -step_w * 0.5:
 		switch_to_chapter(2, true)
@@ -441,11 +630,7 @@ func _finish_drag() -> void:
 func switch_to_chapter(target_chapter: int, animated: bool = true) -> void:
 	current_chapter = target_chapter
 	var step_w := _get_step_width()
-	var target_x: float = 0.0
-	if current_chapter == 2:
-		target_x = -step_w
-	elif current_chapter == 3:
-		target_x = -step_w * 2.0
+	var target_x: float = -step_w * (current_chapter - 1)
 	
 	if pass1 and pass1.has_method("set_card_active"):
 		pass1.set_card_active(false)
@@ -472,36 +657,39 @@ func switch_to_chapter(target_chapter: int, animated: bool = true) -> void:
 
 func _update_top_bar_data() -> void:
 	if title_label:
-		var title_key := "chapter_1_title"
-		if current_chapter == 2:
-			title_key = "chapter_2_title"
-		elif current_chapter == 3:
-			title_key = "chapter_3_title"
-		title_label.text = "< ◇ ── " + LocaleManager.t(title_key).to_upper() + " ── ◇ >"
+		var title_key := "chapter_%d_title" % current_chapter
+		var title_str := LocaleManager.t(title_key)
+		title_label.text = "< ◇ ── " + title_str.to_upper() + " ── ◇ >"
 		
 	if total_stars_chip:
-		var ch_stars := SaveManager.get_chapter_stars(current_chapter)
-		total_stars_chip.text = "     %d / 60" % ch_stars
+		if current_chapter <= 3:
+			var ch_stars := SaveManager.get_chapter_stars(current_chapter)
+			var target_stars := SaveManager.get_chapter_target_stars(current_chapter)
+			total_stars_chip.text = "     %d / %d" % [ch_stars, target_stars]
+		else:
+			total_stars_chip.text = "     " + LocaleManager.t("coming_soon_caps")
 
 func _update_nav_buttons() -> void:
 	if side_nav_right:
-		side_nav_right.visible = (current_chapter < 3)
-		if current_chapter == 1:
-			side_nav_right.text = "2-BOB ▶"
-		elif current_chapter == 2:
-			side_nav_right.text = "3-BOB ▶"
+		side_nav_right.visible = (current_chapter < 5)
+		if current_chapter < 5:
+			var next_txt := LocaleManager.t("chapter_nav_btn", [current_chapter + 1])
+			side_nav_right.text = next_txt + " ▶"
 	if side_nav_left:
 		side_nav_left.visible = (current_chapter > 1)
-		if current_chapter == 2:
-			side_nav_left.text = "◀ 1-BOB"
-		elif current_chapter == 3:
-			side_nav_left.text = "◀ 2-BOB"
-		
-	if btn_ch1 and btn_ch2:
+		if current_chapter > 1:
+			var prev_txt := LocaleManager.t("chapter_nav_btn", [current_chapter - 1])
+			side_nav_left.text = "◀ " + prev_txt
+
+	if btn_ch1:
+		btn_ch1.text = LocaleManager.t("btn_chapter_1")
 		_set_btn_active(btn_ch1, current_chapter == 1)
+	if btn_ch2:
+		btn_ch2.text = LocaleManager.t("btn_chapter_2")
 		_set_btn_active(btn_ch2, current_chapter == 2)
-		if btn_ch3:
-			_set_btn_active(btn_ch3, current_chapter == 3)
+	if btn_ch3:
+		btn_ch3.text = LocaleManager.t("btn_chapter_3")
+		_set_btn_active(btn_ch3, current_chapter == 3)
 
 func _set_btn_active(btn: Button, active: bool) -> void:
 	if active:
@@ -528,6 +716,7 @@ func _on_language_changed(_lang: String) -> void:
 	_update_top_bar_data()
 	_update_nav_buttons()
 	_update_chapter_locks()
+	_refresh_coming_soon_cards()
 	_create_nodes_for_chapter(1)
 	_create_nodes_for_chapter(2)
 	_create_nodes_for_chapter(3)
@@ -560,9 +749,11 @@ func _create_nodes_for_chapter(chapter: int) -> void:
 		start_lvl = 41
 
 	var max_unlocked: int = 1
-	for lvl in SaveManager.unlocked_levels:
-		if lvl > max_unlocked:
-			max_unlocked = lvl
+	var completed := SaveManager.get_highest_completed_level()
+	if completed > 0:
+		max_unlocked = mini(60, completed + 1)
+	else:
+		max_unlocked = 1
 
 	for i in range(20):
 		var lvl := start_lvl + i
@@ -571,11 +762,16 @@ func _create_nodes_for_chapter(chapter: int) -> void:
 		var stars: int = SaveManager.level_stars.get(str(lvl), 0)
 		var is_active_target := (lvl == max_unlocked)
 		
+		var map_tf := _get_map_transform()
+		var map_scale: float = map_tf["scale"]
+		var offset: Vector2 = map_tf["offset"]
+		
 		# Dumaloq tugma (36x36 diametrli doira, radius 18)
 		var btn := Button.new()
 		btn.custom_minimum_size = Vector2(36, 36)
 		btn.size = Vector2(36, 36)
-		btn.position = pos + _get_map_offset() - Vector2(18, 18)
+		btn.position = pos * map_scale + offset - Vector2(18.0 * map_scale, 18.0 * map_scale)
+		btn.scale = Vector2(map_scale, map_scale)
 		btn.focus_mode = Control.FOCUS_NONE
 		
 		var style := StyleBoxFlat.new()
@@ -620,7 +816,14 @@ func _create_nodes_for_chapter(chapter: int) -> void:
 			
 			btn.pressed.connect(func(): _on_level_btn_pressed(lvl))
 		else:
-			var can_ad_unlock := SaveManager.is_level_ad_unlockable(lvl)
+			# Qulflangan daraja uchun qoida: Undan oldingi daraja ochilgan bo'lishi SHART!
+			var is_prev_unlocked: bool = true
+			if lvl > 1:
+				is_prev_unlocked = SaveManager.is_level_unlocked(lvl - 1)
+
+			# Qoida: Darajani reklama orqali ochish faqat har 3 darajada bir marta ishlaydi
+			var can_ad_unlock := SaveManager.is_level_ad_unlockable(lvl) and is_prev_unlocked and (lvl % 3 == 0)
+
 			if can_ad_unlock:
 				style.bg_color = Color(0.12, 0.10, 0.16, 0.90)
 				style.border_color = Color("#eab308")
@@ -636,10 +839,10 @@ func _create_nodes_for_chapter(chapter: int) -> void:
 				btn.add_theme_font_size_override("font_size", 14)
 				btn.add_theme_color_override("font_color", Color(0.98, 0.85, 0.40))
 				
-				var ad_badge := IconFactory.create_texture_rect("video_ad", Vector2(13, 13), 0.55)
-				ad_badge.position = pos + Vector2(9, -17)
+				var ad_badge := IconFactory.create_texture_rect("video_ad", Vector2(14, 14), 0.60)
+				ad_badge.position = Vector2(20, -5)
 				ad_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				container.add_child(ad_badge)
+				btn.add_child(ad_badge)
 				
 				btn.pressed.connect(func():
 					SoundManager.play("click")
@@ -666,16 +869,16 @@ func _create_nodes_for_chapter(chapter: int) -> void:
 				btn.add_theme_font_size_override("font_size", 14)
 				btn.add_theme_color_override("font_color", Color(0.45, 0.50, 0.60))
 				
-				var lock_badge := IconFactory.create_texture_rect("lock", Vector2(12, 12), 0.50)
-				lock_badge.position = pos + Vector2(9, -17)
+				var lock_badge := IconFactory.create_texture_rect("lock", Vector2(13, 13), 0.55)
+				lock_badge.position = Vector2(21, -5)
 				lock_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				container.add_child(lock_badge)
+				btn.add_child(lock_badge)
 				
 				btn.pressed.connect(func():
 					SoundManager.play("click")
 					var info: Dictionary = SaveManager.get_lock_reason_dialog(lvl)
-					var t: String = info.get("title", "Qulflangan")
-					var m: String = info.get("text", "Bu daraja hozircha ochilmagan.")
+					var t: String = info.get("title", LocaleManager.t("lvl_locked"))
+					var m: String = info.get("text", LocaleManager.t("lock_must_open_earlier"))
 					_show_notice(t, m)
 				)
 				
@@ -688,7 +891,10 @@ func _on_level_btn_pressed(lvl: int) -> void:
 	
 	var level_scene_path := "res://scenes/levels/level_%02d.tscn" % lvl
 	if lvl > 60 and not ResourceLoader.exists(level_scene_path):
-		_show_notice("DARJA: %d" % lvl, "Yangi darajalar tez kunda navbatdagi katta yangilanishda taqdim etiladi!")
+		_show_notice(
+			LocaleManager.t("level_header", [lvl]),
+			LocaleManager.t("more_levels_soon")
+		)
 		return
 		
 	var already_beaten := SaveManager.is_level_completed(lvl)
@@ -823,4 +1029,7 @@ func _refresh_lock_card_texts(card: Control, chapter: int) -> void:
 
 func _on_back_pressed() -> void:
 	SoundManager.play("click")
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.navigation_source = "home_menu"
 	get_tree().change_scene_to_file("res://scenes/main/main_menu.tscn")

@@ -30,7 +30,7 @@ platform_size = Vector2(200, 160)
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
-platform_size = Vector2(960, 60)
+platform_size = Vector2(960, 70)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -43,14 +43,14 @@ platform_size = Vector2(32, 540)
 [node name="Traps" type="Node2D" parent="."]
 
 [node name="RollingBoulderFront" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(420, 350)
+position = Vector2(520, 350)
 roll_direction = -1
 roll_speed = 360
 trigger_distance = 260
 delay_before_roll = 0.5
 
 [node name="Stalactite1" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(300, 60)
+position = Vector2(300, 70)
 trigger_distance = 220
 shake_duration = 0.4
 
@@ -65,11 +65,12 @@ platform_size = Vector2(80, 160)
 crumble_delay = 0.5
 
 [node name="RollingBoulderBack" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(460, 350)
+position = Vector2(45, 350)
+boulder_radius = 16.0
 roll_direction = 1
-roll_speed = 340
+roll_speed = 320
 trigger_distance = 160
-delay_before_roll = 0.4
+delay_before_roll = 0.3
 
 [node name="PopUpSpikesDoor" parent="Traps" instance=ExtResource("9_tr")]
 position = Vector2(790, 380)

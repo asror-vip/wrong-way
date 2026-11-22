@@ -9,7 +9,7 @@ class_name ControlInverter
 var pulse_time: float = 0.0
 var is_triggered: bool = false
 
-@onready var col_shape: CollisionShape2D = $CollisionShape2D
+@onready var col_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
 
 func _ready() -> void:
 	add_to_group("traps")
@@ -29,33 +29,66 @@ func _process(delta: float) -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if body is PlayerController or body.is_in_group("player"):
+		if body.has_method("add_inverter_zone"):
+			body.add_inverter_zone(self)
+		elif "controls_inverted" in body:
+			body.controls_inverted = true
 		if not is_triggered:
 			is_triggered = true
-			if "controls_inverted" in body:
-				body.controls_inverted = true
 			SoundManager.play("trap")
 			GameManager.request_screen_shake.emit(5.0)
 
 func _on_body_exited(body: Node2D) -> void:
 	if body is PlayerController or body.is_in_group("player"):
-		if "controls_inverted" in body:
+		if body.has_method("remove_inverter_zone"):
+			body.remove_inverter_zone(self)
+		elif "controls_inverted" in body:
 			body.controls_inverted = false
 
 func reset_trap() -> void:
 	is_triggered = false
-	var player := get_tree().get_first_node_in_group("player") as Node2D
-	if player and "controls_inverted" in player:
-		player.controls_inverted = false
-	queue_redraw()
+	var tree := get_tree()
+	var player: Node2D = null
+	if tree:
+		player = tree.get_first_node_in_group("player") as Node2D
+	if player:
+		if player.has_method("remove_inverter_zone"):
+			player.remove_inverter_zone(self)
+		elif "controls_inverted" in player:
+			player.controls_inverted = false
+	if is_inside_tree():
+		queue_redraw()
 
 func _draw() -> void:
+	var ch: int = 1
+	var gm = get_node_or_null("/root/GameManager")
+	if gm and gm.has_method("get_current_chapter"):
+		ch = gm.get_current_chapter()
+
 	var w := zone_size.x
 	var h := zone_size.y
 	var alpha := 0.35 + 0.15 * sin(pulse_time)
-	
-	# Binafsha teskari boshqaruv portali
-	draw_rect(Rect2(0, 0, w, h), Color(0.65, 0.2, 0.9, alpha * 0.4), true)
-	draw_rect(Rect2(0, 0, w, h), Color(0.75, 0.3, 1.0, alpha), false, 1.5)
+
+	# Biomlarga mos portal ranglari
+	var fill_col := Color(0.65, 0.2, 0.9, alpha * 0.4) # Binafsha (Ch 1)
+	var stroke_col := Color(0.75, 0.3, 1.0, alpha)
+
+	if ch == 2:
+		fill_col = Color(0.2, 0.7, 1.0, alpha * 0.4) # Muzlik ko'k
+		stroke_col = Color(0.4, 0.9, 1.0, alpha)
+	elif ch == 3:
+		fill_col = Color(0.2, 0.9, 0.3, alpha * 0.4) # Zaharli yashil
+		stroke_col = Color(0.4, 1.0, 0.5, alpha)
+	elif ch == 4:
+		fill_col = Color(0.9, 0.7, 0.2, alpha * 0.4) # Sahro qumrang
+		stroke_col = Color(1.0, 0.8, 0.4, alpha)
+	elif ch == 5:
+		fill_col = Color(0.9, 0.2, 0.1, alpha * 0.4) # Lava qizil
+		stroke_col = Color(1.0, 0.4, 0.2, alpha)
+
+	# Teskari boshqaruv portali
+	draw_rect(Rect2(0, 0, w, h), fill_col, true)
+	draw_rect(Rect2(0, 0, w, h), stroke_col, false, 1.5)
 	
 	# Teskari strelka belgisi (<->)
 	var mid_y := h * 0.5

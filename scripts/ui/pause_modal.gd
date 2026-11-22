@@ -12,6 +12,8 @@ class_name PauseModal
 @onready var home_btn: Button = $Card/BtnBox/HomeBtn
 @onready var settings_modal: Control = get_node_or_null("SettingsModal")
 
+var restart_session_count: int = 0
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
@@ -54,9 +56,19 @@ func _on_language_changed(_lang: String) -> void:
 
 func _update_texts() -> void:
 	if title_label:
-		title_label.text = "P A U S E D"
+		var p_txt := LocaleManager.t("pause_title").to_upper()
+		title_label.text = " ".join(p_txt.split(""))
 	if resume_btn: resume_btn.text = "  " + LocaleManager.t("btn_resume")
-	if restart_btn: restart_btn.text = "  " + LocaleManager.t("btn_restart")
+	if restart_btn:
+		restart_btn.text = "  " + LocaleManager.t("btn_restart")
+		if (restart_session_count + 1) % 4 == 0:
+			restart_btn.icon = IconFactory.get_icon("video_ad", 0.8)
+			restart_btn.add_theme_color_override("font_color", Color(0.98, 0.85, 0.40))
+			restart_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.9, 0.6))
+		else:
+			restart_btn.icon = IconFactory.get_icon("restart", 0.8)
+			restart_btn.remove_theme_color_override("font_color")
+			restart_btn.remove_theme_color_override("font_hover_color")
 	if settings_btn: settings_btn.text = "  " + LocaleManager.t("settings_title")
 	if levels_btn: levels_btn.text = "  " + LocaleManager.t("btn_level_select")
 	if home_btn: home_btn.text = "  " + LocaleManager.t("btn_home")
@@ -108,6 +120,18 @@ func _on_resume_pressed() -> void:
 
 func _on_restart_pressed() -> void:
 	SoundManager.play("click")
+	restart_session_count += 1
+	if restart_session_count > 0 and restart_session_count % 4 == 0:
+		var adm = get_node_or_null("/root/AdManager")
+		if adm and adm.has_method("show_rewarded_ad"):
+			adm.show_rewarded_ad(func():
+				SoundManager.set_music_volume_pause(false)
+				visible = false
+				get_tree().paused = false
+				GameManager.restart_current_level()
+			)
+			return
+
 	SoundManager.set_music_volume_pause(false)
 	visible = false
 	get_tree().paused = false

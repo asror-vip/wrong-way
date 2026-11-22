@@ -192,6 +192,9 @@ func _on_play_pressed() -> void:
 
 func _on_level_select_pressed() -> void:
 	SoundManager.play("click")
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm:
+		sm.navigation_source = "home_menu"
 	get_tree().change_scene_to_file("res://scenes/main/level_select.tscn")
 
 func _on_editor_pressed() -> void:

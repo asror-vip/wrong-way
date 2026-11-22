@@ -50,6 +50,10 @@ func _physics_process(delta: float) -> void:
 		crash_velocity += 2400.0 * delta
 		position.y += crash_velocity * delta
 		
+		if kill_area:
+			for b in kill_area.get_overlapping_bodies():
+				_on_kill_entered(b)
+		
 		# Polga urilish (yerni topsin)
 		# Qattiq 190.0 o'rniga parametr orqali
 		var drop_dist = 190.0
@@ -110,16 +114,38 @@ func reset_trap() -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	var ch: int = 1
+	var gm = get_node_or_null("/root/GameManager")
+	if gm and gm.has_method("get_current_chapter"):
+		ch = gm.get_current_chapter()
+
+	var base_col := Color(0.07, 0.09, 0.14, 1.0) # Default
+	var line_col := Color(0.04, 0.05, 0.08, 0.9)
+	var edge_col := Color(0.35, 0.45, 0.60, 0.85)
+
+	if ch == 2:
+		base_col = Color("#0d131f")
+		line_col = Color("#1e293b")
+		edge_col = Color(0.49, 0.86, 0.99, 0.85)
+	elif ch == 3:
+		base_col = Color("#062319")
+		line_col = Color("#064e3b")
+		edge_col = Color("#4ade80")
+	elif ch == 4:
+		base_col = Color("#291c14")
+		line_col = Color("#451a03")
+		edge_col = Color("#fcd34d")
+	elif ch == 5:
+		base_col = Color("#1a0505")
+		line_col = Color("#450a0a")
+		edge_col = Color("#f97316")
+
 	var rect := Rect2(0, 0, pillar_size.x, pillar_size.y)
-	# Asosiy quyuq tosh ustun
-	draw_rect(rect, Color(0.07, 0.09, 0.14, 1.0))
-	# Yon hoshiyalar
-	draw_line(Vector2(0, 0), Vector2(0, pillar_size.y), Color(0.24, 0.32, 0.44, 0.8), 1.5)
-	draw_line(Vector2(pillar_size.x, 0), Vector2(pillar_size.x, pillar_size.y), Color(0.24, 0.32, 0.44, 0.8), 1.5)
+	draw_rect(rect, base_col)
 	
 	# Tosh g'ishtlar relyefi
 	for y in range(25, int(pillar_size.y), 35):
-		draw_line(Vector2(0, y), Vector2(pillar_size.x, y), Color(0.04, 0.05, 0.08, 0.9), 1.2)
+		draw_line(Vector2(0, y), Vector2(pillar_size.x, y), line_col, 1.2)
 	
 	# Pastki o'tkir tishli qoya qirrasi
 	var pts := PackedVector2Array([
@@ -129,6 +155,6 @@ func _draw() -> void:
 		Vector2(38, pillar_size.y + 9),
 		Vector2(pillar_size.x, pillar_size.y)
 	])
-	draw_colored_polygon(pts, Color(0.07, 0.09, 0.14, 1.0))
-	draw_polyline(pts, Color(0.35, 0.45, 0.60, 0.85), 1.5)
+	draw_colored_polygon(pts, base_col)
+	draw_polyline(pts, edge_col, 1.5)
 

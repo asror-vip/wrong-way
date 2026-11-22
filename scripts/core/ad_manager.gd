@@ -57,6 +57,17 @@ var pending_interstitial_callback: Callable = Callable()
 var interstitial_duration_sec: float = 4.0
 var interstitial_elapsed: float = 0.0
 var is_interstitial_finished: bool = false
+var _audio_was_muted_before_ad: bool = false
+
+func _has_native_admob() -> bool:
+	return Engine.has_singleton("PoingGodotAdMob") or Engine.has_singleton("GodotAdMob")
+
+func _set_ad_audio_muted(muted: bool) -> void:
+	if muted:
+		_audio_was_muted_before_ad = AudioServer.is_bus_mute(0)
+		AudioServer.set_bus_mute(0, true)
+	else:
+		AudioServer.set_bus_mute(0, _audio_was_muted_before_ad)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -270,26 +281,24 @@ func _create_interstitial_ui() -> void:
 	
 	canvas_layer.add_child(interstitial_overlay)
 
+func show_interstitial(on_finish_callback: Callable = Callable()) -> void:
+	show_interstitial_ad(on_finish_callback)
+
+func show_interstitial_replay(on_finish_callback: Callable = Callable()) -> void:
+	show_interstitial_ad(on_finish_callback)
+
 func show_interstitial_ad(on_finish_callback: Callable = Callable()) -> void:
+	if not _has_native_admob():
+		if on_finish_callback.is_valid():
+			on_finish_callback.call()
+		interstitial_ad_completed.emit()
+		return
+
+	_set_ad_audio_muted(true)
 	pending_interstitial_callback = on_finish_callback
 	is_interstitial_active = true
 	is_interstitial_finished = false
 	interstitial_elapsed = 0.0
-	
-	if interstitial_progress:
-		interstitial_progress.value = 0.0
-	if interstitial_timer_label:
-		interstitial_timer_label.text = "4s"
-	if interstitial_skip_btn:
-		interstitial_skip_btn.disabled = true
-		interstitial_skip_btn.text = "O'tkazib yuborish (3s)"
-		
-	if interstitial_overlay:
-		interstitial_overlay.visible = true
-		interstitial_overlay.modulate.a = 0.0
-		var tw := create_tween()
-		tw.tween_property(interstitial_overlay, "modulate:a", 1.0, 0.2)
-		
 	_native_show_interstitial()
 
 func _on_skip_interstitial_pressed() -> void:
@@ -298,6 +307,7 @@ func _on_skip_interstitial_pressed() -> void:
 
 func _finish_interstitial() -> void:
 	is_interstitial_active = false
+	_set_ad_audio_muted(false)
 	if interstitial_overlay:
 		interstitial_overlay.visible = false
 		
@@ -409,34 +419,25 @@ func _create_rewarded_ui() -> void:
 	canvas_layer.add_child(rewarded_overlay)
 
 func show_rewarded_ad(on_reward_callback: Callable = Callable()) -> void:
+	if not _has_native_admob():
+		rewarded_ad_started.emit()
+		if on_reward_callback.is_valid():
+			on_reward_callback.call()
+		rewarded_ad_completed.emit(true)
+		return
+
+	_set_ad_audio_muted(true)
 	pending_reward_callback = on_reward_callback
 	is_rewarded_active = true
 	is_rewarded_finished = false
 	rewarded_elapsed = 0.0
-	
-	if rewarded_progress: rewarded_progress.value = 0.0
-	if rewarded_timer_label:
-		rewarded_timer_label.text = "5s"
-		rewarded_timer_label.add_theme_color_override("font_color", Color(1.0, 0.82, 0.35))
-	if rewarded_status_label:
-		rewarded_status_label.text = "Keyingi darajani ochish uchun video tomosha qilinmoqda..."
-		rewarded_status_label.add_theme_color_override("font_color", Color(0.9, 0.88, 0.94))
-	if rewarded_claim_btn:
-		rewarded_claim_btn.disabled = true
-		rewarded_claim_btn.text = "Reklamani oxirigacha ko'ring (5s)"
-		
-	if rewarded_overlay:
-		rewarded_overlay.visible = true
-		rewarded_overlay.modulate.a = 0.0
-		var tw := create_tween()
-		tw.tween_property(rewarded_overlay, "modulate:a", 1.0, 0.2)
-		
 	rewarded_ad_started.emit()
 	_native_show_rewarded()
 
 func _on_claim_reward_pressed() -> void:
 	SoundManager.play("click")
 	is_rewarded_active = false
+	_set_ad_audio_muted(false)
 	if rewarded_overlay:
 		rewarded_overlay.visible = false
 		

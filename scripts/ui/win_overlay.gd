@@ -169,7 +169,7 @@ func _on_duel_match_finished(is_victory: bool, _winner_id: String) -> void:
 		
 	if stats_label:
 		var time_sec: int = maxi(1, int(round(last_time_ms / 1000.0)))
-		stats_label.text = "Vaqt: %ds   •   O'limlar: %d" % [time_sec, last_deaths]
+		stats_label.text = LocaleManager.t("win_stats", [time_sec, last_deaths])
 		
 	if next_btn:
 		next_btn.text = "  Lobbyga qaytish"
@@ -180,10 +180,13 @@ func _on_duel_match_finished(is_victory: bool, _winner_id: String) -> void:
 
 func _render_win_data() -> void:
 	if win_title:
-		win_title.text = "LEVEL COMPLETE"
+		win_title.text = LocaleManager.t("level_complete")
 	
 	if subtitle:
-		subtitle.text = LocaleManager.t("great_job")
+		if last_lvl == 60:
+			subtitle.text = LocaleManager.t("win_all_60_complete")
+		else:
+			subtitle.text = LocaleManager.t("great_job")
 		
 	# 3 ta katta yulduz (glowing oq yulduzlar)
 	if star_box:
@@ -197,7 +200,7 @@ func _render_win_data() -> void:
 			
 	if stats_label:
 		var time_sec: int = maxi(1, int(round(last_time_ms / 1000.0)))
-		stats_label.text = "Vaqt: %ds   •   O'limlar: %d" % [time_sec, last_deaths]
+		stats_label.text = LocaleManager.t("win_stats", [time_sec, last_deaths])
 		
 	if next_btn:
 		next_btn.text = "  " + LocaleManager.t("btn_next_lvl")

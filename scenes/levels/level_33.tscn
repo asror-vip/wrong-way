@@ -21,7 +21,7 @@ platform_size = Vector2(960, 160)
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
-platform_size = Vector2(960, 60)
+platform_size = Vector2(960, 70)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -41,7 +41,7 @@ trigger_distance = 260
 delay_before_roll = 0.4
 
 [node name="BoulderRear" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(260, 350)
+position = Vector2(20, 350)
 roll_direction = 1
 roll_speed = 300
 trigger_distance = 180
@@ -52,7 +52,7 @@ position = Vector2(530, 348)
 spike_size = Vector2(64, 32)
 
 [node name="StalactiteEnd" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(640, 60)
+position = Vector2(640, 70)
 trigger_distance = 260
 shake_duration = 0.45
 
@@ -64,7 +64,7 @@ orbit_speed = 3
 [node name="BoulderFront2" parent="Traps" instance=ExtResource("5_tr")]
 position = Vector2(870, 350)
 roll_direction = -1
-roll_speed = 340
+roll_speed = 300
 trigger_distance = 180
 delay_before_roll = 0.4
 

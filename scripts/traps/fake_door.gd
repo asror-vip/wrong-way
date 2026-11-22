@@ -13,11 +13,13 @@ var runaway_tween: Tween = null
 
 func _ready() -> void:
 	add_to_group("traps")
-	start_pos = global_position
+	door_size = Vector2(44, 58)
+	start_pos = position
 	if col_shape:
-		col_shape.shape = RectangleShape2D.new()
-		col_shape.shape.size = door_size
-		col_shape.position = Vector2(0, -door_size.y / 2.0)
+		var rect := RectangleShape2D.new()
+		rect.size = Vector2(32, 64)
+		col_shape.shape = rect
+		col_shape.position = Vector2(0, -32)
 	body_entered.connect(_on_body_entered)
 
 func _physics_process(delta: float) -> void:
@@ -39,10 +41,13 @@ func _run_away(_player: Node2D) -> void:
 	if sm and sm.has_method("play"):
 		sm.play("trap")
 	
-	# Eshik pastga pol ichiga tushib yo'qoladi (Falls down and vanishes)
+	# Eshik pastga pol ichiga tushib yo'qoladi (o'yinchini tortib ketmaydi)
+	if runaway_tween and runaway_tween.is_valid():
+		runaway_tween.kill()
 	runaway_tween = create_tween()
 	runaway_tween.tween_property(self, "position:y", start_pos.y - 3.0, 0.05)
-	runaway_tween.tween_property(self, "position:y", start_pos.y + 120.0, 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	runaway_tween.tween_property(self, "position:y", start_pos.y + 120.0, 0.28)\
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	runaway_tween.tween_callback(func():
 		visible = false
 		if col_shape:
@@ -51,17 +56,21 @@ func _run_away(_player: Node2D) -> void:
 
 func _draw() -> void:
 	# Haqiqiy ExitDoor bilan 100% bir xil vizual ko'rinish
-	var is_winter := false
+	var ch: int = 1
 	var gm = get_node_or_null("/root/GameManager")
-	if gm and gm.has_method("is_winter_theme"):
-		is_winter = gm.is_winter_theme()
+	if gm and gm.has_method("get_current_chapter"):
+		ch = gm.get_current_chapter()
 
 	var w := door_size.x
 	var h := door_size.y
 	var half_w := w / 2.0
 	var post_w := 5.0
 	var lintel_h := 5.5
-	var frame_col := Color(0.85, 0.95, 1.0, 1.0) if is_winter else Color(1.0, 1.0, 1.0, 1.0)
+	var frame_col := Color(1.0, 1.0, 1.0, 1.0)
+	if ch == 2: frame_col = Color(0.85, 0.95, 1.0, 1.0)
+	elif ch == 3: frame_col = Color(0.75, 1.0, 0.85, 1.0)
+	elif ch == 4: frame_col = Color(1.0, 0.9, 0.7, 1.0)
+	elif ch == 5: frame_col = Color(1.0, 0.7, 0.7, 1.0)
 	
 	var top_y := -h
 	var lintel_bottom := top_y + lintel_h
@@ -102,7 +111,8 @@ func _draw() -> void:
 	draw_line(Vector2(-half_w - 2.0, 0.0), Vector2(half_w + 2.0, 0.0), frame_col, 2.0)
 	
 	# 5. Tepada suzib turuvchi oq uchburchak indikator (▼)
-	var tri_y := -(h + 8.0) + sin(pulse_time * 3.5) * 2.5
+	var t: float = Time.get_ticks_msec() / 1000.0
+	var tri_y := -(h + 8.0) + sin(t * 3.5) * 2.5
 	var tri_w := 12.0
 	var tri_h := 8.0
 	var tri_pts := PackedVector2Array([
@@ -120,7 +130,7 @@ func _on_body_entered(body: Node2D) -> void:
 func reset_trap() -> void:
 	if runaway_tween and runaway_tween.is_valid():
 		runaway_tween.kill()
-	global_position = start_pos
+	position = start_pos
 	rotation = 0.0
 	is_triggered = false
 	visible = true
