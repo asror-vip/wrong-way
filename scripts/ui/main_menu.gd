@@ -57,6 +57,16 @@ func _ready() -> void:
 	_update_record()
 	_update_profile_button()
 	
+	if play_btn and menu_character:
+		play_btn.mouse_entered.connect(func():
+			if menu_character.has_method("trigger_happy_reaction"):
+				menu_character.trigger_happy_reaction()
+		)
+		play_btn.mouse_exited.connect(func():
+			if menu_character.has_method("set_happy_emotion"):
+				menu_character.set_happy_emotion(false)
+		)
+
 	if quit_top_btn and menu_character:
 		quit_top_btn.mouse_entered.connect(func():
 			if menu_character.has_method("set_sad_emotion"):
@@ -180,14 +190,12 @@ func _update_all_texts() -> void:
 func _update_record() -> void:
 	if best_chip_lbl:
 		var stars: int = SaveManager.get_total_stars()
-		if stars > 0:
-			best_chip_lbl.text = "Best: %d" % stars
-		else:
-			best_chip_lbl.text = "Best: 1"
+		best_chip_lbl.text = LocaleManager.t("best_chip", [str(stars)])
 
 func _on_play_pressed() -> void:
 	SoundManager.play("click")
-	var target_lvl: int = SaveManager.get_highest_unlocked_level()
+	var completed := SaveManager.get_highest_completed_level()
+	var target_lvl: int = mini(60, completed + 1) if completed > 0 else 1
 	GameManager.start_game(target_lvl)
 
 func _on_level_select_pressed() -> void:

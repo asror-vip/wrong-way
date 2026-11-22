@@ -111,10 +111,10 @@ func _process(delta: float) -> void:
 	else:
 		target_pupil_offset = Vector2.ZERO
 		
-	# When sad, gaze looks pleadingly towards cursor / Quit button with watery puppy eyes
+	# When sad, gaze looks pleadingly up-left towards Quit button
 	if sad_factor > 0.001:
-		var sad_look := Vector2(2.2, 1.2)
-		target_pupil_offset = target_pupil_offset.lerp(sad_look, sad_factor * 0.7)
+		var sad_look := Vector2(-2.5, -2.4)
+		target_pupil_offset = target_pupil_offset.lerp(sad_look, sad_factor * 0.85)
 		
 	current_pupil_offset = current_pupil_offset.lerp(target_pupil_offset, delta * 12.0)
 	

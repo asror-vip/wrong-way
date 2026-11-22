@@ -58,6 +58,7 @@ func _ready() -> void:
 	_setup_signals()
 	_update_ui_texts()
 	_update_toggles()
+	_update_platform_controls()
 	_update_lang_buttons()
 
 func _setup_icons() -> void:
@@ -176,9 +177,21 @@ func open() -> void:
 	_update_ui_texts()
 	_update_toggles()
 	_update_lang_buttons()
+	_update_platform_controls()
 	visible = true
 	if card:
 		card.queue_redraw()
+
+func _update_platform_controls() -> void:
+	var is_mob := (
+		OS.has_feature("android")
+		or OS.has_feature("ios")
+		or OS.has_feature("mobile")
+		or OS.has_feature("web_android")
+		or OS.has_feature("web_ios")
+	)
+	if customize_controls_btn:
+		customize_controls_btn.visible = is_mob
 
 func close() -> void:
 	visible = false
