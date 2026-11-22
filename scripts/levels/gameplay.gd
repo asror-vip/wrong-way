@@ -13,6 +13,14 @@ func _ready() -> void:
 	arena_extensions.z_index = 5
 	add_child(arena_extensions)
 	move_child(arena_extensions, 0)
+	var is_desktop_pc := (
+		not OS.has_feature("mobile")
+		and not OS.has_feature("android")
+		and not OS.has_feature("ios")
+		and not OS.has_feature("web")
+	)
+	if is_desktop_pc and camera:
+		camera.zoom = Vector2(0.80, 0.80)
 	get_viewport().size_changed.connect(_adapt_arena_boundaries)
 
 	var adm = get_node_or_null("/root/AdManager")
@@ -107,8 +115,10 @@ func _adapt_arena_boundaries() -> void:
 		c.queue_free()
 
 	var vp := get_viewport_rect().size
-	var world_tl := Vector2(480.0, 270.0) - vp * 0.5
-	var world_br := Vector2(480.0, 270.0) + vp * 0.5
+	var zoom_vec := camera.zoom if camera else Vector2.ONE
+	var vis_size := Vector2(vp.x / zoom_vec.x, vp.y / zoom_vec.y)
+	var world_tl := Vector2(480.0, 270.0) - vis_size * 0.5
+	var world_br := Vector2(480.0, 270.0) + vis_size * 0.5
 
 	if world_tl.x < 0.0:
 		var left_w := -world_tl.x + 36.0
