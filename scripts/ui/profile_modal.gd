@@ -106,8 +106,9 @@ func _on_auth_action_pressed() -> void:
 	SoundManager.play("click")
 	if ProfileManager.auth_provider == "google":
 		ProfileManager.logout_to_guest()
-		_refresh_profile_display()
-		_show_toast("Google hisobidan chiqildi")
+		ProfileManager.skip_loading_to_auth = true
+		visible = false
+		get_tree().change_scene_to_file("res://scenes/main/splash_screen.tscn")
 	else:
 		GoogleAuthService.start_google_sign_in()
 

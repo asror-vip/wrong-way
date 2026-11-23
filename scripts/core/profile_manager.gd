@@ -22,6 +22,7 @@ var avatar_index: int = 1
 var auth_provider: String = "guest"
 var email: String = ""
 var has_chosen_auth: bool = false
+var skip_loading_to_auth: bool = false
 var is_ready_online: bool = false
 var saved_friends: Array = []
 

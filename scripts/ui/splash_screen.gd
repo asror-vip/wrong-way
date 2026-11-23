@@ -62,11 +62,17 @@ func _ready() -> void:
 		start_box.modulate.a = 0.0
 
 	_setup_buttons()
-	_update_hint(0)
 	_start_background_drift()
 	_apply_safe_insets()
 	get_viewport().size_changed.connect(_apply_safe_insets)
-	_run_loading_flow()
+	if ProfileManager.skip_loading_to_auth:
+		ProfileManager.skip_loading_to_auth = false
+		if bottom_box:
+			bottom_box.visible = false
+		_show_auth_selection()
+	else:
+		_update_hint(0)
+		_run_loading_flow()
 
 func _apply_safe_insets() -> void:
 	var insets := UIResponsive.get_safe_insets(self)
