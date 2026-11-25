@@ -52,16 +52,13 @@ func _start_android_native_google_modal() -> void:
 		auth_failed.emit("Google Sign-In xizmati topilmadi.")
 		return
 
-	if picker.has_signal("google_sign_in_success") and not picker.is_connected("google_sign_in_success", _on_android_google_success):
+	if not picker.is_connected("google_sign_in_success", _on_android_google_success):
 		picker.connect("google_sign_in_success", _on_android_google_success)
-	if picker.has_signal("google_sign_in_failed") and not picker.is_connected("google_sign_in_failed", _on_android_google_failed):
+	if not picker.is_connected("google_sign_in_failed", _on_android_google_failed):
 		picker.connect("google_sign_in_failed", _on_android_google_failed)
 
-	if picker.has_method("signInWithGoogle"):
-		print("GoogleAuthService: Android native Google modal oynasi ochilmoqda...")
-		picker.call("signInWithGoogle", GOOGLE_WEB_CLIENT_ID)
-	else:
-		auth_failed.emit("Google Sign-In metodi topilmadi.")
+	print("GoogleAuthService: Android native Google modal oynasi ochilmoqda...")
+	picker.call("signInWithGoogle", GOOGLE_WEB_CLIENT_ID)
 
 func _on_android_google_success(acc_email: String, acc_name: String, _id_token: String) -> void:
 	var clean_email := acc_email.strip_edges().to_lower()
