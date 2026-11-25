@@ -62,6 +62,9 @@ func _start_android_native_google_modal() -> void:
 
 func _on_android_google_success(acc_email: String, acc_name: String, _id_token: String) -> void:
 	var clean_email := acc_email.strip_edges().to_lower()
+	if clean_email.is_empty() or not clean_email.contains("@"):
+		auth_failed.emit("Google hisobidan haqiqiy email olinmadi")
+		return
 	var clean_name := acc_name.strip_edges()
 	if clean_name.is_empty():
 		clean_name = ProfileManager.get_name_from_email(clean_email)

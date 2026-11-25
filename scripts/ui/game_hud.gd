@@ -46,6 +46,21 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	_release_all_touch_actions()
+	if LocaleManager and LocaleManager.language_changed.is_connected(_on_language_changed):
+		LocaleManager.language_changed.disconnect(_on_language_changed)
+	if GameManager:
+		if GameManager.player_died.is_connected(_on_player_died):
+			GameManager.player_died.disconnect(_on_player_died)
+		if GameManager.level_started.is_connected(_on_level_started):
+			GameManager.level_started.disconnect(_on_level_started)
+	if SaveManager and SaveManager.touch_layout_changed.is_connected(_apply_custom_touch_layout):
+		SaveManager.touch_layout_changed.disconnect(_apply_custom_touch_layout)
+	var vp := get_viewport()
+	if vp and vp.size_changed.is_connected(_apply_custom_touch_layout):
+		vp.size_changed.disconnect(_apply_custom_touch_layout)
+	var adm = get_node_or_null("/root/AdManager")
+	if adm and adm.has_signal("banner_visibility_changed") and adm.banner_visibility_changed.is_connected(_on_banner_visibility_changed):
+		adm.banner_visibility_changed.disconnect(_on_banner_visibility_changed)
 
 func _update_touch_visibility() -> void:
 	# Sensorli tugmalar faqat mobil qurilmalarda ko'rsatiladi (PC da doim yashirin).

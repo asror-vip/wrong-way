@@ -49,10 +49,10 @@ public class WrongWayYandexAds extends GodotPlugin {
     private static final SignalInfo SIG_REWARDED_FAILED_SHOW = new SignalInfo("rewarded_failed_to_show", String.class);
 
     private InterstitialAdLoader interstitialAdLoader;
-    private InterstitialAd interstitialAd;
+    private volatile InterstitialAd interstitialAd;
 
     private RewardedAdLoader rewardedAdLoader;
-    private RewardedAd rewardedAd;
+    private volatile RewardedAd rewardedAd;
 
     public WrongWayYandexAds(Godot godot) {
         super(godot);
@@ -100,11 +100,15 @@ public class WrongWayYandexAds extends GodotPlugin {
     @UsedByGodot
     public void loadInterstitial(String adUnitId) {
         Activity activity = getActivity();
-        if (activity == null || adUnitId == null || adUnitId.isEmpty()) {
+        if (activity == null || activity.isFinishing() || activity.isDestroyed() || adUnitId == null || adUnitId.isEmpty()) {
             emitSignal(SIG_INTERSTITIAL_FAILED_LOAD.getName(), "Activity or adUnitId missing");
             return;
         }
         activity.runOnUiThread(() -> {
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                emitSignal(SIG_INTERSTITIAL_FAILED_LOAD.getName(), "Activity unavailable");
+                return;
+            }
             try {
                 if (interstitialAdLoader == null) {
                     interstitialAdLoader = new InterstitialAdLoader(activity);
@@ -139,11 +143,15 @@ public class WrongWayYandexAds extends GodotPlugin {
     @UsedByGodot
     public void showInterstitial() {
         Activity activity = getActivity();
-        if (activity == null) {
-            emitSignal(SIG_INTERSTITIAL_FAILED_SHOW.getName(), "Activity null");
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+            emitSignal(SIG_INTERSTITIAL_FAILED_SHOW.getName(), "Activity unavailable");
             return;
         }
         activity.runOnUiThread(() -> {
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                emitSignal(SIG_INTERSTITIAL_FAILED_SHOW.getName(), "Activity unavailable");
+                return;
+            }
             if (interstitialAd == null) {
                 emitSignal(SIG_INTERSTITIAL_FAILED_SHOW.getName(), "Interstitial not loaded");
                 return;
@@ -179,11 +187,15 @@ public class WrongWayYandexAds extends GodotPlugin {
     @UsedByGodot
     public void loadRewarded(String adUnitId) {
         Activity activity = getActivity();
-        if (activity == null || adUnitId == null || adUnitId.isEmpty()) {
+        if (activity == null || activity.isFinishing() || activity.isDestroyed() || adUnitId == null || adUnitId.isEmpty()) {
             emitSignal(SIG_REWARDED_FAILED_LOAD.getName(), "Activity or adUnitId missing");
             return;
         }
         activity.runOnUiThread(() -> {
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                emitSignal(SIG_REWARDED_FAILED_LOAD.getName(), "Activity unavailable");
+                return;
+            }
             try {
                 if (rewardedAdLoader == null) {
                     rewardedAdLoader = new RewardedAdLoader(activity);
@@ -218,11 +230,15 @@ public class WrongWayYandexAds extends GodotPlugin {
     @UsedByGodot
     public void showRewarded() {
         Activity activity = getActivity();
-        if (activity == null) {
-            emitSignal(SIG_REWARDED_FAILED_SHOW.getName(), "Activity null");
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+            emitSignal(SIG_REWARDED_FAILED_SHOW.getName(), "Activity unavailable");
             return;
         }
         activity.runOnUiThread(() -> {
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                emitSignal(SIG_REWARDED_FAILED_SHOW.getName(), "Activity unavailable");
+                return;
+            }
             if (rewardedAd == null) {
                 emitSignal(SIG_REWARDED_FAILED_SHOW.getName(), "Rewarded not loaded");
                 return;

@@ -34,7 +34,12 @@ func _ready() -> void:
 	if google_logo:
 		google_logo.texture = IconFactory.get_icon("google", 1.0)
 		
-	ProfileManager.google_login_finished.connect(_on_login_finished)
+	if not ProfileManager.google_login_finished.is_connected(_on_login_finished):
+		ProfileManager.google_login_finished.connect(_on_login_finished)
+
+func _exit_tree() -> void:
+	if ProfileManager and ProfileManager.google_login_finished.is_connected(_on_login_finished):
+		ProfileManager.google_login_finished.disconnect(_on_login_finished)
 
 func open(_closable: bool = true) -> void:
 	visible = true
@@ -200,15 +205,20 @@ func _is_valid_email(e: String) -> bool:
 	return e.contains("@") and e.contains(".") and e.length() >= 6
 
 func _on_login_finished(success: bool, error_msg: String) -> void:
+	if not visible and not is_authenticating:
+		return
 	is_authenticating = false
 	if success:
 		_set_status("Ulandi! Xush kelibsiz, " + ProfileManager.username + "!", false)
 		auth_completed.emit("google")
 		await get_tree().create_timer(0.5).timeout
+		if not is_inside_tree():
+			return
 		var tw := create_tween()
 		tw.tween_property(self, "modulate:a", 0.0, 0.15)
 		await tw.finished
-		visible = false
+		if is_inside_tree():
+			visible = false
 	else:
 		_set_status(error_msg if not error_msg.is_empty() else "Serverga ulanishda xatolik", true)
 

@@ -132,6 +132,9 @@ func _setup_buttons() -> void:
 		GoogleAuthService.auth_failed.connect(_on_google_auth_failed)
 
 func _exit_tree() -> void:
+	var vp := get_viewport()
+	if vp and vp.size_changed.is_connected(_apply_safe_insets):
+		vp.size_changed.disconnect(_apply_safe_insets)
 	if GoogleAuthService:
 		if GoogleAuthService.auth_succeeded.is_connected(_on_google_auth_succeeded):
 			GoogleAuthService.auth_succeeded.disconnect(_on_google_auth_succeeded)
@@ -176,23 +179,33 @@ func _run_loading_flow() -> void:
 	# 1-bosqich: Baza va o'yin holati
 	target_progress = 25.0
 	await get_tree().create_timer(0.35).timeout
+	if not is_inside_tree() or is_transitioning:
+		return
 	_update_hint(1)
 
 	# 2-bosqich: Tuzoqlar va darajalar
 	target_progress = 60.0
 	await get_tree().create_timer(0.40).timeout
+	if not is_inside_tree() or is_transitioning:
+		return
 	_update_hint(2)
 
 	# 3-bosqich: Server
 	target_progress = 85.0
 	await get_tree().create_timer(0.35).timeout
+	if not is_inside_tree() or is_transitioning:
+		return
 	_update_hint(3)
 
 	# 4-bosqich: Tayyor
 	target_progress = 100.0
 	await get_tree().create_timer(0.30).timeout
+	if not is_inside_tree() or is_transitioning:
+		return
 	_update_hint(4)
 	await get_tree().create_timer(0.25).timeout
+	if not is_inside_tree() or is_transitioning:
+		return
 
 	_show_auth_selection()
 
@@ -279,7 +292,8 @@ func _on_auth_completed(_provider: String) -> void:
 	if greeting_label:
 		greeting_label.text = "Xush kelibsiz, " + ProfileManager.username + "!"
 	await get_tree().create_timer(0.3).timeout
-	_finish_and_open_main_menu()
+	if is_inside_tree():
+		_finish_and_open_main_menu()
 
 func _finish_and_open_main_menu() -> void:
 	if is_transitioning:

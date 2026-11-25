@@ -63,6 +63,8 @@ func _run_all() -> void:
 	await _test_leaderboard_modal()
 	await _test_win_overlay_ch1_gate()
 	await _test_splash_tap_anywhere()
+	await _test_hidden_auth_modal_does_not_skip_splash()
+	await _test_profile_modal_non_uz_best_label()
 	_test_ad_manager_config()
 
 	_restore_user_files(backup)
@@ -175,6 +177,13 @@ func _test_cloud_merge_and_reset() -> void:
 	_expect(sm.get_level_best_deaths(2) == 2 and sm.get_total_beaten_deaths() == 2, "merge_cloud_save restores level_best_deaths")
 	_expect(sm.overall_best_ms > 999999.0, "merge_cloud_save ignores 0 overall_best_ms")
 	_expect(not sm.is_chapter_unlocked(2) and not sm.ad_unlocked_levels.has(21), "merge_cloud_save enforces Ch2 star gate & strips 21 from ad_unlocked_levels")
+	_expect(not sm.unlocked_levels.has(21) and sm.get_unlocked_count() == 3, "merge_cloud_save strips locked 21 from unlocked_levels & get_unlocked_count (count=%d)" % sm.get_unlocked_count())
+
+	# Verify 0.0 time is ignored in record_result & merge_cloud_save
+	sm.record_result(1, 0.0, 0)
+	_expect(sm.overall_best_ms > 999999.0, "record_result ignores 0.0 overall_best_ms")
+	sm.merge_cloud_save({"level_best_times": {"1": 0.0}})
+	_expect(float(sm.level_best_times.get("1", 0.0)) == 4200.0, "merge_cloud_save ignores 0.0 level_best_times")
 
 func _test_profile_isolation_and_friends() -> void:
 	var pm := root.get_node_or_null("/root/ProfileManager")
@@ -293,6 +302,45 @@ func _test_splash_tap_anywhere() -> void:
 
 	sp.queue_free()
 	await process_frame
+
+func _test_hidden_auth_modal_does_not_skip_splash() -> void:
+	var pm := root.get_node_or_null("/root/ProfileManager")
+	pm.has_chosen_auth = true
+	pm.auth_provider = "google"
+	pm.email = "asror_test@gmail.com"
+	pm.username = "Asror"
+	pm.skip_loading_to_auth = false
+
+	var sp_scn := load("res://scenes/main/splash_screen.tscn") as PackedScene
+	var sp := sp_scn.instantiate()
+	root.add_child(sp)
+	await process_frame
+
+	# Simulate startup background Google sync finishing while SplashScreen is loading
+	pm.google_login_finished.emit(true, "")
+	await create_timer(0.45).timeout
+	_expect(not sp.is_transitioning, "Hidden AuthModal does NOT prematurely skip SplashScreen on background google_login_finished")
+
+	sp.queue_free()
+	await process_frame
+
+func _test_profile_modal_non_uz_best_label() -> void:
+	var sm := root.get_node_or_null("/root/SaveManager")
+	var lm := root.get_node_or_null("/root/LocaleManager")
+	sm.reset_progress()
+	var prev_lang: String = lm.current_language
+	lm.current_language = "en"
+
+	var pm_scn := load("res://scenes/ui/profile_modal.tscn") as PackedScene
+	var pm_node := pm_scn.instantiate()
+	root.add_child(pm_node)
+	await process_frame
+	pm_node._load_stats()
+	_expect(pm_node.best_label.text == "Rekord: —", "ProfileModal shows 'Rekord: —' in English when no record exists (got '%s')" % pm_node.best_label.text)
+
+	pm_node.queue_free()
+	await process_frame
+	lm.current_language = prev_lang
 
 func _test_ad_manager_config() -> void:
 	var adm := root.get_node_or_null("/root/AdManager")

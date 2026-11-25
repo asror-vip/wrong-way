@@ -140,7 +140,8 @@ func close() -> void:
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.15)
 	await tween.finished
-	visible = false
+	if is_inside_tree():
+		visible = false
 
 func _apply_modal_styles() -> void:
 	# Close button - circular stylebox
@@ -313,8 +314,9 @@ func _load_stats() -> void:
 				cur_lvl = 1
 			levels_label.text = "%d-Daraja" % cur_lvl
 		if best_label and save_sys.has_method("get_overall_best_text"):
+			var has_best: bool = float(save_sys.overall_best_ms) > 0.0 and float(save_sys.overall_best_ms) < 999999000.0
 			var best_str: String = save_sys.get_overall_best_text()
-			if best_str != "Mavjud emas" and not best_str.is_empty():
+			if has_best and best_str != "Mavjud emas" and best_str != LocaleManager.t("not_available") and not best_str.is_empty():
 				var time_part := best_str.split(" ")[0]
 				best_label.text = time_part + " Rekord"
 			else:
@@ -356,6 +358,8 @@ func _on_save_pressed() -> void:
 		sm.play("click")
 		
 	await get_tree().create_timer(0.55).timeout
+	if not is_inside_tree():
+		return
 	if save_btn:
 		save_btn.disabled = false
 	close()

@@ -68,13 +68,19 @@ func load_data() -> void:
 	if not OS.has_feature("editor"):
 		debug_unlock_all = false
 
+	if overall_best_ms <= 0.0:
+		overall_best_ms = 999999999.0
+		overall_best_text = "Mavjud emas"
+
 	# Eskicha/noto'g'ri saqlangan bob kirishlarini tozalash (50 / 55 yulduzsiz 2/3-bobga o'tib ketmasligi uchun)
 	if not is_chapter_unlocked(2):
 		for l in range(21, 41):
 			ad_unlocked_levels.erase(l)
+			unlocked_levels.erase(l)
 	if not is_chapter_unlocked(3):
 		for l in range(41, 61):
 			ad_unlocked_levels.erase(l)
+			unlocked_levels.erase(l)
 
 	if not unlocked_levels.has(1):
 		unlocked_levels.push_front(1)
@@ -180,14 +186,14 @@ func record_result(lvl: int, time_ms: float, deaths: int) -> int:
 		level_stars[str_lvl] = stars
 
 	var prev_time: float = float(level_best_times.get(str_lvl, 999999999.0))
-	if time_ms < prev_time:
+	if time_ms > 0.0 and time_ms < prev_time:
 		level_best_times[str_lvl] = time_ms
 
 	var prev_deaths: int = int(level_best_deaths.get(str_lvl, 999999))
 	if deaths < prev_deaths:
 		level_best_deaths[str_lvl] = deaths
 
-	if time_ms < overall_best_ms:
+	if time_ms > 0.0 and time_ms < overall_best_ms:
 		overall_best_ms = time_ms
 		var lvl_str := LocaleManager.t("level_header", [lvl])
 		overall_best_text = "%.2fs (%s)" % [time_ms / 1000.0, lvl_str]
@@ -281,7 +287,7 @@ func merge_cloud_save(cloud_data: Dictionary) -> void:
 				var str_k := str(k)
 				var c_t := float(c_times[k])
 				var l_t := float(level_best_times.get(str_k, 999999999.0))
-				if c_t < l_t:
+				if c_t > 0.0 and c_t < l_t:
 					level_best_times[str_k] = c_t
 					changed = true
 
@@ -311,6 +317,9 @@ func merge_cloud_save(cloud_data: Dictionary) -> void:
 			if ad_unlocked_levels.has(l):
 				ad_unlocked_levels.erase(l)
 				changed = true
+			if unlocked_levels.has(l):
+				unlocked_levels.erase(l)
+				changed = true
 	elif not unlocked_levels.has(21):
 		unlocked_levels.append(21)
 		changed = true
@@ -319,6 +328,9 @@ func merge_cloud_save(cloud_data: Dictionary) -> void:
 		for l in range(41, 61):
 			if ad_unlocked_levels.has(l):
 				ad_unlocked_levels.erase(l)
+				changed = true
+			if unlocked_levels.has(l):
+				unlocked_levels.erase(l)
 				changed = true
 	elif not unlocked_levels.has(41):
 		unlocked_levels.append(41)
@@ -478,6 +490,8 @@ func get_completed_level_count() -> int:
 func get_unlocked_count() -> int:
 	var count := 0
 	for lvl in unlocked_levels:
+		if not is_level_unlocked(lvl):
+			continue
 		if lvl <= 60 or ResourceLoader.exists("res://scenes/levels/level_%02d.tscn" % lvl) or ResourceLoader.exists("res://scenes/levels/level_%d.tscn" % lvl):
 			count += 1
 	return count

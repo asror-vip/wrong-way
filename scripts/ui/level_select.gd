@@ -133,6 +133,13 @@ func _ready() -> void:
 
 	switch_to_chapter(target_chapter, false)
 
+func _exit_tree() -> void:
+	if LocaleManager and LocaleManager.language_changed.is_connected(_on_language_changed):
+		LocaleManager.language_changed.disconnect(_on_language_changed)
+	var vp := get_viewport()
+	if vp and vp.size_changed.is_connected(_setup_widescreen_layout):
+		vp.size_changed.disconnect(_setup_widescreen_layout)
+
 func _setup_coming_soon_views() -> void:
 	if not chapter_slider:
 		return
@@ -296,9 +303,13 @@ func _setup_widescreen_layout() -> void:
 	if ch2_view:
 		ch2_view.offset_left = step_w
 		ch2_view.offset_right = step_w
+		if lock_card_ch2:
+			lock_card_ch2.position.x = (step_w - lock_card_ch2.size.x) * 0.5
 	if ch3_view:
 		ch3_view.offset_left = step_w * 2.0
 		ch3_view.offset_right = step_w * 2.0
+		if lock_card_ch3:
+			lock_card_ch3.position.x = (step_w - lock_card_ch3.size.x) * 0.5
 	if ch4_view:
 		ch4_view.offset_left = step_w * 3.0
 		ch4_view.offset_right = step_w * 3.0

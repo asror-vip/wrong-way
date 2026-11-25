@@ -23,10 +23,14 @@ var _next_requires_ad_unlock: bool = false
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
-	GameManager.level_completed.connect(_on_level_completed)
-	GameManager.level_started.connect(func(_lvl): visible = false)
-	DuelService.match_finished.connect(_on_duel_match_finished)
-	LocaleManager.language_changed.connect(_on_language_changed)
+	if not GameManager.level_completed.is_connected(_on_level_completed):
+		GameManager.level_completed.connect(_on_level_completed)
+	if not GameManager.level_started.is_connected(_on_level_started_hide):
+		GameManager.level_started.connect(_on_level_started_hide)
+	if not DuelService.match_finished.is_connected(_on_duel_match_finished):
+		DuelService.match_finished.connect(_on_duel_match_finished)
+	if not LocaleManager.language_changed.is_connected(_on_language_changed):
+		LocaleManager.language_changed.connect(_on_language_changed)
 	
 	if spotlight_fx:
 		spotlight_fx.draw.connect(_on_spotlight_draw)
@@ -39,6 +43,20 @@ func _ready() -> void:
 	if replay_btn: replay_btn.pressed.connect(_on_replay_pressed)
 	if map_btn: map_btn.pressed.connect(_on_map_pressed)
 	if home_btn: home_btn.pressed.connect(_on_home_pressed)
+
+func _exit_tree() -> void:
+	if GameManager:
+		if GameManager.level_completed.is_connected(_on_level_completed):
+			GameManager.level_completed.disconnect(_on_level_completed)
+		if GameManager.level_started.is_connected(_on_level_started_hide):
+			GameManager.level_started.disconnect(_on_level_started_hide)
+	if DuelService and DuelService.match_finished.is_connected(_on_duel_match_finished):
+		DuelService.match_finished.disconnect(_on_duel_match_finished)
+	if LocaleManager and LocaleManager.language_changed.is_connected(_on_language_changed):
+		LocaleManager.language_changed.disconnect(_on_language_changed)
+
+func _on_level_started_hide(_lvl: int) -> void:
+	visible = false
 
 func _process(delta: float) -> void:
 	if visible and crown_icon:
@@ -238,6 +256,10 @@ func _on_next_pressed() -> void:
 		get_tree().change_scene_to_file("res://scenes/multiplayer/multiplayer_menu.tscn")
 		return
 	var next_lvl := last_lvl + 1
+	if next_lvl > 60:
+		return
+	if not SaveManager.is_level_unlocked(next_lvl) and not _next_requires_ad_unlock:
+		return
 	if _next_requires_ad_unlock and not SaveManager.is_level_unlocked(next_lvl):
 		var adm = get_node_or_null("/root/AdManager")
 		if adm and adm.has_method("show_rewarded_ad"):

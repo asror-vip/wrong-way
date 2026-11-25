@@ -81,8 +81,10 @@ func _ready() -> void:
 				menu_character.set_sad_emotion(false)
 		)
 	
-	ProfileManager.profile_updated.connect(func(_d): _update_profile_button())
-	ProfileManager.profile_loaded.connect(func(_d): _update_profile_button())
+	if not ProfileManager.profile_updated.is_connected(_on_profile_changed):
+		ProfileManager.profile_updated.connect(_on_profile_changed)
+	if not ProfileManager.profile_loaded.is_connected(_on_profile_changed):
+		ProfileManager.profile_loaded.connect(_on_profile_changed)
 	if multiplayer_btn:
 		multiplayer_btn.visible = false
 	if incoming_invite_card:
@@ -91,11 +93,27 @@ func _ready() -> void:
 	if duel_lobby_modal:
 		duel_lobby_modal.duel_started.connect(_on_duel_started)
 		
-	get_viewport().size_changed.connect(_apply_responsive_layout)
+	if not get_viewport().size_changed.is_connected(_apply_responsive_layout):
+		get_viewport().size_changed.connect(_apply_responsive_layout)
 	_apply_responsive_layout()
 		
 	SoundManager.set_gameplay_mode(false)
 	SoundManager.play_music()
+
+func _exit_tree() -> void:
+	if LocaleManager and LocaleManager.language_changed.is_connected(_on_language_changed):
+		LocaleManager.language_changed.disconnect(_on_language_changed)
+	if ProfileManager:
+		if ProfileManager.profile_updated.is_connected(_on_profile_changed):
+			ProfileManager.profile_updated.disconnect(_on_profile_changed)
+		if ProfileManager.profile_loaded.is_connected(_on_profile_changed):
+			ProfileManager.profile_loaded.disconnect(_on_profile_changed)
+	var vp := get_viewport()
+	if vp and vp.size_changed.is_connected(_apply_responsive_layout):
+		vp.size_changed.disconnect(_apply_responsive_layout)
+
+func _on_profile_changed(_d: Dictionary) -> void:
+	_update_profile_button()
 
 func _apply_responsive_layout() -> void:
 	var insets := UIResponsive.get_safe_insets(self)
