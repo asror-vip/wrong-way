@@ -231,7 +231,7 @@ func _on_switch_account_pressed() -> void:
 func _on_google_pressed() -> void:
 	SoundManager.play("click")
 	if auth_hint:
-		auth_hint.text = "Brauzerda Google hisobingizni tanlang..."
+		auth_hint.text = "Google hisobingizni tanlang..."
 		auth_hint.add_theme_color_override("font_color", Color(0.55, 0.85, 1.0))
 	GoogleAuthService.start_google_sign_in()
 
@@ -240,6 +240,7 @@ func _on_guest_pressed() -> void:
 	ProfileManager.auth_provider = "guest"
 	ProfileManager.has_chosen_auth = true
 	ProfileManager.save_profile()
+	ProfileManager.sync_with_supabase()
 	_finish_and_open_main_menu()
 
 func _on_auth_completed(_provider: String) -> void:

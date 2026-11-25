@@ -64,10 +64,12 @@ func _ready() -> void:
 	_load_saved_friends()
 	_setup_corner_id_overlay()
 	
-	# Agar avval Google bilan kirgan bo'lsa, to'g'ridan-to'g'ri Google profili sinxronlanadi
+	# Agar avval Google bilan kirgan bo'lsa, Google profili va bulutli saqlash sinxronlanadi.
+	# Mehmon esa faqat kirish usulini tanlaganidan keyingina (has_chosen_auth) serverdan ID oladi
+	# va hech qachon eski qurilma ID'si orqali o'chirilgan yutuqlarni tiklamaydi.
 	if auth_provider == "google" and not email.is_empty():
 		login_with_google(email, username)
-	else:
+	elif has_chosen_auth:
 		sync_with_supabase()
 
 func _load_or_create_device_id() -> void:
@@ -76,12 +78,16 @@ func _load_or_create_device_id() -> void:
 		if f:
 			device_id = f.get_as_text().strip_edges()
 			f.close()
-			
+
+	# Har bir yangi o'rnatish / "Barcha ma'lumotlarni tozalash" uchun YANGI tasodifiy ID.
+	# Hech qachon OS.get_unique_id() (doimiy ANDROID_ID) ishlatilmaydi!
 	if device_id.is_empty():
-		var unique := OS.get_unique_id()
-		if unique.is_empty():
-			unique = "dev_" + str(Time.get_unix_time_from_system()) + "_" + str(randi() % 100000)
-		device_id = unique
+		randomize()
+		device_id = "dev_%d_%08x_%08x" % [
+			Time.get_unix_time_from_system(),
+			randi(),
+			randi()
+		]
 		var f := FileAccess.open(DEVICE_ID_PATH, FileAccess.WRITE)
 		if f:
 			f.store_string(device_id)
@@ -154,11 +160,9 @@ func _apply_profile_dict(data: Dictionary) -> void:
 		has_chosen_auth = bool(data["has_chosen_auth"])
 	elif auth_provider == "google" and not email.is_empty():
 		has_chosen_auth = true
-	elif not player_id.is_empty() and username != "Player":
-		has_chosen_auth = true
 
-	# Bulutdan kelgan yutuqlarni lokal saqlash tizimi bilan birlashtirish
-	if data.has("save_data") and data["save_data"] is Dictionary:
+	# Bulutdan kelgan yutuqlarni FAQAT Google hisobi ulangan bo'lsa tiklaymiz (Mehmon lokal qoladi)
+	if auth_provider == "google" and not email.is_empty() and data.has("save_data") and data["save_data"] is Dictionary:
 		var save_sys = get_node_or_null("/root/SaveManager")
 		if save_sys and save_sys.has_method("merge_cloud_save"):
 			save_sys.merge_cloud_save(data["save_data"])
@@ -312,6 +316,8 @@ func save_profile() -> void:
 # Bulutli Yutuqlar Sinxronizatsiyasi (Cloud Save)
 # -------------------------------------------------------------
 func sync_save_to_cloud() -> void:
+	if auth_provider != "google" or email.is_empty():
+		return
 	if not is_ready_online or player_id.is_empty():
 		return
 	if not http_cloud:

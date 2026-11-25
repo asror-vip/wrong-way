@@ -1,14 +1,15 @@
 extends Node
 
 # GoogleAuthService - Wrong Way Official Cross-Platform Google Authentication
-# - Uses official Supabase Google OAuth in the system browser (Chrome on Android,
-#   default browser on Windows/Mac/Linux) with a background-threaded local loopback
-#   server on 127.0.0.1:8943 so callbacks are received even while the Android app
-#   is backgrounded in Chrome.
+# - Android: Uses native Jetpack Credential Manager bottom-sheet modal (GetSignInWithGoogleOption)
+#   directly inside the game — NEVER opens Chrome or leaves the game.
+# - Desktop (Windows/Mac/Linux): Uses official Supabase Google OAuth in default browser
+#   with local loopback callback on 127.0.0.1:8943.
 
 signal auth_succeeded(user_data: Dictionary)
 signal auth_failed(error_message: String)
 
+const GOOGLE_WEB_CLIENT_ID := "554448116259-f2l5gs2h2fucpbtbkq87d2j34a963h4i.apps.googleusercontent.com"
 const LOOPBACK_PORT: int = 8943
 const REDIRECT_URI: String = "http://127.0.0.1:8943/callback"
 const REFRESH_TOKEN_PATH := "user://google_refresh_token.txt"
@@ -19,6 +20,7 @@ var _stop_requested: bool = false
 var _server_thread: Thread = null
 var auth_timeout_timer: SceneTreeTimer
 var http_user: HTTPRequest
+var _pending_google_user: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -32,51 +34,86 @@ func _exit_tree() -> void:
 	_stop_loopback_server()
 
 func start_google_sign_in() -> void:
-	if OS.get_name() == "Android" and Engine.has_singleton("WrongWayAccountPicker"):
-		_start_android_in_app_oauth()
+	if OS.get_name() == "Android":
+		_start_android_native_google_modal()
 	else:
-		_start_browser_oauth()
+		_start_desktop_browser_oauth()
 
-func _start_android_in_app_oauth() -> void:
+# -------------------------------------------------------------
+# 1. ANDROID NATIVE GOOGLE BOTTOM-SHEET MODAL (Zero Browser)
+# -------------------------------------------------------------
+func _start_android_native_google_modal() -> void:
+	if not Engine.has_singleton("WrongWayAccountPicker"):
+		auth_failed.emit("Google Sign-In plagini yuklanmagan.")
+		return
+
 	var picker = Engine.get_singleton("WrongWayAccountPicker")
 	if picker == null:
-		_start_browser_oauth()
+		auth_failed.emit("Google Sign-In xizmati topilmadi.")
 		return
-	if picker.has_signal("oauth_callback_received") and not picker.is_connected("oauth_callback_received", _on_android_oauth_callback):
-		picker.connect("oauth_callback_received", _on_android_oauth_callback)
-	if picker.has_signal("account_picker_failed") and not picker.is_connected("account_picker_failed", _on_android_oauth_failed):
-		picker.connect("account_picker_failed", _on_android_oauth_failed)
 
-	var supabase_url: String = Env.get_supabase_url()
-	var auth_url := "%s/auth/v1/authorize?provider=google&redirect_to=%s" % [supabase_url, REDIRECT_URI.uri_encode()]
-	print("GoogleAuthService: Android in-app OAuth ochilmoqda: ", auth_url)
-	picker.call("openInAppAuth", auth_url)
+	if picker.has_signal("google_sign_in_success") and not picker.is_connected("google_sign_in_success", _on_android_google_success):
+		picker.connect("google_sign_in_success", _on_android_google_success)
+	if picker.has_signal("google_sign_in_failed") and not picker.is_connected("google_sign_in_failed", _on_android_google_failed):
+		picker.connect("google_sign_in_failed", _on_android_google_failed)
 
-func _on_android_oauth_callback(query_str: String) -> void:
-	print("GoogleAuthService: Android deep-link callback keldi!")
-	_parse_auth_query(query_str)
+	if picker.has_method("signInWithGoogle"):
+		print("GoogleAuthService: Android native Google modal oynasi ochilmoqda...")
+		picker.call("signInWithGoogle", GOOGLE_WEB_CLIENT_ID)
+	else:
+		auth_failed.emit("Google Sign-In metodi topilmadi.")
 
-func _on_android_oauth_failed(err_msg: String) -> void:
-	print("GoogleAuthService: Android OAuth xatosi: ", err_msg)
-	auth_failed.emit(err_msg)
+func _on_android_google_success(acc_email: String, acc_name: String, _id_token: String) -> void:
+	var clean_email := acc_email.strip_edges().to_lower()
+	var clean_name := acc_name.strip_edges()
+	if clean_name.is_empty():
+		clean_name = ProfileManager.get_name_from_email(clean_email)
+
+	print("GoogleAuthService: Native Google modal muvaffaqiyatli: ", clean_email, " (", clean_name, ")")
+	_pending_google_user = {"email": clean_email, "name": clean_name}
+
+	if not ProfileManager.google_login_finished.is_connected(_on_profile_google_sync_done):
+		ProfileManager.google_login_finished.connect(_on_profile_google_sync_done, CONNECT_ONE_SHOT)
+
+	ProfileManager.login_with_google(clean_email, clean_name)
+
+func _on_profile_google_sync_done(success: bool, err_msg: String) -> void:
+	var user_data := _pending_google_user.duplicate()
+	_pending_google_user.clear()
+	if success:
+		auth_succeeded.emit(user_data)
+	else:
+		# Even if Supabase RPC timed out offline, local Google identity was applied;
+		# inform caller cleanly so user isn't stuck if online sync failed.
+		if not user_data.is_empty() and ProfileManager.auth_provider == "google":
+			auth_succeeded.emit(user_data)
+		else:
+			auth_failed.emit(err_msg if not err_msg.is_empty() else "Server bilan sinxronlashda xatolik")
+
+func _on_android_google_failed(err_code: String, err_msg: String) -> void:
+	print("GoogleAuthService: Android native Google xato [%s]: %s" % [err_code, err_msg])
+	if err_code == "CANCELED":
+		auth_failed.emit("Kirish bekor qilindi")
+	elif err_code == "NO_CREDENTIAL":
+		auth_failed.emit("Qurilmada Google hisobi topilmadi")
+	else:
+		auth_failed.emit(err_msg)
 
 # -------------------------------------------------------------
-# Cross-Platform Official Google Browser OAuth (Android + Desktop)
+# 2. DESKTOP BROWSER OAUTH (Windows / Mac / Linux only)
 # -------------------------------------------------------------
-func _start_browser_oauth() -> void:
+func _start_desktop_browser_oauth() -> void:
 	_stop_loopback_server()
 
 	tcp_server = TCPServer.new()
 	var err := tcp_server.listen(LOOPBACK_PORT, "127.0.0.1")
 	if err != OK:
-		print("GoogleAuthService: Loopback serverni ishga tushirib bo'lmadi (Port %d band). Xato: %d" % [LOOPBACK_PORT, err])
 		auth_failed.emit("Lokal serverni ochib bo'lmadi (Port %d band)" % LOOPBACK_PORT)
 		return
 
 	is_listening = true
 	_stop_requested = false
 
-	# Background thread keeps accepting Chrome's callback even while Android pauses _process()
 	_server_thread = Thread.new()
 	var t_err := _server_thread.start(_loopback_thread_worker)
 	if t_err != OK:
@@ -85,21 +122,12 @@ func _start_browser_oauth() -> void:
 	var supabase_url: String = Env.get_supabase_url()
 	var auth_url := "%s/auth/v1/authorize?provider=google&redirect_to=%s" % [supabase_url, REDIRECT_URI.uri_encode()]
 
-	print("GoogleAuthService: Google Sign-In ochilmoqda: ", auth_url)
-	if OS.get_name() == "Android" and Engine.has_singleton("WrongWayAccountPicker"):
-		var picker = Engine.get_singleton("WrongWayAccountPicker")
-		if picker.has_method("openInAppAuth"):
-			picker.openInAppAuth(auth_url)
-		else:
-			OS.shell_open(auth_url)
-	else:
-		var open_err := OS.shell_open(auth_url)
-		if open_err != OK:
-			_stop_loopback_server()
-			auth_failed.emit("Brauzerni ochib bo'lmadi (kod: %d)" % open_err)
-			return
+	var open_err := OS.shell_open(auth_url)
+	if open_err != OK:
+		_stop_loopback_server()
+		auth_failed.emit("Brauzerni ochib bo'lmadi (kod: %d)" % open_err)
+		return
 
-	# 120 soniyalik kutish taymeri
 	auth_timeout_timer = get_tree().create_timer(120.0, true)
 	auth_timeout_timer.timeout.connect(func():
 		if is_listening:
@@ -112,13 +140,11 @@ func _loopback_thread_worker() -> void:
 		if tcp_server.is_connection_available():
 			var peer: StreamPeerTCP = tcp_server.take_connection()
 			if peer != null:
-				var handled_final := _handle_http_client_sync(peer)
-				if handled_final:
+				if _handle_http_client_sync(peer):
 					break
 		OS.delay_msec(15)
 
 func _process(_delta: float) -> void:
-	# Fallback if Thread could not be started
 	if _server_thread != null or not is_listening or tcp_server == null:
 		return
 	if tcp_server.is_connection_available():
@@ -148,90 +174,20 @@ func _handle_http_client_sync(peer: StreamPeerTCP) -> bool:
 	var has_query := request_line.contains("?")
 
 	var html_body := """<!DOCTYPE html>
-<html lang="uz">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wrong Way — Google Sign-In</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            background: #080c14;
-            color: #f1f5f9;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .card {
-            background: #0f172a;
-            border: 1px solid #1e293b;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-            border-radius: 20px;
-            padding: 36px 28px;
-            max-width: 420px;
-            width: 100%;
-            text-align: center;
-        }
-        .icon {
-            width: 56px;
-            height: 56px;
-            margin: 0 auto 18px;
-            background: #0284c7;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-        }
-        h1 { font-size: 22px; color: #38bdf8; margin-bottom: 10px; }
-        p { font-size: 14px; color: #94a3b8; line-height: 1.5; margin-bottom: 22px; }
-        .tag {
-            display: inline-block;
-            background: #1e293b;
-            color: #38bdf8;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <div class="icon">&#10003;</div>
-        <h1>Muvaffaqiyatli kirdingiz!</h1>
-        <p>Google hisobingiz Wrong Way o'yiniga ulandi. Endi Wrong Way ilovasiga qaytishingiz mumkin.</p>
-        <div class="tag">Wrong Way Game</div>
-    </div>
-    <script>
-        if (window.location.hash && window.location.hash.length > 1) {
-            window.location.replace('/callback?' + window.location.hash.substring(1));
-        } else {
-            setTimeout(function() { window.close(); }, 2500);
-        }
-    </script>
-</body>
-</html>"""
+<html lang="uz"><head><meta charset="UTF-8"><title>Wrong Way — Google Sign-In</title>
+<style>body{background:#080c14;color:#f1f5f9;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}.card{background:#0f172a;border:1px solid #1e293b;border-radius:20px;padding:36px;max-width:420px;text-align:center}h1{color:#38bdf8;margin:0 0 10px}p{color:#94a3b8;font-size:14px}</style>
+</head><body><div class="card"><h1>Muvaffaqiyatli kirdingiz!</h1><p>Endi o'yinga qaytishingiz mumkin.</p></div>
+<script>if(window.location.hash&&window.location.hash.length>1){window.location.replace('/callback?'+window.location.hash.substring(1));}else{setTimeout(function(){window.close();},2500);}</script>
+</body></html>"""
 
 	var html_bytes := html_body.to_utf8_buffer()
-	var response := "HTTP/1.1 200 OK\r\n"
-	response += "Content-Type: text/html; charset=utf-8\r\n"
-	response += "Content-Length: %d\r\n" % html_bytes.size()
-	response += "Connection: close\r\n\r\n"
-
+	var response := "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: %d\r\nConnection: close\r\n\r\n" % html_bytes.size()
 	peer.put_data(response.to_utf8_buffer())
 	peer.put_data(html_bytes)
 	OS.delay_msec(120)
 	peer.disconnect_from_host()
 
 	if has_query:
-		if OS.get_name() == "Android" and Engine.has_singleton("WrongWayAccountPicker"):
-			var picker = Engine.get_singleton("WrongWayAccountPicker")
-			if picker.has_method("bringGameToFront"):
-				picker.bringGameToFront()
 		call_deferred("_parse_auth_request", request_line)
 		return true
 	return false
@@ -240,13 +196,10 @@ func _parse_auth_request(req_line: String) -> void:
 	var parts := req_line.split(" ")
 	if parts.size() < 2:
 		return
-
 	var path_and_query: String = parts[1]
 	if not path_and_query.contains("?"):
 		return
-
-	var query_str := path_and_query.split("?")[1]
-	_parse_auth_query(query_str)
+	_parse_auth_query(path_and_query.split("?")[1])
 
 func _parse_auth_query(query_str: String) -> void:
 	var query_params := {}
@@ -255,11 +208,8 @@ func _parse_auth_query(query_str: String) -> void:
 		if kv.size() == 2:
 			query_params[kv[0]] = kv[1].uri_decode()
 
-	print("GoogleAuthService: Callback parametrlari olindi: ", query_params.keys())
-
 	if query_params.has("error"):
 		var err_desc: String = query_params.get("error_description", query_params["error"])
-		print("GoogleAuthService: OAuth xatosi: ", err_desc)
 		_stop_loopback_server()
 		auth_failed.emit(err_desc)
 		return
@@ -272,15 +222,9 @@ func _parse_auth_query(query_str: String) -> void:
 		_fetch_supabase_user(token)
 		return
 
-	var user_email := ""
-	var user_name := ""
-	if query_params.has("user_email"):
-		user_email = query_params["user_email"]
-	if query_params.has("user_name"):
-		user_name = query_params["user_name"]
-
+	var user_email: String = query_params.get("user_email", "")
+	var user_name: String = query_params.get("user_name", "")
 	if user_email.is_empty():
-		print("GoogleAuthService: Callbackda email parametri topilmadi.")
 		_stop_loopback_server()
 		auth_failed.emit("Google hisob ma'lumotlari topilmadi.")
 		return
@@ -303,8 +247,7 @@ func _fetch_supabase_user(access_token: String) -> void:
 func _on_user_info_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	_stop_loopback_server()
 	if response_code == 200:
-		var txt := body.get_string_from_utf8()
-		var parsed = JSON.parse_string(txt)
+		var parsed = JSON.parse_string(body.get_string_from_utf8())
 		if parsed is Dictionary and parsed.has("email"):
 			var u_email: String = str(parsed["email"]).strip_edges()
 			var u_name := ""
@@ -313,16 +256,13 @@ func _on_user_info_completed(_result: int, response_code: int, _headers: PackedS
 				u_name = str(meta.get("full_name", meta.get("name", ""))).strip_edges()
 			if u_name.is_empty():
 				u_name = ProfileManager.get_name_from_email(u_email)
-
-			print("GoogleAuthService: Haqiqiy Google foydalanuvchisi olindi: ", u_email, " (", u_name, ")")
 			ProfileManager.login_with_google(u_email, u_name)
 			_bring_game_window_to_front()
 			auth_succeeded.emit({"email": u_email, "name": u_name})
 			return
 
-	print("GoogleAuthService: User info olishda xatolik (HTTP %d)" % response_code)
 	_bring_game_window_to_front()
-	auth_failed.emit("Google hisob ma'lumotlarini olishda xatolik yuz berdi (HTTP %d)" % response_code)
+	auth_failed.emit("Google hisob ma'lumotlarini olishda xatolik (HTTP %d)" % response_code)
 
 func _store_refresh_token(token: String) -> void:
 	if token.is_empty():
