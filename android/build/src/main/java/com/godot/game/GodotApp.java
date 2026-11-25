@@ -104,6 +104,7 @@ public class GodotApp extends GodotActivity {
 			plugins.addAll(superPlugins);
 		}
 		plugins.add(new WrongWayAccountPicker(engine));
+		plugins.add(new WrongWayYandexAds(engine));
 		return plugins;
 	}
 
