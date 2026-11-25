@@ -191,6 +191,10 @@ func _render_win_data() -> void:
 	if subtitle:
 		if last_lvl == 60:
 			subtitle.text = LocaleManager.t("win_all_60_complete")
+		elif last_lvl == 20 and not SaveManager.is_chapter_unlocked(2):
+			subtitle.text = "2-bobni ochish uchun 1-bobda kamida 50 yulduz to'plang (%d/50)" % SaveManager.get_chapter_stars(1)
+		elif last_lvl == 40 and not SaveManager.is_chapter_unlocked(3):
+			subtitle.text = "3-bobni ochish uchun 2-bobda kamida 55 yulduz to'plang (%d/55)" % SaveManager.get_chapter_stars(2)
 		elif not next_unlocked and last_stars < 2:
 			subtitle.text = LocaleManager.t("win_1_star")
 		else:

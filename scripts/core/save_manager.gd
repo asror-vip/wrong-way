@@ -141,6 +141,10 @@ func is_level_unlocked(lvl: int) -> bool:
 		return true
 	if lvl == 1:
 		return true
+	if lvl >= 21 and lvl <= 40 and not is_chapter_unlocked(2):
+		return false
+	if lvl >= 41 and lvl <= 60 and not is_chapter_unlocked(3):
+		return false
 	return unlocked_levels.has(lvl) or ad_unlocked_levels.has(lvl)
 
 func get_highest_unlocked_level() -> int:
@@ -185,8 +189,19 @@ func record_result(lvl: int, time_ms: float, deaths: int) -> int:
 
 	if stars >= 2:
 		var next_lvl := lvl + 1
-		if next_lvl <= 60 and not unlocked_levels.has(next_lvl):
+		var can_unlock_next := next_lvl <= 60
+		if next_lvl == 21 and not is_chapter_unlocked(2):
+			can_unlock_next = false
+		elif next_lvl == 41 and not is_chapter_unlocked(3):
+			can_unlock_next = false
+		if can_unlock_next and not unlocked_levels.has(next_lvl):
 			unlocked_levels.append(next_lvl)
+
+	# Oldingi darajalarni qayta o'ynab kerakli yulduz yig'ilganda keyingi bobning 1-darajasini ochish
+	if is_chapter_unlocked(2) and not unlocked_levels.has(21):
+		unlocked_levels.append(21)
+	if is_chapter_unlocked(3) and not unlocked_levels.has(41):
+		unlocked_levels.append(41)
 
 	save_data()
 	
@@ -339,6 +354,17 @@ func is_level_ad_unlockable(lvl: int) -> bool:
 	return true
 
 func get_lock_reason_dialog(lvl: int) -> Dictionary:
+	if lvl >= 21 and lvl <= 40 and not is_chapter_unlocked(2):
+		return {
+			"title": LocaleManager.t("lock_title"),
+			"text": "2-bobni ochish uchun 1-bobda kamida 50 yulduz to'plang (%d/50)" % get_chapter_stars(1)
+		}
+	if lvl >= 41 and lvl <= 60 and not is_chapter_unlocked(3):
+		return {
+			"title": LocaleManager.t("lock_title"),
+			"text": "3-bobni ochish uchun 2-bobda kamida 55 yulduz to'plang (%d/55)" % get_chapter_stars(2)
+		}
+
 	var first_locked := -1
 	for l in range(1, 61):
 		if not is_level_unlocked(l):
