@@ -61,6 +61,13 @@ func _ready() -> void:
 		start_box.visible = false
 		start_box.modulate.a = 0.0
 
+	if bg_texture:
+		bg_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if vignette:
+		vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if logo_container:
+		logo_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	_setup_buttons()
 	_start_background_drift()
 	_apply_safe_insets()
@@ -84,12 +91,23 @@ func _apply_safe_insets() -> void:
 	if start_box:
 		start_box.offset_bottom = -25.0 - b_margin
 
+func _gui_input(event: InputEvent) -> void:
+	if start_box and start_box.visible and not is_transitioning:
+		if (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) \
+				or (event is InputEventScreenTouch and event.pressed):
+			_on_start_pressed()
+			accept_event()
+
 func _unhandled_input(event: InputEvent) -> void:
 	if start_box and start_box.visible and not is_transitioning:
 		if event is InputEventKey and event.pressed and not event.echo:
 			if event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
 				_on_start_pressed()
 				get_viewport().set_input_as_handled()
+		elif (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) \
+				or (event is InputEventScreenTouch and event.pressed):
+			_on_start_pressed()
+			get_viewport().set_input_as_handled()
 
 func _setup_buttons() -> void:
 	if google_btn:
