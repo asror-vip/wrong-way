@@ -122,6 +122,9 @@ func _setup_buttons() -> void:
 	)
 	GoogleAuthService.auth_failed.connect(func(err):
 		print("SplashScreen: Google kirish xatosi: ", err)
+		if auth_hint:
+			auth_hint.text = "Google: " + str(err)
+			auth_hint.add_theme_color_override("font_color", Color(1.0, 0.55, 0.45))
 	)
 
 func _start_background_drift() -> void:
@@ -227,6 +230,9 @@ func _on_switch_account_pressed() -> void:
 
 func _on_google_pressed() -> void:
 	SoundManager.play("click")
+	if auth_hint:
+		auth_hint.text = "Brauzerda Google hisobingizni tanlang..."
+		auth_hint.add_theme_color_override("font_color", Color(0.55, 0.85, 1.0))
 	GoogleAuthService.start_google_sign_in()
 
 func _on_guest_pressed() -> void:

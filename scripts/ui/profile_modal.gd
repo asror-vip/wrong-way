@@ -53,6 +53,9 @@ func _ready() -> void:
 		_refresh_profile_display()
 		_show_toast("Google hisobi muvaffaqiyatli ulandi!")
 	)
+	GoogleAuthService.auth_failed.connect(func(err):
+		_show_toast("Google: " + str(err))
+	)
 	
 	_apply_modal_styles()
 	_setup_avatar_buttons()
