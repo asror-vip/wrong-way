@@ -4,22 +4,15 @@
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
 [ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
 [ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
-[ext_resource type="PackedScene" path="res://scenes/traps/crusher.tscn" id="5_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="5_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/objects/paranormal_event.tscn" id="7_pe"]
 
 [node name="Level05" type="Node2D"]
 script = ExtResource("1_bl")
 level_number = 5
 
 [node name="Platforms" type="Node2D" parent="."]
-
-[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(0, 380)
-platform_size = Vector2(460, 160)
-
-[node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(530, 380)
-platform_size = Vector2(430, 160)
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -33,20 +26,44 @@ platform_size = Vector2(32, 540)
 position = Vector2(928, 0)
 platform_size = Vector2(32, 540)
 
+[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(230, 160)
+
+[node name="GroundMid" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(325, 380)
+platform_size = Vector2(245, 160)
+
+[node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(665, 380)
+platform_size = Vector2(295, 160)
+
 [node name="Traps" type="Node2D" parent="."]
 
-[node name="Crusher1" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(300, 6)
-crusher_size = Vector2(64, 64)
-target_y = 304
-wait_at_bottom = 1.2
+[node name="TrapFloor1" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(230, 380)
+platform_size = Vector2(95, 160)
+shake_duration = 0.12
 
-[node name="SpikesEnd" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(680, 348)
-spike_size = Vector2(48, 32)
+[node name="PopUpMid" parent="Traps" instance=ExtResource("6_tr")]
+position = Vector2(440, 380)
+spike_width = 44.0
+max_spike_height = 32.0
+trigger_distance = 70.0
+
+[node name="TrapFloor2" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(570, 380)
+platform_size = Vector2(95, 160)
+shake_duration = 0.12
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
-position = Vector2(860, 380)
+position = Vector2(865, 380)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
 position = Vector2(80, 380)
+
+[node name="Paranormal" type="Node2D" parent="."]
+
+[node name="ParanormalEvent" parent="Paranormal" instance=ExtResource("7_pe")]
+event_type = "betraying_arrow"
+trigger_x = 460.0

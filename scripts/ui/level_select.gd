@@ -311,6 +311,13 @@ func _setup_widescreen_layout() -> void:
 			lock_card_ch5.position = Vector2((step_w - lock_card_ch5.size.x) * 0.5, (get_viewport_rect().size.y - lock_card_ch5.size.y) * 0.5)
 
 	var insets := UIResponsive.get_safe_insets(self)
+	var adm = get_node_or_null("/root/AdManager")
+	var banner_h: float = adm.get_top_banner_height() \
+		if adm and adm.has_method("get_top_banner_height") else 0.0
+	var top_bar_ctrl := get_node_or_null("TopBar") as Control
+	if top_bar_ctrl:
+		top_bar_ctrl.offset_top = banner_h
+		top_bar_ctrl.offset_bottom = banner_h + 54.0
 	if back_btn:
 		back_btn.position.x = 20.0 + insets["left"]
 	if total_stars_chip:
@@ -748,12 +755,7 @@ func _create_nodes_for_chapter(chapter: int) -> void:
 	elif chapter == 3:
 		start_lvl = 41
 
-	var max_unlocked: int = 1
-	var completed := SaveManager.get_highest_completed_level()
-	if completed > 0:
-		max_unlocked = mini(60, completed + 1)
-	else:
-		max_unlocked = 1
+	var max_unlocked: int = mini(60, SaveManager.get_highest_unlocked_level())
 
 	for i in range(20):
 		var lvl := start_lvl + i
@@ -816,13 +818,9 @@ func _create_nodes_for_chapter(chapter: int) -> void:
 			
 			btn.pressed.connect(func(): _on_level_btn_pressed(lvl))
 		else:
-			# Qulflangan daraja uchun qoida: Undan oldingi daraja ochilgan bo'lishi SHART!
-			var is_prev_unlocked: bool = true
-			if lvl > 1:
-				is_prev_unlocked = SaveManager.is_level_unlocked(lvl - 1)
-
-			# Qoida: Darajani reklama orqali ochish faqat har 3 darajada bir marta ishlaydi
-			var can_ad_unlock := SaveManager.is_level_ad_unlockable(lvl) and is_prev_unlocked and (lvl % 3 == 0)
+			# Qoida (SaveManager bilan bir xil): eng birinchi qulflangan daraja,
+			# oldingisi kamida 1 marta o'ynalgan va bitta daraja oralab (cheriz) ruxsat.
+			var can_ad_unlock := SaveManager.is_level_ad_unlockable(lvl)
 
 			if can_ad_unlock:
 				style.bg_color = Color(0.12, 0.10, 0.16, 0.90)
@@ -848,13 +846,32 @@ func _create_nodes_for_chapter(chapter: int) -> void:
 					SoundManager.play("click")
 					var adm = get_node_or_null("/root/AdManager")
 					if adm and adm.has_method("show_rewarded_ad"):
-						adm.show_rewarded_ad(func():
-							SaveManager.unlock_level_via_ad(lvl)
-							_create_nodes_for_chapter(current_chapter)
+						adm.show_rewarded_ad(
+							func():
+								SaveManager.unlock_level_via_ad(lvl)
+								_update_chapter_locks()
+								_create_nodes_for_chapter(1)
+								_create_nodes_for_chapter(2)
+								_create_nodes_for_chapter(3)
+								_update_top_bar_data()
+								_show_notice(
+									LocaleManager.t("lvl_unlocked_title"),
+									LocaleManager.t("lvl_unlocked_msg", [lvl])
+								),
+							false,
+							func():
+								_show_notice(
+									LocaleManager.t("ad_loading_title"),
+									LocaleManager.t("ad_loading_msg")
+								)
 						)
 					else:
 						SaveManager.unlock_level_via_ad(lvl)
-						_create_nodes_for_chapter(current_chapter)
+						_update_chapter_locks()
+						_create_nodes_for_chapter(1)
+						_create_nodes_for_chapter(2)
+						_create_nodes_for_chapter(3)
+						_update_top_bar_data()
 				)
 			else:
 				style.bg_color = Color(0.04, 0.05, 0.08, 0.82)

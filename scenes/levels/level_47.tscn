@@ -4,9 +4,13 @@
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
 [ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
 [ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
-[ext_resource type="PackedScene" path="res://scenes/traps/crusher.tscn" id="5_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="6_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="7_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/crusher.tscn" id="5_cr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/jumping_spikes.tscn" id="6_ju"]
+[ext_resource type="PackedScene" path="res://scenes/traps/moving_saw.tscn" id="7_mo"]
+[ext_resource type="PackedScene" path="res://scenes/traps/circular_saw.tscn" id="8_ci"]
+[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="9_po"]
+[ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="10_fa"]
+[ext_resource type="PackedScene" path="res://scenes/objects/paranormal_event.tscn" id="11_pe"]
 
 [node name="Level47" type="Node2D"]
 script = ExtResource("1_bl")
@@ -14,13 +18,30 @@ level_number = 47
 
 [node name="Platforms" type="Node2D" parent="."]
 
-[node name="GroundFull" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(0, 380)
-platform_size = Vector2(960, 160)
-
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
-platform_size = Vector2(960, 70)
+platform_size = Vector2(960, 48)
+
+[node name="FloorBot" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(32, 415)
+platform_size = Vector2(896, 125)
+
+[node name="UpperCanopy" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(32, 235)
+platform_size = Vector2(755, 24)
+one_way = true
+
+[node name="RightRootLift" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(805, 408)
+platform_size = Vector2(118, 20)
+one_way = true
+
+[node name="LeftRootShortcut" type="Node2D" parent="Platforms"]
+
+[node name="LeftRootStep" parent="Platforms/LeftRootShortcut" instance=ExtResource("3_sp")]
+position = Vector2(155, 325)
+platform_size = Vector2(92, 18)
+one_way = true
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -32,46 +53,63 @@ platform_size = Vector2(32, 540)
 
 [node name="Traps" type="Node2D" parent="."]
 
-[node name="Crusher1" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(200, 6)
-crusher_size = Vector2(68, 64)
-target_y = 320
-trigger_distance = 70
-wait_at_bottom = 0.6
+[node name="CrusherLow" parent="Traps" instance=ExtResource("5_cr")]
+position = Vector2(355, 6)
+crusher_size = Vector2(56, 42)
+target_y = 373.0
+fakeout_first = false
+pass_through_platforms = true
+trigger_y_min = 350.0
+trigger_y_max = 460.0
 
-[node name="Crusher2" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(340, 6)
-crusher_size = Vector2(68, 64)
-target_y = 320
-trigger_distance = 70
-wait_at_bottom = 0.6
+[node name="JumpLow" parent="Traps" instance=ExtResource("6_ju")]
+position = Vector2(510, 415)
+spike_width = 48.0
+spike_height = 28.0
+trigger_y_min = 350.0
+trigger_y_max = 460.0
 
-[node name="Stalactite1" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(470, 70)
-trigger_distance = 240
-shake_duration = 0.35
+[node name="SawLow" parent="Traps" instance=ExtResource("7_mo")]
+position = Vector2(685, 399)
+radius = 16.0
+patrol_distance = 115.0
+patrol_speed = 145.0
+patrol_axis = Vector2(-1, 0)
+trigger_y_min = 350.0
+trigger_y_max = 460.0
 
-[node name="Stalactite2" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(530, 70)
-trigger_distance = 240
-shake_duration = 0.35
+[node name="CircTop" parent="Traps" instance=ExtResource("8_ci")]
+position = Vector2(545, 182)
+orbit_radius = 34.0
+orbit_speed = 2.6
 
-[node name="Stalactite3" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(590, 70)
-trigger_distance = 240
-shake_duration = 0.35
+[node name="PopUpTop" parent="Traps" instance=ExtResource("9_po")]
+position = Vector2(385, 235)
+spike_width = 44.0
+max_spike_height = 32.0
+trigger_y_min = 155.0
+trigger_y_max = 270.0
 
-[node name="SpikesUnderCrusher3" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(740, 348)
-spike_size = Vector2(64, 32)
-
-[node name="Crusher3" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(740, 6)
-crusher_size = Vector2(68, 64)
-target_y = 320
+[node name="ThornTop" parent="Traps" instance=ExtResource("10_fa")]
+position = Vector2(250, 48)
+trigger_distance = 210.0
+pass_through_platforms = false
+trigger_y_min = 155.0
+trigger_y_max = 270.0
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
-position = Vector2(890, 380)
+position = Vector2(85, 235)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
-position = Vector2(70, 380)
+position = Vector2(95, 415)
+
+[node name="Paranormal" type="Node2D" parent="."]
+
+[node name="ParanormalEvent" parent="Paranormal" instance=ExtResource("11_pe")]
+event_type = "root_labyrinth_shift"
+trigger_x = 745.0
+trigger_y = 385.0
+param_a = 95.0
+param_b = 325.0
+target_node_path = NodePath("../../Platforms/RightRootLift")
+aux_node_path = NodePath("../../Platforms/LeftRootShortcut")

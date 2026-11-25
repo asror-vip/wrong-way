@@ -1,6 +1,9 @@
 extends CharacterBody2D
 class_name RollingBoulder
 
+const TrapBiomeArt := preload("res://scripts/traps/trap_biome_art.gd")
+const TrapBiomeVFX := preload("res://scripts/traps/trap_biome_vfx.gd")
+
 # Wrong Way - Unexpected Event: Rolling Giant Boulder (Qoya Toshi)
 # Iconic Limbo-style surprise: Triggers when the player walks past,
 # rumbles with screen shake and rolls rapidly to chase or crush the player!
@@ -11,6 +14,9 @@ class_name RollingBoulder
 @export var trigger_distance: float = 260.0 # O'yinchi yaqinlashganda
 @export var delay_before_roll: float = 0.7
 @export var gravity: float = 1200.0
+@export var bounce_back_once: bool = false
+@export var trigger_y_min: float = -9999.0
+@export var trigger_y_max: float = 9999.0
 
 var is_triggered: bool = false
 var is_rolling: bool = false
@@ -18,6 +24,18 @@ var has_fallen: bool = false
 var roll_delay_timer: float = 0.0
 var original_pos: Vector2
 var roll_rotation: float = 0.0
+var _has_bounced: bool = false
+var _initial_direction: float = -99.0
+var _initial_speed: float = 380.0
+var _fade_tween: Tween = null
+var _bounce_tween: Tween = null
+var _anim_time: float = 0.0
+var _trail_accum: float = 0.0
+var _rumble_accum: float = 0.0
+var _is_shattered: bool = false
+var _impact_flash: float = 0.0
+var _was_on_floor: bool = true
+var _prev_vy: float = 0.0
 
 @onready var col_shape: CollisionShape2D = $CollisionShape2D
 @onready var kill_area: Area2D = $KillArea
@@ -25,6 +43,8 @@ var roll_rotation: float = 0.0
 func _ready() -> void:
 	add_to_group("traps")
 	original_pos = global_position
+	_initial_direction = roll_direction
+	_initial_speed = roll_speed
 	
 	if col_shape and col_shape.shape is CircleShape2D:
 		col_shape.shape.radius = boulder_radius
@@ -36,6 +56,9 @@ func _physics_process(delta: float) -> void:
 	if has_fallen:
 		return
 
+	_anim_time += delta
+	var ch := TrapBiomeArt.get_chapter(self)
+
 	# Qoyaga tushib ketsa
 	if global_position.y > 650.0:
 		has_fallen = true
@@ -45,18 +68,30 @@ func _physics_process(delta: float) -> void:
 
 	if not is_triggered:
 		_check_player_trigger()
+		if ch == 5 or ch == 3:
+			# Subtle ambient magma pulse / forest spore shimmer even before rolling (throttled)
+			_rumble_accum += delta
+			if _rumble_accum >= 0.08:
+				_rumble_accum = 0.0
+				queue_redraw()
 		return
 
 	if not is_rolling:
 		roll_delay_timer -= delta
 		global_position.x = original_pos.x + randf_range(-1.5, 1.5)
+		_rumble_accum += delta
+		if _rumble_accum >= 0.09:
+			_rumble_accum = 0.0
+			TrapBiomeVFX.emit_boulder_rumble(self, global_position, boulder_radius, ch)
+		queue_redraw()
 		if roll_delay_timer <= 0.0:
 			global_position.x = original_pos.x
 			is_rolling = true
 		return
 		
 	# Gravitatsiya va aylanish
-	if not is_on_floor():
+	var pre_on_floor := is_on_floor()
+	if not pre_on_floor:
 		velocity.y += gravity * delta
 	else:
 		velocity.y = 0.0
@@ -65,14 +100,35 @@ func _physics_process(delta: float) -> void:
 			var gm = get_node_or_null("/root/GameManager")
 			if gm and gm.has_signal("request_screen_shake"):
 				gm.request_screen_shake.emit(3.0)
+	_prev_vy = velocity.y
 			
 	velocity.x = roll_direction * roll_speed
 	roll_rotation += roll_direction * (roll_speed / boulder_radius) * delta
 	
 	move_and_slide()
+	var now_on_floor := is_on_floor()
+	if not _was_on_floor and now_on_floor and _prev_vy > 220.0:
+		TrapBiomeVFX.emit_boulder_land(self, global_position, boulder_radius, ch)
+		if _bounce_tween and _bounce_tween.is_valid():
+			_bounce_tween.kill()
+		scale = Vector2(1.14, 0.86)
+		_bounce_tween = create_tween()
+		_bounce_tween.tween_property(self, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		var sm_land = get_node_or_null("/root/SoundManager")
+		if sm_land and sm_land.has_method("play_biome_trap"):
+			sm_land.play_biome_trap("impact", ch)
+		var gm_land = get_node_or_null("/root/GameManager")
+		if gm_land and gm_land.has_signal("request_screen_shake"):
+			gm_land.request_screen_shake.emit(5.0)
+	_was_on_floor = now_on_floor
+	_trail_accum += delta
+	var trail_step := 0.07 if OS.has_feature("mobile") else 0.045
+	if _trail_accum >= trail_step:
+		_trail_accum = 0.0
+		TrapBiomeVFX.emit_boulder_trail(self, global_position, boulder_radius, roll_direction, is_on_floor(), ch)
 	queue_redraw()
 
-	# Devorga yetganda tosh yo'lni to'sib qolmasligi uchun to'xtaydi
+	# Devorga yetganda tosh yo'lni to'sib qolmasligi uchun to'xtaydi va biomga xos tarzda yoriladi!
 	var wall_in_front := false
 	if is_on_wall():
 		for i in get_slide_collision_count():
@@ -83,18 +139,54 @@ func _physics_process(delta: float) -> void:
 				wall_in_front = true
 				break
 
-	if wall_in_front and absf(global_position.x - original_pos.x) > 60.0:
+	if wall_in_front and (_has_bounced or absf(global_position.x - original_pos.x) > 60.0):
+		if bounce_back_once and not _has_bounced:
+			var impact_dir := roll_direction
+			_has_bounced = true
+			roll_direction = -roll_direction
+			roll_speed *= 1.12
+			global_position.x += roll_direction * 4.0
+			TrapBiomeVFX.emit_boulder_shatter(self, global_position, boulder_radius, impact_dir, ch, true)
+			if _bounce_tween and _bounce_tween.is_valid():
+				_bounce_tween.kill()
+			scale = Vector2(0.84, 1.18)
+			_bounce_tween = create_tween()
+			_bounce_tween.tween_property(self, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			var sm = get_node_or_null("/root/SoundManager")
+			if sm and sm.has_method("play_biome_trap"):
+				sm.play_biome_trap("impact", ch)
+			elif sm and sm.has_method("play"):
+				sm.play("trap")
+			var gm = get_node_or_null("/root/GameManager")
+			if gm and gm.has_signal("request_screen_shake"):
+				gm.request_screen_shake.emit(8.0)
+			return
 		has_fallen = true
 		is_rolling = false
+		_is_shattered = true
+		_impact_flash = 1.0
 		velocity = Vector2.ZERO
 		if col_shape:
 			col_shape.set_deferred("disabled", true)
 		if kill_area:
 			kill_area.set_deferred("monitoring", false)
 			kill_area.set_deferred("monitorable", false)
-		var tw := create_tween()
-		tw.tween_property(self, "modulate:a", 0.0, 0.25)
-		tw.tween_callback(func(): visible = false)
+		TrapBiomeVFX.emit_boulder_shatter(self, global_position, boulder_radius, roll_direction, ch, false)
+		var sm_shatter = get_node_or_null("/root/SoundManager")
+		if sm_shatter and sm_shatter.has_method("play_biome_trap"):
+			sm_shatter.play_biome_trap("boulder_shatter", ch)
+		elif sm_shatter and sm_shatter.has_method("play"):
+			sm_shatter.play("trap")
+		var gm_shatter = get_node_or_null("/root/GameManager")
+		if gm_shatter and gm_shatter.has_signal("request_screen_shake"):
+			gm_shatter.request_screen_shake.emit(8.0)
+		queue_redraw()
+		if _fade_tween and _fade_tween.is_valid():
+			_fade_tween.kill()
+		_fade_tween = create_tween()
+		_fade_tween.tween_property(self, "scale", Vector2(1.22, 0.78), 0.045)
+		_fade_tween.parallel().tween_property(self, "modulate:a", 0.0, 0.06)
+		_fade_tween.tween_callback(func(): visible = false)
 		return
 	
 	# Qoyaga tushib ketsa
@@ -111,9 +203,12 @@ func _check_player_trigger() -> void:
 	if "is_dead" in player and player.is_dead:
 		return
 		
+	var py: float = player.global_position.y
+	if py < trigger_y_min or py > trigger_y_max:
+		return
 	var dx: float = player.global_position.x - global_position.x
-	var dy: float = absf(player.global_position.y - global_position.y)
-	if dy > 120.0:
+	var dy: float = absf(py - global_position.y)
+	if trigger_y_min <= -9000.0 and trigger_y_max >= 9000.0 and dy > 95.0:
 		return
 		
 	if roll_direction > 0:
@@ -133,8 +228,11 @@ func trigger_boulder() -> void:
 	is_triggered = true
 	is_rolling = false
 	roll_delay_timer = delay_before_roll
+	var ch := TrapBiomeArt.get_chapter(self)
 	var sm = get_node_or_null("/root/SoundManager")
-	if sm and sm.has_method("play"):
+	if sm and sm.has_method("play_biome_trap"):
+		sm.play_biome_trap("trigger", ch)
+	elif sm and sm.has_method("play"):
 		sm.play("trap")
 	var gm = get_node_or_null("/root/GameManager")
 	if gm and gm.has_signal("request_screen_shake"):
@@ -148,13 +246,30 @@ func _on_kill_entered(body: Node2D) -> void:
 			body.die()
 
 func reset_trap() -> void:
+	if _fade_tween and _fade_tween.is_valid():
+		_fade_tween.kill()
+	if _bounce_tween and _bounce_tween.is_valid():
+		_bounce_tween.kill()
+	if _is_shattered:
+		TrapBiomeVFX.clear_for(self)
 	has_fallen = false
 	is_triggered = false
 	is_rolling = false
+	_is_shattered = false
+	_impact_flash = 0.0
+	_was_on_floor = true
+	_prev_vy = 0.0
+	_trail_accum = 0.0
+	_rumble_accum = 0.0
 	roll_delay_timer = 0.0
+	_has_bounced = false
+	if _initial_direction != -99.0:
+		roll_direction = _initial_direction
+	roll_speed = _initial_speed
 	global_position = original_pos
 	velocity = Vector2.ZERO
 	roll_rotation = 0.0
+	scale = Vector2.ONE
 	modulate.a = 1.0
 	visible = true
 	if col_shape:
@@ -165,66 +280,6 @@ func reset_trap() -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	draw_set_transform(Vector2.ZERO, roll_rotation, Vector2.ONE)
-
-	var ch: int = 1
-	var gm = get_node_or_null("/root/GameManager")
-	if gm and gm.has_method("get_current_chapter"):
-		ch = gm.get_current_chapter()
-
-	var base_col := Color(0.08, 0.10, 0.15, 1.0)
-	var edge_col := Color(0.35, 0.45, 0.60, 0.9)
-	var crack_col := Color(0.03, 0.04, 0.07, 0.95)
-	var spike_col := Color("#2a2536")
-
-	if ch == 2:
-		base_col = Color("#0f172a") # To'q qor/muz shar
-		edge_col = Color("#e0f2fe")
-		crack_col = Color("#1e293b")
-		spike_col = Color("#0284c7")
-	elif ch == 3:
-		base_col = Color("#064e3b") # Zaharli log
-		edge_col = Color("#4ade80")
-		crack_col = Color("#14532d")
-		spike_col = Color("#166534")
-	elif ch == 4:
-		base_col = Color("#78350f") # Qadimgi g'isht
-		edge_col = Color("#fcd34d")
-		crack_col = Color("#451a03")
-		spike_col = Color("#b45309")
-	elif ch == 5:
-		base_col = Color("#450a0a") # Lovullagan meteor
-		edge_col = Color("#f97316")
-		crack_col = Color("#7f1d1d")
-		spike_col = Color("#ef4444")
-
-	# 1. Shar atrofidagi o'tkir metall/tosh tikanlar
-	var num_spikes := 8
-	for i in range(num_spikes):
-		var ang := float(i) * (TAU / float(num_spikes))
-		var dir := Vector2(cos(ang), sin(ang))
-		var norm := Vector2(-dir.y, dir.x)
-		var base1 := dir * (boulder_radius - 2.0) - norm * 6.0
-		var base2 := dir * (boulder_radius - 2.0) + norm * 6.0
-		var tip := dir * (boulder_radius + 12.0)
-		draw_colored_polygon(PackedVector2Array([base1 + norm * 2.0, tip, base2]), spike_col)
-
-	# 2. Asosiy obsidian qoya toshi tanasi
-	draw_circle(Vector2.ZERO, boulder_radius, base_col)
-	# Qoya xoshiyasi
-	draw_arc(Vector2.ZERO, boulder_radius, -PI, PI, 32, edge_col, 2.0)
-	
-	# 3. Ichki tosh qatlamlari va yoriqlari
-	draw_line(Vector2(-16, -10), Vector2(4, -4), crack_col, 2.5)
-	draw_line(Vector2(4, -4), Vector2(16, -14), crack_col, 2.0)
-	draw_line(Vector2(4, -4), Vector2(0, 15), crack_col, 2.2)
-	draw_line(Vector2(0, 15), Vector2(-12, 18), crack_col, 1.8)
-	
-	# Markaziy temir yadrosi
-	draw_circle(Vector2.ZERO, 6.0, Color("#36435c"))
-	draw_circle(Vector2.ZERO, 3.0, Color.WHITE)
-	
-	# Nozik tosh yorug'lik aksi
-	var arc_col := Color(0.40, 0.50, 0.65, 0.40)
-	draw_arc(Vector2.ZERO, boulder_radius - 4.0, -PI * 0.7, -PI * 0.2, 16, arc_col, 1.5)
+	var ch := TrapBiomeArt.get_chapter(self)
+	TrapBiomeArt.draw_rolling_boulder(self, boulder_radius, roll_rotation, ch, _anim_time, _impact_flash)
 

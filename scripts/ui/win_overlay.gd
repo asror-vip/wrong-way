@@ -18,6 +18,7 @@ var last_time_ms: float = 0.0
 var last_deaths: int = 0
 var last_stars: int = 1
 var anim_time: float = 0.0
+var _next_requires_ad_unlock: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -182,9 +183,16 @@ func _render_win_data() -> void:
 	if win_title:
 		win_title.text = LocaleManager.t("level_complete")
 	
+	var next_lvl := last_lvl + 1
+	var next_unlocked := last_lvl < 60 and SaveManager.is_level_unlocked(next_lvl)
+	var next_ad_unlockable := last_lvl < 60 and not next_unlocked and SaveManager.is_level_ad_unlockable(next_lvl)
+	_next_requires_ad_unlock = next_ad_unlockable
+
 	if subtitle:
 		if last_lvl == 60:
 			subtitle.text = LocaleManager.t("win_all_60_complete")
+		elif not next_unlocked and last_stars < 2:
+			subtitle.text = LocaleManager.t("win_1_star")
 		else:
 			subtitle.text = LocaleManager.t("great_job")
 		
@@ -203,22 +211,48 @@ func _render_win_data() -> void:
 		stats_label.text = LocaleManager.t("win_stats", [time_sec, last_deaths])
 		
 	if next_btn:
-		next_btn.text = "  " + LocaleManager.t("btn_next_lvl")
-		# 2+ yulduz olingan bo'lsa va 60-darajadan kichik bo'lsa keyingi daraja faol
-		next_btn.visible = (last_stars >= 2 and last_lvl < 60)
+		if next_unlocked:
+			next_btn.icon = IconFactory.get_icon("play_dark", 0.85)
+			next_btn.text = "  " + LocaleManager.t("btn_next_lvl")
+			next_btn.visible = true
+		elif next_ad_unlockable:
+			next_btn.icon = IconFactory.get_icon("video_ad", 0.85)
+			next_btn.text = "  " + LocaleManager.t("btn_unlock_next_ad")
+			next_btn.visible = true
+		else:
+			next_btn.visible = false
 		
 	if replay_btn:
 		replay_btn.text = "  " + LocaleManager.t("btn_restart")
 
 func _on_next_pressed() -> void:
 	SoundManager.play("click")
-	visible = false
 	if GameManager.is_duel_mode:
+		visible = false
 		GameManager.is_duel_mode = false
 		get_tree().paused = false
 		get_tree().change_scene_to_file("res://scenes/multiplayer/multiplayer_menu.tscn")
 		return
-	GameManager.start_game(last_lvl + 1)
+	var next_lvl := last_lvl + 1
+	if _next_requires_ad_unlock and not SaveManager.is_level_unlocked(next_lvl):
+		var adm = get_node_or_null("/root/AdManager")
+		if adm and adm.has_method("show_rewarded_ad"):
+			adm.show_rewarded_ad(
+				func():
+					SaveManager.unlock_level_via_ad(next_lvl)
+					_next_requires_ad_unlock = false
+					visible = false
+					GameManager.start_game(next_lvl),
+				false,
+				func():
+					if subtitle:
+						subtitle.text = LocaleManager.t("ad_loading_msg")
+			)
+			return
+		SaveManager.unlock_level_via_ad(next_lvl)
+		_next_requires_ad_unlock = false
+	visible = false
+	GameManager.start_game(next_lvl)
 
 func _on_replay_pressed() -> void:
 	SoundManager.play("click")

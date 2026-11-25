@@ -4,13 +4,11 @@
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
 [ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
 [ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
-[ext_resource type="PackedScene" path="res://scenes/traps/crusher.tscn" id="5_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="6_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="7_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/circular_saw.tscn" id="8_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/rolling_boulder.tscn" id="9_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/laser_beam.tscn" id="10_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="11_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/jumping_spikes.tscn" id="5_ju"]
+[ext_resource type="PackedScene" path="res://scenes/traps/crusher.tscn" id="6_cr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/rolling_boulder.tscn" id="7_ro"]
+[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="8_po"]
+[ext_resource type="PackedScene" path="res://scenes/objects/paranormal_event.tscn" id="9_pe"]
 
 [node name="Level57" type="Node2D"]
 script = ExtResource("1_bl")
@@ -18,17 +16,21 @@ level_number = 57
 
 [node name="Platforms" type="Node2D" parent="."]
 
-[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(0, 380)
-platform_size = Vector2(740, 160)
-
-[node name="GroundDoor" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(820, 380)
-platform_size = Vector2(140, 160)
-
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
-platform_size = Vector2(960, 70)
+platform_size = Vector2(960, 48)
+
+[node name="Grove1" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(32, 420)
+platform_size = Vector2(265, 120)
+
+[node name="Grove2" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(350, 350)
+platform_size = Vector2(260, 190)
+
+[node name="Grove3" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(675, 275)
+platform_size = Vector2(253, 265)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -40,72 +42,45 @@ platform_size = Vector2(32, 540)
 
 [node name="Traps" type="Node2D" parent="."]
 
-[node name="Crusher1" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(180, 6)
-crusher_size = Vector2(68, 64)
-target_y = 320
-trigger_distance = 64
+[node name="JumpG2" parent="Traps" instance=ExtResource("5_ju")]
+position = Vector2(445, 350)
+spike_width = 48.0
+spike_height = 28.0
+trigger_y_min = 305.0
+trigger_y_max = 385.0
 
-[node name="Crusher2" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(260, 6)
-crusher_size = Vector2(68, 64)
-target_y = 320
-trigger_distance = 64
+[node name="CrusherG2" parent="Traps" instance=ExtResource("6_cr")]
+position = Vector2(495, 6)
+crusher_size = Vector2(56, 42)
+target_y = 308.0
+fakeout_first = false
+pass_through_platforms = false
+trigger_y_min = 305.0
+trigger_y_max = 385.0
 
-[node name="Stalactite1" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(350, 70)
-trigger_distance = 240
-shake_duration = 0.35
+[node name="VineBoulderG3" parent="Traps" instance=ExtResource("7_ro")]
+position = Vector2(815, 247)
+boulder_radius = 28.0
+roll_direction = -1.0
+roll_speed = 250.0
+trigger_distance = 165.0
+trigger_y_min = 210.0
+trigger_y_max = 310.0
 
-[node name="Stalactite2" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(400, 70)
-trigger_distance = 240
-shake_duration = 0.35
-
-[node name="PopUpSpikes1" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(470, 380)
-spike_width = 48
-max_spike_height = 32
-trigger_distance = 75
-warning_time = 0.3
-
-[node name="PopUpSpikes2" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(520, 380)
-spike_width = 48
-max_spike_height = 32
-trigger_distance = 75
-warning_time = 0.35
-
-[node name="CircularSaw1" parent="Traps" instance=ExtResource("8_tr")]
-position = Vector2(600, 330)
-orbit_radius = 36
-orbit_speed = 2.2
-
-[node name="CircularSaw2" parent="Traps" instance=ExtResource("8_tr")]
-position = Vector2(660, 330)
-orbit_radius = 36
-orbit_speed = -2.2
-
-[node name="ChasingBoulder" parent="Traps" instance=ExtResource("9_tr")]
-position = Vector2(20, 350)
-roll_direction = 1
-roll_speed = 240
-trigger_distance = 200
-delay_before_roll = 0.8
-
-[node name="LaserCombo" parent="Traps" instance=ExtResource("10_tr")]
-position = Vector2(730, 220)
-beam_length = 160
-active_time = 1.2
-inactive_time = 1.2
-
-[node name="TrapFloorCombo" parent="Traps" instance=ExtResource("11_tr")]
-position = Vector2(740, 380)
-platform_size = Vector2(80, 160)
-shake_duration = 0.18
+[node name="PopUpG3" parent="Traps" instance=ExtResource("8_po")]
+position = Vector2(755, 275)
+spike_width = 44.0
+max_spike_height = 32.0
+trigger_y_min = 210.0
+trigger_y_max = 310.0
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
-position = Vector2(895, 380)
+position = Vector2(865, 275)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
-position = Vector2(70, 380)
+position = Vector2(95, 420)
+
+[node name="Paranormal" type="Node2D" parent="."]
+
+[node name="ParanormalEvent" parent="Paranormal" instance=ExtResource("9_pe")]
+event_type = "spirit_bamboo_gust"

@@ -1,8 +1,13 @@
 extends Area2D
 class_name FakeDoorTrap
 
+const TrapBiomeArt := preload("res://scripts/traps/trap_biome_art.gd")
+const TrapBiomeVFX := preload("res://scripts/traps/trap_biome_vfx.gd")
+
 @export var door_size: Vector2 = Vector2(44, 58)
 @export var run_away_distance: float = 90.0
+@export var trigger_y_min: float = -9999.0
+@export var trigger_y_max: float = 9999.0
 
 var start_pos: Vector2
 var is_triggered: bool = false
@@ -31,14 +36,24 @@ func _physics_process(delta: float) -> void:
 		if player != null and is_instance_valid(player):
 			if "is_dead" in player and player.is_dead:
 				return
+			var py: float = player.global_position.y
+			if py < trigger_y_min or py > trigger_y_max:
+				return
+			if trigger_y_min <= -9000.0 and trigger_y_max >= 9000.0:
+				if absf(py - global_position.y) > 70.0:
+					return
 			var dist := global_position.distance_to(player.global_position)
 			if dist < run_away_distance:
 				_run_away(player)
 
 func _run_away(_player: Node2D) -> void:
 	is_triggered = true
+	var ch := TrapBiomeArt.get_chapter(self)
+	TrapBiomeVFX.emit_door_vanish(self, global_position, door_size, ch)
 	var sm = get_node_or_null("/root/SoundManager")
-	if sm and sm.has_method("play"):
+	if sm and sm.has_method("play_biome_trap"):
+		sm.play_biome_trap("trigger", ch)
+	elif sm and sm.has_method("play"):
 		sm.play("trap")
 	
 	# Eshik pastga pol ichiga tushib yo'qoladi (o'yinchini tortib ketmaydi)
@@ -123,6 +138,8 @@ func _draw() -> void:
 	draw_colored_polygon(tri_pts, frame_col)
 
 func _on_body_entered(body: Node2D) -> void:
+	if is_triggered:
+		return
 	if body is PlayerController or body.is_in_group("player"):
 		if body.has_method("kill"):
 			body.kill()
@@ -136,4 +153,5 @@ func reset_trap() -> void:
 	visible = true
 	if col_shape:
 		col_shape.disabled = false
+	queue_redraw()
 

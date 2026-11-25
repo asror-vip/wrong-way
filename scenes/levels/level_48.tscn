@@ -4,9 +4,10 @@
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
 [ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
 [ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
-[ext_resource type="PackedScene" path="res://scenes/traps/laser_beam.tscn" id="5_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="6_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/rolling_boulder.tscn" id="7_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/circular_saw.tscn" id="5_ci"]
+[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="6_po"]
+[ext_resource type="PackedScene" path="res://scenes/traps/rolling_boulder.tscn" id="7_ro"]
+[ext_resource type="PackedScene" path="res://scenes/objects/paranormal_event.tscn" id="8_pe"]
 
 [node name="Level48" type="Node2D"]
 script = ExtResource("1_bl")
@@ -16,11 +17,19 @@ level_number = 48
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
-platform_size = Vector2(960, 70)
+platform_size = Vector2(960, 48)
 
-[node name="GroundFull" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(0, 380)
-platform_size = Vector2(960, 160)
+[node name="Tree1" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(32, 195)
+platform_size = Vector2(170, 26)
+
+[node name="Tree2" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(355, 285)
+platform_size = Vector2(185, 26)
+
+[node name="Tree3" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(650, 375)
+platform_size = Vector2(278, 165)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -32,51 +41,39 @@ platform_size = Vector2(32, 540)
 
 [node name="Traps" type="Node2D" parent="."]
 
-[node name="LaserFast" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(180, 220)
-beam_length = 160
-active_time = 0.8
-inactive_time = 0.8
+[node name="CircGap1" parent="Traps" instance=ExtResource("5_ci")]
+position = Vector2(275, 285)
+orbit_radius = 30.0
+orbit_speed = 2.4
 
-[node name="LaserLong" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(290, 220)
-beam_length = 160
-active_time = 2.4
-inactive_time = 1
+[node name="PopUpT2" parent="Traps" instance=ExtResource("6_po")]
+position = Vector2(435, 285)
+spike_width = 44.0
+max_spike_height = 32.0
+trigger_y_min = 215.0
+trigger_y_max = 320.0
 
-[node name="LaserTrap3" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(390, 220)
-beam_length = 160
-active_time = 1.4
-inactive_time = 1.2
+[node name="CircGap2" parent="Traps" instance=ExtResource("5_ci")]
+position = Vector2(595, 365)
+orbit_radius = 28.0
+orbit_speed = -2.4
 
-[node name="PopUpSpikesPostLaser" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(480, 380)
-spike_width = 56
-max_spike_height = 32
-trigger_distance = 75
-warning_time = 0.35
-
-[node name="RollingBoulderMid" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(620, 350)
-roll_direction = -1
-roll_speed = 340
-trigger_distance = 220
-
-[node name="LaserAfterBoulder" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(700, 220)
-beam_length = 160
-active_time = 1.2
-inactive_time = 1.2
-
-[node name="LaserDoorQuick" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(810, 220)
-beam_length = 160
-active_time = 1.8
-inactive_time = 0.7
+[node name="VineBoulderT3" parent="Traps" instance=ExtResource("7_ro")]
+position = Vector2(825, 347)
+boulder_radius = 28.0
+roll_direction = -1.0
+roll_speed = 240.0
+trigger_distance = 155.0
+trigger_y_min = 310.0
+trigger_y_max = 415.0
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
-position = Vector2(890, 380)
+position = Vector2(865, 375)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
-position = Vector2(70, 380)
+position = Vector2(85, 195)
+
+[node name="Paranormal" type="Node2D" parent="."]
+
+[node name="ParanormalEvent" parent="Paranormal" instance=ExtResource("8_pe")]
+event_type = "pollen_dream_drift"

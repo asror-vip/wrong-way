@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
 [ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="5_tr"]
 [ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/objects/paranormal_event.tscn" id="7_pe"]
 
 [node name="Level01" type="Node2D"]
 script = ExtResource("1_bl")
@@ -17,18 +18,6 @@ level_number = 1
 position = Vector2(0, 0)
 platform_size = Vector2(960, 70)
 
-[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(0, 380)
-platform_size = Vector2(320, 160)
-
-[node name="GroundMid" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(400, 380)
-platform_size = Vector2(180, 160)
-
-[node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(680, 380)
-platform_size = Vector2(280, 160)
-
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
 platform_size = Vector2(32, 540)
@@ -37,18 +26,38 @@ platform_size = Vector2(32, 540)
 position = Vector2(928, 0)
 platform_size = Vector2(32, 540)
 
+[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(320, 160)
+
+[node name="GroundMid" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(410, 380)
+platform_size = Vector2(170, 160)
+
+[node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(680, 380)
+platform_size = Vector2(280, 160)
+
 [node name="Traps" type="Node2D" parent="."]
 
 [node name="SpikesStart" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(200, 348)
+position = Vector2(210, 348)
 spike_size = Vector2(48, 32)
 
 [node name="TrapFloorMid" parent="Traps" instance=ExtResource("6_tr")]
 position = Vector2(580, 380)
 platform_size = Vector2(100, 160)
+shake_duration = 0.12
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
 position = Vector2(860, 380)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
 position = Vector2(80, 380)
+
+[node name="Paranormal" type="Node2D" parent="."]
+
+[node name="ParanormalEvent" parent="Paranormal" instance=ExtResource("7_pe")]
+event_type = "phantom_footprints"
+trigger_x = 555.0
+trigger_y = 380.0

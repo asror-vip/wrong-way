@@ -61,7 +61,9 @@ func _update_texts() -> void:
 	if resume_btn: resume_btn.text = "  " + LocaleManager.t("btn_resume")
 	if restart_btn:
 		restart_btn.text = "  " + LocaleManager.t("btn_restart")
-		if (restart_session_count + 1) % 4 == 0:
+		var adm = get_node_or_null("/root/AdManager")
+		var ads_on: bool = adm != null and adm.has_method("is_ads_enabled") and bool(adm.is_ads_enabled())
+		if ads_on and (restart_session_count + 1) % 4 == 0:
 			restart_btn.icon = IconFactory.get_icon("video_ad", 0.8)
 			restart_btn.add_theme_color_override("font_color", Color(0.98, 0.85, 0.40))
 			restart_btn.add_theme_color_override("font_hover_color", Color(1.0, 0.9, 0.6))
@@ -123,13 +125,13 @@ func _on_restart_pressed() -> void:
 	restart_session_count += 1
 	if restart_session_count > 0 and restart_session_count % 4 == 0:
 		var adm = get_node_or_null("/root/AdManager")
-		if adm and adm.has_method("show_rewarded_ad"):
+		if adm and adm.has_method("is_ads_enabled") and bool(adm.is_ads_enabled()) and adm.has_method("show_rewarded_ad"):
 			adm.show_rewarded_ad(func():
 				SoundManager.set_music_volume_pause(false)
 				visible = false
 				get_tree().paused = false
 				GameManager.restart_current_level()
-			)
+			, true)
 			return
 
 	SoundManager.set_music_volume_pause(false)

@@ -1,17 +1,29 @@
 extends Area2D
 class_name MovingSawTrap
 
+const TrapBiomeArt := preload("res://scripts/traps/trap_biome_art.gd")
+const TrapBiomeVFX := preload("res://scripts/traps/trap_biome_vfx.gd")
+
 @export var radius: float = 16.0 # 32px diametr
 @export var patrol_distance: float = 64.0 # 2x katak
 @export var patrol_speed: float = 120.0
 @export var patrol_axis: Vector2 = Vector2.RIGHT
 @export var trigger_distance: float = 0.0 # Agar > 0 bo'lsa, o'yinchi yaqinlashganda otilib chiqadi
+@export var one_shot_boomerang: bool = false
+@export var trigger_y_min: float = -9999.0
+@export var trigger_y_max: float = 9999.0
+@export var max_trigger_dy: float = 95.0
 
 var start_pos: Vector2
 var patrol_t: float = 0.0
 var rotation_angle: float = 0.0
 var moving_forward: bool = true
 var is_triggered: bool = false
+var boomerang_done: bool = false
+var pause_timer: float = 0.0
+var pop_tween: Tween = null
+var _anim_time: float = 0.0
+var _spark_accum: float = 0.0
 
 @onready var col_shape: CollisionShape2D = $CollisionShape2D
 
@@ -33,6 +45,12 @@ func _physics_process(delta: float) -> void:
 		if player != null and is_instance_valid(player):
 			if "is_dead" in player and player.is_dead:
 				return
+			var py: float = player.global_position.y
+			if py < trigger_y_min or py > trigger_y_max:
+				return
+			if trigger_y_min <= -9000.0 and trigger_y_max >= 9000.0:
+				if absf(py - global_position.y) > max_trigger_dy:
+					return
 			var dx: float = player.global_position.x - global_position.x
 			var should_trigger: bool = false
 			# Agar arra o'ngga (orqadan quvuvchi) bo'lsa (patrol_axis.x > 0):
@@ -54,35 +72,66 @@ func _physics_process(delta: float) -> void:
 				is_triggered = true
 				if col_shape:
 					col_shape.disabled = false
+				if pop_tween and pop_tween.is_valid():
+					pop_tween.kill()
+				scale = Vector2(0.2, 0.2)
+				pop_tween = create_tween()
+				pop_tween.tween_property(self, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+				var ch_trig := TrapBiomeArt.get_chapter(self)
+				TrapBiomeVFX.emit_saw_spark(self, global_position, radius, ch_trig, true)
 				var sm = get_node_or_null("/root/SoundManager")
-				if sm and sm.has_method("play"):
+				if sm and sm.has_method("play_biome_trap"):
+					sm.play_biome_trap("trigger", ch_trig)
+				elif sm and sm.has_method("play"):
 					sm.play("trap")
 		return
 
 	if col_shape and col_shape.disabled:
 		col_shape.disabled = false
 
-	rotation_angle += delta * 14.0
+	_anim_time += delta
+	rotation_angle += delta * (4.0 if boomerang_done else 14.0)
+	if not boomerang_done:
+		_spark_accum += delta
+		var spark_step := 0.28 if OS.has_feature("mobile") else 0.16
+		if _spark_accum >= spark_step:
+			_spark_accum = 0.0
+			TrapBiomeVFX.emit_saw_spark(self, global_position, radius, TrapBiomeArt.get_chapter(self), false)
 	
-	if patrol_distance > 0.0:
-		if moving_forward:
-			patrol_t += (patrol_speed * delta) / patrol_distance
-			if patrol_t >= 1.0:
-				patrol_t = 1.0
-				moving_forward = false
+	if patrol_distance > 0.0 and not boomerang_done:
+		if pause_timer > 0.0:
+			pause_timer -= delta
 		else:
-			patrol_t -= (patrol_speed * delta) / patrol_distance
-			if patrol_t <= 0.0:
-				patrol_t = 0.0
-				moving_forward = true
+			if moving_forward:
+				patrol_t += (patrol_speed * delta) / patrol_distance
+				if patrol_t >= 1.0:
+					patrol_t = 1.0
+					moving_forward = false
+					if one_shot_boomerang:
+						pause_timer = 0.08
+			else:
+				var ret_speed := patrol_speed * 1.25 if one_shot_boomerang else patrol_speed
+				patrol_t -= (ret_speed * delta) / patrol_distance
+				if patrol_t <= 0.0:
+					patrol_t = 0.0
+					if one_shot_boomerang:
+						boomerang_done = true
+					else:
+						moving_forward = true
 		global_position = start_pos + patrol_axis.normalized() * (patrol_distance * patrol_t)
 		
 	queue_redraw()
 
 func reset_trap() -> void:
+	if pop_tween and pop_tween.is_valid():
+		pop_tween.kill()
 	is_triggered = false
+	boomerang_done = false
+	pause_timer = 0.0
+	_spark_accum = 0.0
 	patrol_t = 0.0
 	moving_forward = true
+	scale = Vector2.ONE
 	global_position = start_pos
 	if trigger_distance > 0.0 and col_shape:
 		col_shape.disabled = true
@@ -91,74 +140,8 @@ func reset_trap() -> void:
 func _draw() -> void:
 	if trigger_distance > 0.0 and not is_triggered:
 		return
-
-	var ch: int = 1
-	var gm = get_node_or_null("/root/GameManager")
-	if gm and gm.has_method("get_current_chapter"):
-		ch = gm.get_current_chapter()
-
-	var teeth_count := 8
-	var outer_r := radius
-	var inner_r := radius * 0.70
-	
-	var pts := PackedVector2Array()
-	var step := (PI * 2.0) / float(teeth_count)
-	
-	for i in range(teeth_count):
-		var a0 := rotation_angle + float(i) * step
-		var a1 := a0 + step * 0.45
-		var a2 := a0 + step * 0.80
-		
-		pts.append(Vector2(cos(a0), sin(a0)) * inner_r)
-		pts.append(Vector2(cos(a1), sin(a1)) * outer_r)
-		pts.append(Vector2(cos(a2), sin(a2)) * inner_r)
-		
-	if ch == 2:
-		draw_colored_polygon(pts, Color(0.22, 0.74, 0.97, 0.95))
-		draw_polyline(pts, Color("#ffffff"), 1.2)
-		draw_circle(Vector2.ZERO, inner_r * 0.85, Color("#0f172a"))
-		draw_circle(Vector2.ZERO, inner_r * 0.65, Color("#0284c7"))
-		draw_circle(Vector2.ZERO, 3.5, Color("#1e293b"))
-		draw_circle(Vector2.ZERO, 1.5, Color("#e0f2fe"))
-	elif ch == 3:
-		draw_colored_polygon(pts, Color("#22c55e"))
-		draw_polyline(pts, Color("#86efac"), 1.2)
-		draw_circle(Vector2.ZERO, inner_r * 0.85, Color("#1c1917"))
-		draw_circle(Vector2.ZERO, inner_r * 0.65, Color("#166534"))
-		draw_circle(Vector2.ZERO, 3.5, Color("#451a03"))
-		draw_circle(Vector2.ZERO, 1.5, Color("#fef08a"))
-	elif ch == 4:
-		teeth_count = 6
-		pts.clear()
-		step = (PI * 2.0) / float(teeth_count)
-		inner_r = radius * 0.75
-		for i in range(teeth_count):
-			var a0 := rotation_angle + float(i) * step
-			var a1 := a0 + step * 0.50
-			var a2 := a0 + step * 1.0
-			pts.append(Vector2(cos(a0), sin(a0)) * inner_r)
-			pts.append(Vector2(cos(a1), sin(a1)) * outer_r)
-			pts.append(Vector2(cos(a2), sin(a2)) * inner_r)
-		draw_colored_polygon(pts, Color("#d97706"))
-		draw_polyline(pts, Color("#fcd34d"), 1.5)
-		draw_circle(Vector2.ZERO, inner_r * 0.80, Color("#451a03"))
-		draw_circle(Vector2.ZERO, inner_r * 0.55, Color("#b45309"))
-		draw_circle(Vector2.ZERO, 4.0, Color("#78350f"))
-		draw_rect(Rect2(-2, -2, 4, 4), Color("#fef3c7"), true)
-	elif ch == 5:
-		draw_colored_polygon(pts, Color("#ef4444"))
-		draw_polyline(pts, Color("#f97316"), 1.5)
-		draw_circle(Vector2.ZERO, inner_r * 0.90, Color("#1a0505"))
-		draw_circle(Vector2.ZERO, inner_r * 0.70, Color("#991b1b"))
-		draw_circle(Vector2.ZERO, inner_r * 0.45, Color("#ea580c"))
-		draw_circle(Vector2.ZERO, 2.5, Color("#fef08a"))
-	else:
-		draw_colored_polygon(pts, Color("#94a3b8"))
-		draw_polyline(pts, Color("#f1f5f9"), 1.0)
-		draw_circle(Vector2.ZERO, inner_r * 0.85, Color("#475569"))
-		draw_circle(Vector2.ZERO, inner_r * 0.65, Color("#dc2626"))
-		draw_circle(Vector2.ZERO, 3.5, Color("#0f172a"))
-		draw_circle(Vector2.ZERO, 1.5, Color("#cbd5e1"))
+	var ch := TrapBiomeArt.get_chapter(self)
+	TrapBiomeArt.draw_saw_blade(self, Vector2.ZERO, radius, rotation_angle, ch, _anim_time)
 
 func _on_body_entered(body: Node2D) -> void:
 	if body is PlayerController or body.is_in_group("player"):

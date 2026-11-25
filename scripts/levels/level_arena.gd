@@ -5,11 +5,9 @@ class_name LevelArena
 # Instantiates platforms, traps, player, and exit door dynamically from data (JSON / Supabase)
 
 const TRAP_SCENE_MAP: Dictionary = {
-	"sinking_door_floor": "res://scenes/traps/sinking_door_floor.tscn",
 	"jumping_spikes": "res://scenes/traps/jumping_spikes.tscn",
 	"dodging_platform": "res://scenes/traps/dodging_platform.tscn",
 	"falling_ceiling": "res://scenes/traps/falling_ceiling.tscn",
-	"control_inverter": "res://scenes/traps/control_inverter.tscn",
 	"pop_up_spikes": "res://scenes/traps/pop_up_spikes.tscn",
 	"trap_floor": "res://scenes/traps/trap_floor.tscn",
 	"crumbling_platform": "res://scenes/traps/crumbling_platform.tscn",
@@ -17,13 +15,11 @@ const TRAP_SCENE_MAP: Dictionary = {
 	"spikes": "res://scenes/traps/spikes.tscn",
 	"falling_spike": "res://scenes/traps/falling_spike.tscn",
 	"spring": "res://scenes/traps/spring.tscn",
-	"invisible_block": "res://scenes/traps/invisible_block.tscn",
 	"moving_saw": "res://scenes/traps/moving_saw.tscn",
 	"circular_saw": "res://scenes/traps/circular_saw.tscn",
 	"crusher": "res://scenes/traps/crusher.tscn",
 	"laser_beam": "res://scenes/traps/laser_beam.tscn",
 	"rolling_boulder": "res://scenes/traps/rolling_boulder.tscn",
-	"rotating_spike_ball": "res://scenes/traps/rotating_spike_ball.tscn",
 }
 
 @onready var platforms_container: Node2D = $Platforms
@@ -48,9 +44,14 @@ func load_level_from_data(data: Dictionary) -> void:
 		var plats = data.get("platforms", [])
 		for p in plats:
 			var plat_inst = solid_platform_scene.instantiate()
+			var p_name := str(p.get("name", ""))
+			if p_name != "":
+				plat_inst.name = p_name
 			plat_inst.position = Vector2(float(p.get("x", 0)), float(p.get("y", 0)))
 			if "platform_size" in plat_inst:
 				plat_inst.platform_size = Vector2(float(p.get("w", 100)), float(p.get("h", 100)))
+			if "one_way" in plat_inst and p.has("one_way"):
+				plat_inst.one_way = bool(p.get("one_way", false))
 			platforms_container.add_child(plat_inst)
 
 	# 2. Tuzoqlarni tozalash va faqat Level Devil uslubidagi tuzoqlarni yuklash
@@ -95,7 +96,7 @@ func load_level_from_data(data: Dictionary) -> void:
 			var params = t.get("params", {})
 			for k in params:
 				var v = params[k]
-				if k == "dodge_offset" and v is Array and v.size() >= 2:
+				if k in ["dodge_offset", "patrol_axis", "betray_offset"] and v is Array and v.size() >= 2:
 					trap_inst.set(k, Vector2(float(v[0]), float(v[1])))
 				elif k in trap_inst:
 					trap_inst.set(k, v)

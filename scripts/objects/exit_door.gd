@@ -7,12 +7,14 @@ signal door_sunk_completely
 @export var runaway_enabled: bool = false
 @export var runaway_distance: float = 110.0
 @export var runaway_offset_x: float = -180.0
+@export var runaway_second_offset_x: float = 0.0
 
 var initial_x: float
 var initial_y: float
 var is_sinking: bool = false
 var has_run_away: bool = false
 var is_running_away: bool = false
+var _runaway_stage: int = 0
 var runaway_tween_x: Tween
 var runaway_tween_y: Tween
 var reset_cooldown: float = 0.0
@@ -28,11 +30,15 @@ func _ready() -> void:
 
 func _physics_process(_delta: float) -> void:
 	if runaway_enabled and not has_run_away and not is_sinking and not is_running_away:
+		if _runaway_stage > 0 and reset_cooldown > 0.0:
+			return
 		var player := get_tree().get_first_node_in_group("player") as Node2D
 		if player != null and is_instance_valid(player):
 			if "is_dead" in player and player.is_dead:
 				return
 			if "is_invulnerable" in player and player.is_invulnerable:
+				return
+			if absf(player.global_position.y - global_position.y) > 75.0:
 				return
 			var dist := global_position.distance_to(player.global_position)
 			if dist < runaway_distance:
@@ -41,7 +47,15 @@ func _physics_process(_delta: float) -> void:
 func _run_away() -> void:
 	if has_run_away or is_running_away:
 		return
-	has_run_away = true
+	var target_x: float
+	if _runaway_stage == 0:
+		_runaway_stage = 1
+		target_x = initial_x + runaway_offset_x
+		has_run_away = absf(runaway_second_offset_x) <= 1.0
+	else:
+		_runaway_stage = 2
+		target_x = global_position.x + runaway_second_offset_x
+		has_run_away = true
 	is_running_away = true
 	var sm = get_node_or_null("/root/SoundManager")
 	if sm and sm.has_method("play"):
@@ -52,7 +66,6 @@ func _run_away() -> void:
 	if runaway_tween_y and runaway_tween_y.is_valid():
 		runaway_tween_y.kill()
 		
-	var target_x := initial_x + runaway_offset_x
 	var orig_y := initial_y
 	var peak_y := orig_y - 130.0 # O'yinchi ustidan baland sakrab narigi tomonga o'tadi
 	
@@ -74,7 +87,7 @@ func _run_away() -> void:
 func _process(delta: float) -> void:
 	if reset_cooldown > 0.0:
 		reset_cooldown -= delta
-		if reset_cooldown <= 0.0 and not is_sinking:
+		if reset_cooldown <= 0.0 and not is_sinking and monitoring:
 			for body in get_overlapping_bodies():
 				_on_body_entered(body)
 				if is_sinking:
@@ -209,6 +222,7 @@ func reset_door() -> void:
 	show_triangle = true
 	global_position = Vector2(initial_x, initial_y)
 	has_run_away = false
+	_runaway_stage = 0
 	modulate.a = 1.0
 	visible = true
 	reset_cooldown = 0.40

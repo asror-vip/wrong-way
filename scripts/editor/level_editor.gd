@@ -19,11 +19,9 @@ const TOOLS = [
 	{"id": "pop_up_spikes", "icon": "pop_up_spikes", "loc_key": "tool_pop_up_spikes"},
 	{"id": "saw", "icon": "saw", "loc_key": "tool_saw"},
 	{"id": "circular_saw", "icon": "circular_saw", "loc_key": "tool_circular_saw"},
-	{"id": "spike_ball", "icon": "spike_ball", "loc_key": "tool_spike_ball"},
 	{"id": "crusher", "icon": "crusher", "loc_key": "tool_crusher"},
 	{"id": "spring", "icon": "spring", "loc_key": "tool_spring"},
 	{"id": "falling", "icon": "falling", "loc_key": "tool_falling"},
-	{"id": "laser", "icon": "laser", "loc_key": "tool_laser"},
 	{"id": "fake_door", "icon": "fake_door", "loc_key": "tool_fake_door"},
 	{"id": "door", "icon": "door", "loc_key": "tool_door"},
 	{"id": "player", "icon": "player", "loc_key": "tool_player"},
@@ -37,14 +35,13 @@ const SCENE_SPIKES = preload("res://scenes/traps/spikes.tscn")
 const SCENE_POP_UP_SPIKES = preload("res://scenes/traps/pop_up_spikes.tscn")
 const SCENE_SAW = preload("res://scenes/traps/moving_saw.tscn")
 const SCENE_CIRCULAR_SAW = preload("res://scenes/traps/circular_saw.tscn")
-const SCENE_SPIKE_BALL = preload("res://scenes/traps/rotating_spike_ball.tscn")
 const SCENE_CRUSHER = preload("res://scenes/traps/crusher.tscn")
 const SCENE_SPRING = preload("res://scenes/traps/spring.tscn")
 const SCENE_FALLING_SPIKE = preload("res://scenes/traps/falling_spike.tscn")
-const SCENE_LASER = preload("res://scenes/traps/laser_beam.tscn")
 const SCENE_FAKE_DOOR = preload("res://scenes/traps/fake_door.tscn")
 const SCENE_EXIT_DOOR = preload("res://scenes/objects/exit_door.tscn")
 const SCENE_PLAYER = preload("res://scenes/player/player.tscn")
+const TrapBiomeVFX := preload("res://scripts/traps/trap_biome_vfx.gd")
 
 var current_slot: int = 1
 var is_save_mode: bool = true
@@ -94,6 +91,11 @@ func _ready() -> void:
 	var adm = get_node_or_null("/root/AdManager")
 	if adm and adm.has_method("show_banner"):
 		adm.show_banner()
+	var banner_h: float = adm.get_top_banner_height() \
+		if adm and adm.has_method("get_top_banner_height") else 0.0
+	if top_bar:
+		top_bar.offset_top = banner_h
+		top_bar.offset_bottom = banner_h + 56.0
 		
 	LocaleManager.language_changed.connect(_on_language_changed)
 	GameManager.custom_player_died.connect(_on_custom_player_died)
@@ -434,17 +436,12 @@ func _apply_tool_at_pos(pos: Vector2) -> void:
 		"circular_saw":
 			elem["orbit_radius"] = 64.0
 			elem["saw_radius"] = 20.0
-		"spike_ball":
-			elem["chain_length"] = 64.0
-			elem["ball_radius"] = 16.0
 		"crusher":
 			pass
 		"spring":
 			elem["bounce_force"] = -580.0
 		"falling":
 			elem["trigger_dist"] = 280.0
-		"laser":
-			elem["beam_length"] = 160.0
 		"fake_door":
 			pass
 			
@@ -543,19 +540,6 @@ func _draw_cell_element(elem: Dictionary) -> void:
 			canvas.draw_circle(bpos, srad, Color("#94a3b8"))
 			canvas.draw_circle(bpos, srad * 0.65, Color("#dc2626"))
 			canvas.draw_circle(bpos, 2.5, Color("#f8fafc"))
-		"spike_ball":
-			var m_center := Vector2(x + 16, y + 16)
-			var clen: float = float(elem.get("chain_length", 64.0))
-			var brad: float = 11.0
-			var m_bpos := m_center + Vector2(0, clen)
-			canvas.draw_arc(m_center, clen, 0, TAU, 32, Color(0.8, 0.3, 0.3, 0.25), 1.0)
-			canvas.draw_circle(m_center, 5.0, Color("#1e1b29"))
-			canvas.draw_line(m_center, m_bpos, Color("#334155"), 2.0)
-			canvas.draw_circle(m_bpos, brad, Color("#18181b"))
-			for i in range(8):
-				var ang := float(i) * (TAU / 8.0)
-				var tip := m_bpos + Vector2(cos(ang), sin(ang)) * (brad + 5.0)
-				canvas.draw_line(m_bpos, tip, Color("#e11d48"), 2.0)
 		"crusher":
 			# 2x standart: 64x64px siluet blok
 			canvas.draw_rect(Rect2(x, y, 64, 64), Color("#0c0e14"), true)
@@ -582,9 +566,6 @@ func _draw_cell_element(elem: Dictionary) -> void:
 			canvas.draw_colored_polygon(f_pts, Color("#e11d48"))
 			canvas.draw_line(Vector2(x, y), Vector2(x + 16.0, y + sz), Color("#fb7185"), 1.2)
 			canvas.draw_line(Vector2(x + 16.0, y + sz), Vector2(x + sz, y), Color("#881337"), 1.2)
-		"laser":
-			canvas.draw_circle(Vector2(x + 16, y + 6), 5.0, Color("#ef4444"))
-			canvas.draw_line(Vector2(x + 16, y + 6), Vector2(x + 16, y + 160), Color(1.0, 0.2, 0.3, 0.65), 2.5)
 		"fake_door":
 			var fdw: float = 32.0
 			var fdh: float = 56.0
@@ -721,11 +702,6 @@ func _spawn_test_world() -> void:
 				node.position = Vector2(x + 16, y + 16)
 				node.set("orbit_radius", float(elem.get("orbit_radius", 64.0)))
 				node.set("saw_radius", 16.0)
-			"spike_ball":
-				node = SCENE_SPIKE_BALL.instantiate()
-				node.position = Vector2(x + 16, y + 16)
-				node.set("chain_length", float(elem.get("chain_length", 64.0)))
-				node.set("ball_radius", 16.0)
 			"crusher":
 				node = SCENE_CRUSHER.instantiate()
 				node.position = Vector2(x, y)
@@ -737,10 +713,6 @@ func _spawn_test_world() -> void:
 			"falling":
 				node = SCENE_FALLING_SPIKE.instantiate()
 				node.position = Vector2(x + 16, y)
-			"laser":
-				node = SCENE_LASER.instantiate()
-				node.position = Vector2(x + 16, y)
-				node.set("beam_length", float(elem.get("beam_length", 160.0)))
 			"fake_door":
 				node = SCENE_FAKE_DOOR.instantiate()
 				node.position = Vector2(x + 16, y + 32)
@@ -791,6 +763,7 @@ func _on_custom_player_died() -> void:
 	SoundManager.play("die")
 	await get_tree().create_timer(0.35).timeout
 	if is_testing:
+		TrapBiomeVFX.clear_level(playtest_world)
 		for c in playtest_world.get_children():
 			if c.has_method("reset_trap"):
 				c.reset_trap()

@@ -1,6 +1,9 @@
 extends Area2D
 class_name CircularSawTrap
 
+const TrapBiomeArt := preload("res://scripts/traps/trap_biome_art.gd")
+const TrapBiomeVFX := preload("res://scripts/traps/trap_biome_vfx.gd")
+
 @export var orbit_radius: float = 64.0 # 2x katak radiusi
 @export var orbit_speed: float = 2.4
 @export var saw_radius: float = 16.0 # 32px diametr
@@ -10,6 +13,8 @@ class_name CircularSawTrap
 var current_angle: float = 0.0
 var spin_angle: float = 0.0
 var blade_offset: Vector2 = Vector2.ZERO
+var _anim_time: float = 0.0
+var _spark_accum: float = 0.0
 
 @onready var col_shape: CollisionShape2D = $CollisionShape2D
 
@@ -26,12 +31,18 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	var dir := 1.0 if clockwise else -1.0
+	_anim_time += delta
 	current_angle += orbit_speed * dir * delta
 	spin_angle += 16.0 * dir * delta
 	
 	_update_blade_position()
 	if col_shape:
 		col_shape.position = blade_offset
+	_spark_accum += delta
+	var spark_step := 0.34 if OS.has_feature("mobile") else 0.22
+	if _spark_accum >= spark_step:
+		_spark_accum = 0.0
+		TrapBiomeVFX.emit_saw_spark(self, global_position + blade_offset, saw_radius, TrapBiomeArt.get_chapter(self), false)
 	queue_redraw()
 
 func _update_blade_position() -> void:
@@ -41,95 +52,10 @@ func _update_blade_position() -> void:
 		blade_offset = Vector2.ZERO
 
 func _draw() -> void:
+	var ch := TrapBiomeArt.get_chapter(self)
 	if orbit_radius > 0.0:
-		# 1. Markaziy o'q (32px to'r markazi)
-		draw_circle(Vector2.ZERO, 6.0, Color("#1e1b29"))
-		draw_circle(Vector2.ZERO, 3.5, Color("#475569"))
-		draw_circle(Vector2.ZERO, 1.5, Color("#cbd5e1"))
-		
-		# 2. Bog'lovchi metall zanjir
-		var chain_links := maxi(2, int(orbit_radius / 16.0))
-		for i in range(1, chain_links):
-			var t := float(i) / float(chain_links)
-			var link_pos := blade_offset * t
-			draw_circle(link_pos, 3.5, Color("#334155"))
-			draw_circle(link_pos, 1.5, Color("#64748b"))
-		draw_line(Vector2.ZERO, blade_offset, Color("#1e293b"), 2.5)
-	
-	# 3. 32px diametrli arra diski
-	_draw_saw_blade(blade_offset, saw_radius, spin_angle)
-
-func _draw_saw_blade(pos: Vector2, r: float, spin: float) -> void:
-	var ch: int = 1
-	var gm = get_node_or_null("/root/GameManager")
-	if gm and gm.has_method("get_current_chapter"):
-		ch = gm.get_current_chapter()
-
-	var teeth_count := 8
-	var inner_r := r * 0.70
-	var pts := PackedVector2Array()
-	var step := (PI * 2.0) / float(teeth_count)
-	
-	for i in range(teeth_count):
-		var a0 := spin + float(i) * step
-		var a1 := a0 + step * 0.45
-		var a2 := a0 + step * 0.80
-		
-		pts.append(pos + Vector2(cos(a0), sin(a0)) * inner_r)
-		pts.append(pos + Vector2(cos(a1), sin(a1)) * r)
-		pts.append(pos + Vector2(cos(a2), sin(a2)) * inner_r)
-		
-	if ch == 2:
-		# Muzli arra tishlari (Winter)
-		draw_colored_polygon(pts, Color(0.22, 0.74, 0.97, 0.95))
-		draw_polyline(pts, Color("#ffffff"), 1.2)
-		draw_circle(pos, inner_r * 0.85, Color("#0f172a"))
-		draw_circle(pos, inner_r * 0.65, Color("#0284c7"))
-		draw_circle(pos, 4.0, Color("#1e293b"))
-		draw_circle(pos, 2.0, Color("#e0f2fe"))
-	elif ch == 3:
-		# Zaharli o'rmon arrasi (Neon Green, Zanglagan ichi)
-		draw_colored_polygon(pts, Color("#22c55e")) # Zaharli yashil qirralar
-		draw_polyline(pts, Color("#86efac"), 1.2)
-		draw_circle(pos, inner_r * 0.85, Color("#1c1917"))
-		draw_circle(pos, inner_r * 0.65, Color("#166534")) # To'q yashil markaz
-		draw_circle(pos, 4.0, Color("#451a03")) # Zanglagan o'q
-		draw_circle(pos, 2.0, Color("#fef08a"))
-	elif ch == 4:
-		# Sahro ibodatxonasi mis arrasi (Copper, Aztek)
-		teeth_count = 6 # Sahroda tishlar qalinroq va burchakli
-		pts.clear()
-		step = (PI * 2.0) / float(teeth_count)
-		inner_r = r * 0.75
-		for i in range(teeth_count):
-			var a0 := spin + float(i) * step
-			var a1 := a0 + step * 0.50
-			var a2 := a0 + step * 1.0
-			pts.append(pos + Vector2(cos(a0), sin(a0)) * inner_r)
-			pts.append(pos + Vector2(cos(a1), sin(a1)) * r)
-			pts.append(pos + Vector2(cos(a2), sin(a2)) * inner_r)
-		draw_colored_polygon(pts, Color("#d97706")) # To'q mis
-		draw_polyline(pts, Color("#fcd34d"), 1.5) # Yaltiroq tillarang
-		draw_circle(pos, inner_r * 0.80, Color("#451a03"))
-		draw_circle(pos, inner_r * 0.55, Color("#b45309"))
-		draw_circle(pos, 5.0, Color("#78350f"))
-		draw_rect(Rect2(pos.x - 2, pos.y - 2, 4, 4), Color("#fef3c7"), true) # Kvadrat qoziq
-	elif ch == 5:
-		# Olovli Abiss arrasi (Obsidian va Lava markazi)
-		draw_colored_polygon(pts, Color("#ef4444")) # Qizigan qirralar
-		draw_polyline(pts, Color("#f97316"), 1.5) # Lovullagan olov hoshiya
-		draw_circle(pos, inner_r * 0.90, Color("#1a0505")) # To'q obsidian
-		draw_circle(pos, inner_r * 0.70, Color("#991b1b"))
-		draw_circle(pos, inner_r * 0.45, Color("#ea580c")) # Lava markazi
-		draw_circle(pos, 3.0, Color("#fef08a")) # Oq-sariq issiqlik markazi
-	else:
-		# Default / Limbo
-		draw_colored_polygon(pts, Color("#94a3b8"))
-		draw_polyline(pts, Color("#f1f5f9"), 1.0)
-		draw_circle(pos, inner_r * 0.85, Color("#475569"))
-		draw_circle(pos, inner_r * 0.65, Color("#dc2626"))
-		draw_circle(pos, 4.0, Color("#0f172a"))
-		draw_circle(pos, 2.0, Color("#e2e8f0"))
+		TrapBiomeArt.draw_saw_tether(self, Vector2.ZERO, blade_offset, orbit_radius, ch)
+	TrapBiomeArt.draw_saw_blade(self, blade_offset, saw_radius, spin_angle, ch, _anim_time)
 
 func _on_body_entered(body: Node2D) -> void:
 	if body is PlayerController or body.is_in_group("player"):
@@ -142,6 +68,8 @@ func _on_body_entered(body: Node2D) -> void:
 
 func reset_trap() -> void:
 	current_angle = deg_to_rad(start_angle_deg)
+	_spark_accum = 0.0
 	_update_blade_position()
 	if col_shape:
 		col_shape.position = blade_offset
+	queue_redraw()

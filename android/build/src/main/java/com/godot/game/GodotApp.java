@@ -98,9 +98,10 @@ public class GodotApp extends GodotActivity {
 
 	@Override
 	public Set<GodotPlugin> getHostPlugins(Godot engine) {
-		Set<GodotPlugin> plugins = super.getHostPlugins(engine);
-		if (plugins == null) {
-			plugins = new HashSet<>();
+		Set<GodotPlugin> plugins = new HashSet<>();
+		Set<GodotPlugin> superPlugins = super.getHostPlugins(engine);
+		if (superPlugins != null) {
+			plugins.addAll(superPlugins);
 		}
 		plugins.add(new WrongWayAccountPicker(engine));
 		return plugins;

@@ -10,7 +10,7 @@ var solid_platform_scene = preload("res://scenes/objects/solid_platform.tscn")
 func _ready() -> void:
 	arena_extensions = Node2D.new()
 	arena_extensions.name = "ArenaExtensions"
-	arena_extensions.z_index = 5
+	arena_extensions.z_index = 15
 	add_child(arena_extensions)
 	move_child(arena_extensions, 0)
 	var is_desktop_pc := (
@@ -21,6 +21,7 @@ func _ready() -> void:
 	)
 	if is_desktop_pc and camera:
 		camera.zoom = Vector2(0.80, 0.80)
+		camera.position = Vector2(480.0, 245.0)
 	get_viewport().size_changed.connect(_adapt_arena_boundaries)
 
 	var adm = get_node_or_null("/root/AdManager")
@@ -80,6 +81,9 @@ func reload_to_level(lvl: int) -> void:
 	GameManager.level_started.emit(lvl)
 
 func _load_level(lvl: int) -> void:
+	Engine.time_scale = 1.0
+	if camera:
+		camera.rotation = 0.0
 	if level_holder:
 		level_holder.process_mode = Node.PROCESS_MODE_INHERIT
 		for child in level_holder.get_children():
@@ -119,16 +123,18 @@ func _adapt_arena_boundaries() -> void:
 
 	var vp := get_viewport_rect().size
 	var zoom_vec := camera.zoom if camera else Vector2.ONE
+	var cam_center := camera.position if camera else Vector2(480.0, 270.0)
 	var vis_size := Vector2(vp.x / zoom_vec.x, vp.y / zoom_vec.y)
-	var world_tl := Vector2(480.0, 270.0) - vis_size * 0.5
-	var world_br := Vector2(480.0, 270.0) + vis_size * 0.5
+	var world_tl := cam_center - vis_size * 0.5
+	var world_br := cam_center + vis_size * 0.5
 
 	if world_tl.x < 0.0:
 		var left_w := -world_tl.x + 36.0
 		var h := (world_br.y - world_tl.y) + 128.0
 		_create_extension_block(
 			Vector2(world_tl.x - 32.0, world_tl.y - 64.0),
-			Vector2(left_w, h)
+			Vector2(left_w, h),
+			true
 		)
 
 	if world_br.x > 960.0:
@@ -136,7 +142,8 @@ func _adapt_arena_boundaries() -> void:
 		var h := (world_br.y - world_tl.y) + 128.0
 		_create_extension_block(
 			Vector2(928.0, world_tl.y - 64.0),
-			Vector2(right_w, h)
+			Vector2(right_w, h),
+			true
 		)
 
 	if world_br.y > 540.0:
@@ -144,7 +151,8 @@ func _adapt_arena_boundaries() -> void:
 		var total_w := (world_br.x - world_tl.x) + 128.0
 		_create_extension_block(
 			Vector2(world_tl.x - 64.0, 540.0),
-			Vector2(total_w, bot_h)
+			Vector2(total_w, bot_h),
+			true
 		)
 
 	if world_tl.y < 0.0:
@@ -152,10 +160,11 @@ func _adapt_arena_boundaries() -> void:
 		var total_w := (world_br.x - world_tl.x) + 128.0
 		_create_extension_block(
 			Vector2(world_tl.x - 64.0, world_tl.y - 64.0),
-			Vector2(total_w, top_h)
+			Vector2(total_w, top_h),
+			true
 		)
 
-func _create_extension_block(pos: Vector2, sz: Vector2) -> void:
+func _create_extension_block(pos: Vector2, sz: Vector2, disable_collision: bool = false) -> void:
 	if sz.x <= 0.0 or sz.y <= 0.0:
 		return
 	var p = solid_platform_scene.instantiate()
@@ -163,6 +172,12 @@ func _create_extension_block(pos: Vector2, sz: Vector2) -> void:
 	p.is_extension_or_wall = true
 	p.position = pos
 	p.platform_size = sz
+	if disable_collision:
+		p.collision_layer = 0
+		p.collision_mask = 0
+		var col := p.get_node_or_null("CollisionShape2D") as CollisionShape2D
+		if col:
+			col.disabled = true
 	arena_extensions.add_child(p)
 
 

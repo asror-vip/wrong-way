@@ -1,11 +1,15 @@
 extends StaticBody2D
 class_name SolidPlatform
 
+const TrapBiomeArt := preload("res://scripts/traps/trap_biome_art.gd")
+
 @export var platform_size: Vector2 = Vector2(350, 160)
 @export var has_ceiling_teeth: bool = false
 @export var is_extension_or_wall: bool = false
+@export var one_way: bool = false
 
 var _crusher_ranges: Array[Vector2] = []
+var _crusher_caps: Array[float] = []
 var _falling_spike_xs: Array[float] = []
 
 func _is_ceiling_platform() -> bool:
@@ -22,7 +26,7 @@ func _is_ceiling_platform() -> bool:
 	return global_position.y <= 30.0 and platform_size.x >= 200.0
 
 func _is_wall_or_extension() -> bool:
-	if is_extension_or_wall:
+	if is_extension_or_wall or _is_ceiling_platform():
 		return true
 	var n := name.to_lower()
 	if n.contains("wall") or n.contains("extension") or n.contains("ceiling"):
@@ -38,6 +42,7 @@ func _ready() -> void:
 		col.shape = RectangleShape2D.new()
 		col.shape.size = platform_size
 		col.position = platform_size / 2.0
+		col.one_way_collision = one_way
 	
 	# Shift platformasi har doim tikanli bo'lishi va ezuvchidan oldi qatlamda
 	# (z_index=10) turishi kerak
@@ -55,6 +60,7 @@ func _check_ceiling_traps() -> void:
 	var traps := get_tree().get_nodes_in_group("traps")
 	var bot_y := global_position.y + platform_size.y
 	_crusher_ranges.clear()
+	_crusher_caps.clear()
 	_falling_spike_xs.clear()
 	
 	for t in traps:
@@ -63,6 +69,13 @@ func _check_ceiling_traps() -> void:
 			if absf(cy + t.crusher_size.y - bot_y) <= 24.0 or absf(cy - bot_y) <= 24.0:
 				var rel_x: float = t.global_position.x - global_position.x
 				_crusher_ranges.append(Vector2(rel_x, rel_x + t.crusher_size.x))
+				_crusher_caps.append(maxf(16.0, cy - global_position.y + 4.0))
+		elif t is FallingCeiling:
+			var cy: float = t.global_position.y
+			if absf(cy + t.ceiling_size.y - bot_y) <= 24.0 or absf(cy - bot_y) <= 24.0:
+				var rel_x: float = t.global_position.x - global_position.x
+				_crusher_ranges.append(Vector2(rel_x, rel_x + t.ceiling_size.x))
+				_crusher_caps.append(maxf(16.0, cy - global_position.y + 4.0))
 		elif t is FallingSpikeTrap:
 			var sy: float = t.global_position.y
 			if absf(sy - bot_y) <= 24.0:
@@ -99,15 +112,20 @@ func _draw() -> void:
 	# Shift platformasida crusher bo'lsa, o'sha ochiq joy uchun kichik shiftcha chizish
 	# (tepa tarafi butun shift bilan bir tekis qoplanadi)
 	if has_ceiling_teeth and not _crusher_ranges.is_empty():
-		var ranges := _crusher_ranges.duplicate()
-		ranges.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.x < b.x)
+		var entries: Array[Dictionary] = []
+		for idx in range(_crusher_ranges.size()):
+			var cap_v: float = _crusher_caps[idx] if idx < _crusher_caps.size() else 16.0
+			entries.append({"range": _crusher_ranges[idx], "cap": cap_v})
+		entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["range"].x < b["range"].x)
 		var cur_x := 0.0
-		for r in ranges:
+		for e in entries:
+			var r: Vector2 = e["range"]
+			var cap_h: float = float(e["cap"])
 			var rx1 := clampf(r.x, 0.0, platform_size.x)
 			var rx2 := clampf(r.y, 0.0, platform_size.x)
 			if rx1 > cur_x:
 				_draw_segment(cur_x, rx1 - cur_x, base_col, ch)
-			_draw_top_ceiling_cap(rx1, rx2 - rx1, base_col, ch)
+			_draw_top_ceiling_cap(rx1, rx2 - rx1, base_col, ch, cap_h)
 			cur_x = maxf(cur_x, rx2)
 		if cur_x < platform_size.x:
 			_draw_segment(cur_x, platform_size.x - cur_x, base_col, ch)
@@ -116,11 +134,6 @@ func _draw() -> void:
 
 	# Shiftning uzluksiz tikanlari va aldovchi (soxta) stalaktitlari
 	if has_ceiling_teeth and platform_size.x > 64.0:
-		var teeth_col := base_col
-		if ch == 2: teeth_col = Color(0.22, 0.74, 0.97, 0.92) # Muz
-		elif ch == 3: teeth_col = Color("#166534") # Zaharli tikan
-		elif ch == 4: teeth_col = Color("#b45309") # Qumli qoya tikan
-		elif ch == 5: teeth_col = Color("#7f1d1d") # Qizigan obsidian
 		var bot_y := platform_size.y
 		var start_x := 32.0
 		var end_x := platform_size.x - 32.0
@@ -145,14 +158,9 @@ func _draw() -> void:
 				valid_big_spikes.append(bx)
 			bx += cycle_w
 
-		# Soxta katta tikanlarni chizish (32px kenglik, 32px chuqurlik)
+		# Soxta katta tikanlarni chizish (32px kenglik, 32px chuqurlik) — FallingSpikeTrap bilan 100% bir xil
 		for sp_x in valid_big_spikes:
-			var pts := PackedVector2Array([
-				Vector2(sp_x, bot_y),
-				Vector2(sp_x + 16.0, bot_y + 32.0),
-				Vector2(sp_x + 32.0, bot_y)
-			])
-			draw_colored_polygon(pts, teeth_col)
+			TrapBiomeArt.draw_stalactite(self, Vector2(sp_x + 16.0, bot_y), 16.0, 32.0, ch, false)
 
 		# 2. Band bo'lgan zonalarni birlashtirish (Ezuvchilar, real stalaktitlar, soxta stalaktitlar)
 		var occupied_zones: Array[Vector2] = []
@@ -183,61 +191,21 @@ func _draw() -> void:
 			var gap_start := cur_pos
 			var gap_end := minf(z.x, end_x)
 			if gap_end > gap_start:
-				_draw_uniform_teeth(gap_start, gap_end, bot_y, teeth_col)
+				_draw_uniform_teeth(gap_start, gap_end, bot_y, ch)
 			cur_pos = maxf(cur_pos, z.y)
 
 		if cur_pos < end_x:
-			_draw_uniform_teeth(cur_pos, end_x, bot_y, teeth_col)
+			_draw_uniform_teeth(cur_pos, end_x, bot_y, ch)
 
-func _draw_uniform_teeth(x1: float, x2: float, bot_y: float, teeth_col: Color) -> void:
-	var span := x2 - x1
-	if span < 8.0:
-		return
-	var count := maxi(1, int(round(span / 16.0)))
-	var tw := span / float(count)
-	for i in range(count):
-		var tx := x1 + float(i) * tw
-		var tooth_pts := PackedVector2Array([
-			Vector2(tx, bot_y),
-			Vector2(tx + tw * 0.5, bot_y + 13.0),
-			Vector2(tx + tw, bot_y)
-		])
-		draw_colored_polygon(tooth_pts, teeth_col)
+func _draw_uniform_teeth(x1: float, x2: float, bot_y: float, ch: int) -> void:
+	TrapBiomeArt.draw_ceiling_teeth(self, x1, x2, bot_y, ch, 13.0)
 
-func _draw_segment(sx: float, sw: float, base_col: Color, ch: int) -> void:
-	if sw <= 0.0:
-		return
-	draw_rect(Rect2(sx, 0.0, sw, platform_size.y), base_col, true)
-	if _is_wall_or_extension():
-		return
+func _draw_segment(sx: float, sw: float, _base_col: Color, ch: int) -> void:
+	TrapBiomeArt.draw_platform_surface(self, sx, sw, platform_size.y, ch, _is_wall_or_extension(), platform_size.x, true)
 
-	# Boblarga mos pol qoplamalari (Top layers)
-	if ch == 2: # Winter
-		var snow_h := 5.5
-		if platform_size.x > 36.0:
-			draw_rect(Rect2(sx, 0.0, sw, snow_h), Color("#f1f5f9"), true)
-			draw_rect(Rect2(sx, 0.0, sw, 2.0), Color("#ffffff"), true)
-			draw_rect(Rect2(sx, snow_h - 1.5, sw, 1.5), Color("#94a3b8"), true)
-		else:
-			var frost_rect := Rect2(sx, 0.0, minf(sw, 2.5), platform_size.y)
-			draw_rect(frost_rect, Color(0.49, 0.86, 0.99, 0.6), true)
-	elif ch == 3: # Emerald Woods (To'q yashil mox / Moss)
-		draw_rect(Rect2(sx, 0.0, sw, 4.0), Color("#14532d"), true)
-		draw_rect(Rect2(sx, 4.0, sw, 2.0), Color("#064e3b"), true)
-	elif ch == 4: # Golden Canyon (Sahro / Qum)
-		var sand_h := 6.0
-		draw_rect(Rect2(sx, 0.0, sw, sand_h), Color("#fcd34d"), true)
-		draw_rect(Rect2(sx, sand_h - 2.0, sw, 2.0), Color("#d97706"), true)
-	elif ch == 5: # Inferno Abyss (Lava / Obsidian)
-		draw_rect(Rect2(sx, 0.0, sw, 3.0), Color("#450a0a"), true)
-		draw_rect(Rect2(sx, 0.0, sw, 1.0), Color("#f97316"), true) # Lava qizishi
-	else: # Chapter 1 (Default / Limbo)
-		draw_rect(Rect2(sx, 0.0, sw, 3.0), Color("#342f3a"), true)
-
-func _draw_top_ceiling_cap(sx: float, sw: float, base_col: Color, _ch: int) -> void:
+func _draw_top_ceiling_cap(sx: float, sw: float, base_col: Color, _ch: int, cap_h: float = 16.0) -> void:
 	if sw <= 0.0:
 		return
 	# Ezuvchi ustidagi uya butun shift kabi to'q tosh rangi bilan bir xil bo'ladi.
 	# Hech qanday oq chiziq yoki qor chizilmaydi, toki ezuvchi joyi sezilib qolmasin!
-	var cap_h := 16.0
-	draw_rect(Rect2(sx, 0.0, sw, cap_h), base_col, true)
+	draw_rect(Rect2(sx, 0.0, sw, clampf(cap_h, 16.0, platform_size.y)), base_col, true)

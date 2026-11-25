@@ -180,6 +180,9 @@ func record_result(lvl: int, time_ms: float, deaths: int) -> int:
 		var lvl_str := LocaleManager.t("level_header", [lvl])
 		overall_best_text = "%.2fs (%s)" % [time_ms / 1000.0, lvl_str]
 
+	if not attempted_levels.has(lvl):
+		attempted_levels.append(lvl)
+
 	if stars >= 2:
 		var next_lvl := lvl + 1
 		if next_lvl <= 60 and not unlocked_levels.has(next_lvl):
@@ -221,6 +224,19 @@ func merge_cloud_save(cloud_data: Dictionary) -> void:
 				if ilvl >= 1 and not unlocked_levels.has(ilvl):
 					unlocked_levels.append(ilvl)
 					changed = true
+
+	if cloud_data.has("ad_unlocked_levels"):
+		var c_ad_unlocked = cloud_data["ad_unlocked_levels"]
+		if c_ad_unlocked is Array:
+			for lvl in c_ad_unlocked:
+				var ilvl := int(lvl)
+				if ilvl >= 1:
+					if not ad_unlocked_levels.has(ilvl):
+						ad_unlocked_levels.append(ilvl)
+						changed = true
+					if not unlocked_levels.has(ilvl):
+						unlocked_levels.append(ilvl)
+						changed = true
 					
 	# 2. Level stars
 	if cloud_data.has("level_stars"):
@@ -283,9 +299,20 @@ func record_level_attempt(lvl: int) -> void:
 # Yangilangan Reklama orqali Daraja Ochish Tizimi:
 # 1. Faqat birinchi qulflangan darajagagina ruxsat (sakrab ketish taqiqlanadi).
 # 2. Ochmoqchi bo'lgan darajadan oldingisini kamida bir marta o'ynagan bo'lishi shart (1-ni o'ynamay 2-ni ocholmaydi).
-# 3. Bitta daraja oralab (cheriz) reklama ruxsat beriladi (masalan 2 dan o'tolmasa 3 ni reklama bilan ochadi, 4 da bu yo'q, 5 da bor va h.k.).
+# 3. Bitta daraja oralab (cheriz) reklama ruxsat beriladi (masalan 1 dan o'tolmasa 2 ni reklama bilan ochadi, 3 da bu yo'q, 4 da yana bor va h.k.).
 # -------------------------------------------------------------
+func has_attempted_level(lvl: int) -> bool:
+	return attempted_levels.has(lvl) or is_level_completed(lvl)
+
+func _are_ads_enabled() -> bool:
+	var adm = get_node_or_null("/root/AdManager")
+	if adm and adm.has_method("is_ads_enabled"):
+		return bool(adm.is_ads_enabled())
+	return false
+
 func is_level_ad_unlockable(lvl: int) -> bool:
+	if not _are_ads_enabled():
+		return false
 	if lvl <= 1 or lvl > 60:
 		return false
 	if is_level_unlocked(lvl):
@@ -301,7 +328,7 @@ func is_level_ad_unlockable(lvl: int) -> bool:
 		return false
 		
 	# 2. Ochmoqchi bo'lgan darajadan oldingisini kamida bir marta o'ynagan bo'lishi shart
-	if not attempted_levels.has(lvl - 1):
+	if not has_attempted_level(lvl - 1):
 		return false
 		
 	# 3. Bitta daraja oralab (cheriz) reklama ruxsat beriladi
@@ -323,8 +350,14 @@ func get_lock_reason_dialog(lvl: int) -> Dictionary:
 			"title": LocaleManager.t("lock_title"),
 			"text": LocaleManager.t("lock_must_open_earlier")
 		}
+
+	if not _are_ads_enabled():
+		return {
+			"title": LocaleManager.t("lock_title"),
+			"text": LocaleManager.t("lock_need_stars", [lvl - 1])
+		}
 		
-	if not attempted_levels.has(lvl - 1):
+	if not has_attempted_level(lvl - 1):
 		return {
 			"title": LocaleManager.t("lock_title"),
 			"text": LocaleManager.t("lock_need_attempt", [lvl - 1])
@@ -349,6 +382,9 @@ func unlock_level_via_ad(lvl: int) -> void:
 	if not unlocked_levels.has(lvl):
 		unlocked_levels.append(lvl)
 	save_data()
+	var pm = get_node_or_null("/root/ProfileManager")
+	if pm and pm.has_method("sync_save_to_cloud"):
+		pm.sync_save_to_cloud()
 
 func is_level_completed(lvl: int) -> bool:
 	return level_stars.has(str(lvl)) and int(level_stars[str(lvl)]) > 0

@@ -41,8 +41,12 @@ var pending_invite_duel_id: String = ""
 
 func _ready() -> void:
 	var adm = get_node_or_null("/root/AdManager")
-	if adm and adm.has_method("show_banner"):
-		adm.show_banner()
+	var is_mobile := OS.has_feature("android") or OS.has_feature("ios") or OS.has_feature("mobile")
+	if adm:
+		if is_mobile and adm.has_method("hide_banner"):
+			adm.hide_banner()
+		elif not is_mobile and adm.has_method("show_banner"):
+			adm.show_banner()
 		
 	LocaleManager.language_changed.connect(_on_language_changed)
 	
@@ -96,6 +100,9 @@ func _ready() -> void:
 func _apply_responsive_layout() -> void:
 	var insets := UIResponsive.get_safe_insets(self)
 	var vp := UIResponsive.get_viewport_size(self)
+	var adm = get_node_or_null("/root/AdManager")
+	var banner_h: float = adm.get_top_banner_height() \
+		if adm and adm.has_method("get_top_banner_height") else 0.0
 	var aspect: float = 960.0 / 540.0
 	
 	var s: float = 1.0
@@ -116,18 +123,18 @@ func _apply_responsive_layout() -> void:
 
 	if settings_top_btn:
 		settings_top_btn.position.x = left_pad
-		settings_top_btn.position.y = 20.0 + float(insets["top"])
+		settings_top_btn.position.y = 20.0 + float(insets["top"]) + banner_h
 	if quit_top_btn:
 		quit_top_btn.position.x = left_pad
-		quit_top_btn.position.y = 74.0 + float(insets["top"])
+		quit_top_btn.position.y = 74.0 + float(insets["top"]) + banner_h
 		
 	if profile_top_btn:
 		profile_top_btn.position.x = vp.x - 160.0 - right_pad
-		profile_top_btn.position.y = 14.0 + float(insets["top"])
+		profile_top_btn.position.y = 14.0 + float(insets["top"]) + banner_h
 	var best_badge = get_node_or_null("TopBar/BestBadge")
 	if best_badge:
 		best_badge.position.x = vp.x - 280.0 - right_pad
-		best_badge.position.y = 17.0 + float(insets["top"])
+		best_badge.position.y = 17.0 + float(insets["top"]) + banner_h
 		
 	var cliff_x: float = 78.0 * s + ox + left_pad - 20.0
 	var cliff_y: float = 265.0 * s + oy
@@ -223,8 +230,7 @@ func _update_record() -> void:
 
 func _on_play_pressed() -> void:
 	SoundManager.play("click")
-	var completed := SaveManager.get_highest_completed_level()
-	var target_lvl: int = mini(60, completed + 1) if completed > 0 else 1
+	var target_lvl: int = mini(60, SaveManager.get_highest_unlocked_level())
 	GameManager.start_game(target_lvl)
 
 func _on_level_select_pressed() -> void:

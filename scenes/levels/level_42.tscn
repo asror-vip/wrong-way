@@ -4,10 +4,10 @@
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="2_pl"]
 [ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
 [ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
-[ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="5_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/rolling_boulder.tscn" id="6_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/circular_saw.tscn" id="7_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/trap_floor.tscn" id="8_tr"]
+[ext_resource type="PackedScene" path="res://scenes/traps/circular_saw.tscn" id="5_ci"]
+[ext_resource type="PackedScene" path="res://scenes/traps/falling_spike.tscn" id="6_fa"]
+[ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="7_po"]
+[ext_resource type="PackedScene" path="res://scenes/objects/paranormal_event.tscn" id="8_pe"]
 
 [node name="Level42" type="Node2D"]
 script = ExtResource("1_bl")
@@ -17,15 +17,15 @@ level_number = 42
 
 [node name="Ceiling" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
-platform_size = Vector2(960, 70)
+platform_size = Vector2(960, 50)
 
-[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(0, 380)
-platform_size = Vector2(760, 160)
+[node name="LeftBough" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(32, 340)
+platform_size = Vector2(210, 200)
 
-[node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(840, 380)
-platform_size = Vector2(120, 160)
+[node name="RightBough" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(718, 340)
+platform_size = Vector2(210, 200)
 
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
@@ -37,41 +37,38 @@ platform_size = Vector2(32, 540)
 
 [node name="Traps" type="Node2D" parent="."]
 
-[node name="SpikesStart" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(180, 348)
-spike_size = Vector2(48, 32)
+[node name="CircVine1" parent="Traps" instance=ExtResource("5_ci")]
+position = Vector2(395, 305)
+orbit_radius = 34.0
+orbit_speed = 2.3
 
-[node name="RollingBoulderFront" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(440, 350)
-roll_direction = -1
-roll_speed = 300
-trigger_distance = 220
+[node name="CircVine2" parent="Traps" instance=ExtResource("5_ci")]
+position = Vector2(565, 305)
+orbit_radius = 34.0
+orbit_speed = -2.3
 
-[node name="RollingBoulderBack" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(20, 350)
-roll_direction = 1
-roll_speed = 280
-trigger_distance = 200
+[node name="ThornMid" parent="Traps" instance=ExtResource("6_fa")]
+position = Vector2(480, 50)
+trigger_distance = 320.0
+pass_through_platforms = true
+stop_min_y = 300.0
+trigger_y_min = 270.0
+trigger_y_max = 380.0
 
-[node name="CircularSawMid" parent="Traps" instance=ExtResource("7_tr")]
-position = Vector2(570, 325)
-orbit_radius = 36
-orbit_speed = 2.2
-
-[node name="RollingBoulderFast" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(740, 350)
-roll_direction = -1
-roll_speed = 320
-trigger_distance = 220
-delay_before_roll = 0.35
-
-[node name="TrapFloorFinish" parent="Traps" instance=ExtResource("8_tr")]
-position = Vector2(760, 380)
-platform_size = Vector2(80, 160)
-shake_duration = 0.18
+[node name="PopUpRight" parent="Traps" instance=ExtResource("7_po")]
+position = Vector2(770, 340)
+spike_width = 42.0
+max_spike_height = 30.0
+trigger_y_min = 270.0
+trigger_y_max = 375.0
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
-position = Vector2(890, 380)
+position = Vector2(860, 340)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
-position = Vector2(70, 380)
+position = Vector2(105, 340)
+
+[node name="Paranormal" type="Node2D" parent="."]
+
+[node name="ParanormalEvent" parent="Paranormal" instance=ExtResource("8_pe")]
+event_type = "living_vine_bridge"

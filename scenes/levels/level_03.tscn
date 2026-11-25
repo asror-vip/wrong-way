@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/solid_platform.tscn" id="3_sp"]
 [ext_resource type="PackedScene" path="res://scenes/objects/exit_door.tscn" id="4_ed"]
 [ext_resource type="PackedScene" path="res://scenes/traps/pop_up_spikes.tscn" id="5_tr"]
-[ext_resource type="PackedScene" path="res://scenes/traps/spikes.tscn" id="6_tr"]
+[ext_resource type="PackedScene" path="res://scenes/objects/paranormal_event.tscn" id="6_pe"]
 
 [node name="Level03" type="Node2D"]
 script = ExtResource("1_bl")
@@ -17,14 +17,6 @@ level_number = 3
 position = Vector2(0, 0)
 platform_size = Vector2(960, 70)
 
-[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(0, 380)
-platform_size = Vector2(380, 160)
-
-[node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
-position = Vector2(450, 380)
-platform_size = Vector2(510, 160)
-
 [node name="WallLeft" parent="Platforms" instance=ExtResource("3_sp")]
 position = Vector2(0, 0)
 platform_size = Vector2(32, 540)
@@ -33,21 +25,35 @@ platform_size = Vector2(32, 540)
 position = Vector2(928, 0)
 platform_size = Vector2(32, 540)
 
+[node name="GroundStart" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(0, 380)
+platform_size = Vector2(380, 160)
+
+[node name="GroundEnd" parent="Platforms" instance=ExtResource("3_sp")]
+position = Vector2(475, 380)
+platform_size = Vector2(485, 160)
+
 [node name="Traps" type="Node2D" parent="."]
 
-[node name="PopUpSpike1" parent="Traps" instance=ExtResource("5_tr")]
-position = Vector2(200, 380)
-spike_width = 48
-max_spike_height = 32
-trigger_distance = 70
-warning_time = 0.7
+[node name="PopUp1" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(250, 380)
+spike_width = 40.0
+max_spike_height = 32.0
+trigger_distance = 68.0
 
-[node name="SpikesFinish" parent="Traps" instance=ExtResource("6_tr")]
-position = Vector2(680, 348)
-spike_size = Vector2(48, 32)
+[node name="PopUp2" parent="Traps" instance=ExtResource("5_tr")]
+position = Vector2(670, 380)
+spike_width = 44.0
+max_spike_height = 32.0
+trigger_distance = 68.0
 
 [node name="ExitDoor" parent="." instance=ExtResource("4_ed")]
 position = Vector2(860, 380)
 
 [node name="Player" parent="." instance=ExtResource("2_pl")]
 position = Vector2(80, 380)
+
+[node name="Paranormal" type="Node2D" parent="."]
+
+[node name="ParanormalEvent" parent="Paranormal" instance=ExtResource("6_pe")]
+event_type = "death_tally_wall"

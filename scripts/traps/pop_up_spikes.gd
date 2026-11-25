@@ -1,18 +1,26 @@
 extends Area2D
 class_name PopUpSpikesTrap
 
+const TrapBiomeArt := preload("res://scripts/traps/trap_biome_art.gd")
+const TrapBiomeVFX := preload("res://scripts/traps/trap_biome_vfx.gd")
+
 @export var spike_width: float = 32.0
 @export var max_spike_height: float = 32.0
 @export var trigger_distance: float = 85.0
 @export var warning_time: float = 0.0
 @export var is_timer_mode: bool = false
 @export var cycle_time: float = 2.4
+@export var trigger_y_min: float = -9999.0
+@export var trigger_y_max: float = 9999.0
 
 var current_height: float = 0.0
 var is_triggered: bool = false
 var is_active: bool = false
 var timer: float = 0.0
 var warning_timer: float = 0.0
+var overshoot_scale: float = 1.0
+var pop_tween: Tween = null
+var _was_timer_extended: bool = false
 
 @onready var col_shape: CollisionShape2D = $CollisionShape2D
 
@@ -35,9 +43,14 @@ func _physics_process(delta: float) -> void:
 		timer += delta
 		var phase := fmod(timer, cycle_time)
 		if phase < cycle_time * 0.5:
+			if not _was_timer_extended:
+				_was_timer_extended = true
+				var ch_t := TrapBiomeArt.get_chapter(self)
+				TrapBiomeVFX.emit_spike_erupt(self, global_position + Vector2(spike_width * 0.5, 0.0), spike_width, ch_t)
 			current_height = move_toward(current_height, max_spike_height, delta * 500.0)
 			is_active = current_height > (max_spike_height * 0.3)
 		else:
+			_was_timer_extended = false
 			current_height = move_toward(current_height, 0.0, delta * 300.0)
 			is_active = current_height > (max_spike_height * 0.3)
 	else:
@@ -47,13 +60,18 @@ func _physics_process(delta: float) -> void:
 				var p_dead: bool = "is_dead" in player and player.is_dead
 				var p_inv: bool = "is_invulnerable" in player and player.is_invulnerable
 				if not p_dead and not p_inv:
-					var center_x := global_position.x + spike_width / 2.0
-					var dx: float = abs(player.global_position.x - center_x)
-					var dy: float = abs(player.global_position.y - global_position.y)
-					var effective_trigger := maxf(trigger_distance, spike_width / 2.0 + 20.0)
-					if dx < effective_trigger and dy < 85.0:
-						var is_direct_step := dx <= (spike_width / 2.0 + 16.0)
-						_trigger(is_direct_step)
+					var py: float = player.global_position.y
+					if py >= trigger_y_min and py <= trigger_y_max:
+						var center_x := global_position.x + spike_width / 2.0
+						var dx: float = abs(player.global_position.x - center_x)
+						var rel_y: float = global_position.y - py
+						var y_ok := true
+						if trigger_y_min <= -9000.0 and trigger_y_max >= 9000.0:
+							y_ok = rel_y >= -20.0 and rel_y <= 85.0
+						var effective_trigger := maxf(trigger_distance, spike_width / 2.0 + 20.0)
+						if dx < effective_trigger and y_ok:
+							var is_direct_step := dx <= (spike_width / 2.0 + 16.0)
+							_trigger(is_direct_step)
 		elif warning_timer > 0.0:
 			warning_timer -= delta
 		else:
@@ -90,52 +108,26 @@ func _physics_process(delta: float) -> void:
 func _trigger(instant: bool = false) -> void:
 	is_triggered = true
 	warning_timer = 0.0 if instant else minf(warning_time, 0.02)
+	var ch := TrapBiomeArt.get_chapter(self)
+	TrapBiomeVFX.emit_spike_erupt(self, global_position + Vector2(spike_width * 0.5, 0.0), spike_width, ch)
 	var sm = get_node_or_null("/root/SoundManager")
-	if sm and sm.has_method("play"):
+	if sm and sm.has_method("play_biome_trap"):
+		sm.play_biome_trap("trigger", ch)
+	elif sm and sm.has_method("play"):
 		sm.play("trap")
+	if pop_tween and pop_tween.is_valid():
+		pop_tween.kill()
+	overshoot_scale = 1.22
+	pop_tween = create_tween()
+	pop_tween.tween_property(self, "overshoot_scale", 0.94, 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	pop_tween.tween_property(self, "overshoot_scale", 1.0, 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _draw() -> void:
 	if current_height <= 1.0:
 		return
-
-	var ch: int = 1
-	var gm = get_node_or_null("/root/GameManager")
-	if gm and gm.has_method("get_current_chapter"):
-		ch = gm.get_current_chapter()
-
-	var teeth_col := Color("#1c1a22")
-	var stroke_col := Color("#1c1a22", 0.0)
-	if ch == 2:
-		teeth_col = Color(0.22, 0.74, 0.97, 0.90)
-		stroke_col = Color("#ffffff")
-	elif ch == 3:
-		teeth_col = Color("#14532d")
-		stroke_col = Color("#4ade80")
-	elif ch == 4:
-		teeth_col = Color("#78350f")
-		stroke_col = Color("#fcd34d")
-	elif ch == 5:
-		teeth_col = Color("#450a0a")
-		stroke_col = Color("#f97316")
-		
-	var w := spike_width
-	var count := int(maxf(1.0, w / 16.0))
-	var step := w / float(count)
-	
-	for i in range(count):
-		var sx0 := float(i) * step
-		var sx1 := sx0 + step / 2.0
-		var sx2 := sx0 + step
-		
-		# Pol bilan uzviy birlashish uchun asos 2px chuqurroq tushiriladi
-		var tri := PackedVector2Array([
-			Vector2(sx0, 2.0),
-			Vector2(sx1, -current_height),
-			Vector2(sx2, 2.0)
-		])
-		draw_colored_polygon(tri, teeth_col)
-		if stroke_col.a > 0.0:
-			draw_polyline(tri, stroke_col, 1.2)
+	var ch := TrapBiomeArt.get_chapter(self)
+	var draw_height := current_height * overshoot_scale
+	TrapBiomeArt.draw_floor_spikes(self, spike_width, draw_height, ch, 2.0, -draw_height, false)
 
 func _on_body_entered(body: Node2D) -> void:
 	if is_active:
@@ -153,10 +145,15 @@ func _kill_player(body: Node2D) -> void:
 			body.die()
 
 func reset_trap() -> void:
+	if pop_tween and pop_tween.is_valid():
+		pop_tween.kill()
+	overshoot_scale = 1.0
 	current_height = 0.0
 	is_triggered = false
 	is_active = false
+	_was_timer_extended = false
 	timer = 0.0
 	warning_timer = 0.0
 	if col_shape:
 		col_shape.disabled = true
+	queue_redraw()

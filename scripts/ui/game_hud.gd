@@ -3,6 +3,7 @@ extends Control
 # Wrong Way - Game HUD Controller
 # Atmospheric Minimalist HUD with Circular Glass Controls & Diamond Header
 
+@onready var top_hud: Control = get_node_or_null("TopHUD")
 @onready var pause_btn: Button = get_node_or_null("TopHUD/PauseBtn")
 @onready var level_label: Label = get_node_or_null("TopHUD/CenterHeader/HBox/LevelLabel")
 @onready var time_icon: TextureRect = get_node_or_null("TopHUD/RightBox/TimeChip/HBox/TimeIcon")
@@ -29,6 +30,9 @@ func _ready() -> void:
 	GameManager.level_started.connect(_on_level_started)
 	SaveManager.touch_layout_changed.connect(_apply_custom_touch_layout)
 	get_viewport().size_changed.connect(_apply_custom_touch_layout)
+	var adm = get_node_or_null("/root/AdManager")
+	if adm and adm.has_signal("banner_visibility_changed"):
+		adm.banner_visibility_changed.connect(_on_banner_visibility_changed)
 	
 	_apply_custom_touch_layout()
 	_setup_icons()
@@ -57,10 +61,19 @@ func _update_touch_visibility() -> void:
 		if not is_mob:
 			_release_all_touch_actions()
 
+func _on_banner_visibility_changed(_is_visible: bool) -> void:
+	_apply_custom_touch_layout()
+
 func _apply_custom_touch_layout() -> void:
 	var def_positions := UIResponsive.get_default_touch_positions(self)
 	var insets := UIResponsive.get_safe_insets(self)
 	var vp := UIResponsive.get_viewport_size(self)
+	var adm = get_node_or_null("/root/AdManager")
+	var banner_h: float = adm.get_top_banner_height() \
+		if adm and adm.has_method("get_top_banner_height") else 0.0
+	if top_hud:
+		top_hud.offset_top = banner_h
+		top_hud.offset_bottom = banner_h + 56.0
 	
 	if pause_btn:
 		pause_btn.position = Vector2(20.0 + insets["left"], 16.0 + insets["top"])
