@@ -59,12 +59,19 @@ func _start_browser_oauth() -> void:
 	var supabase_url: String = Env.get_supabase_url()
 	var auth_url := "%s/auth/v1/authorize?provider=google&redirect_to=%s" % [supabase_url, REDIRECT_URI.uri_encode()]
 
-	print("GoogleAuthService: Brauzerda rasmiy Google sahifasi ochilmoqda: ", auth_url)
-	var open_err := OS.shell_open(auth_url)
-	if open_err != OK:
-		_stop_loopback_server()
-		auth_failed.emit("Brauzerni ochib bo'lmadi (kod: %d)" % open_err)
-		return
+	print("GoogleAuthService: Google Sign-In ochilmoqda: ", auth_url)
+	if OS.get_name() == "Android" and Engine.has_singleton("WrongWayAccountPicker"):
+		var picker = Engine.get_singleton("WrongWayAccountPicker")
+		if picker.has_method("openInAppAuth"):
+			picker.openInAppAuth(auth_url)
+		else:
+			OS.shell_open(auth_url)
+	else:
+		var open_err := OS.shell_open(auth_url)
+		if open_err != OK:
+			_stop_loopback_server()
+			auth_failed.emit("Brauzerni ochib bo'lmadi (kod: %d)" % open_err)
+			return
 
 	# 120 soniyalik kutish taymeri
 	auth_timeout_timer = get_tree().create_timer(120.0, true)
@@ -195,6 +202,10 @@ func _handle_http_client_sync(peer: StreamPeerTCP) -> bool:
 	peer.disconnect_from_host()
 
 	if has_query:
+		if OS.get_name() == "Android" and Engine.has_singleton("WrongWayAccountPicker"):
+			var picker = Engine.get_singleton("WrongWayAccountPicker")
+			if picker.has_method("bringGameToFront"):
+				picker.bringGameToFront()
 		call_deferred("_parse_auth_request", request_line)
 		return true
 	return false
