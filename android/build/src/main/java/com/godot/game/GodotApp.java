@@ -36,6 +36,7 @@ import org.godotengine.godot.plugin.GodotPlugin;
 import java.util.Set;
 import java.util.HashSet;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -73,6 +74,14 @@ public class GodotApp extends GodotActivity {
 		SplashScreen.installSplashScreen(this);
 		EdgeToEdge.enable(this);
 		super.onCreate(savedInstanceState);
+		WrongWayAccountPicker.handleDeepLinkIntent(getIntent());
+	}
+
+	@Override
+	public void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		setIntent(intent);
+		WrongWayAccountPicker.handleDeepLinkIntent(intent);
 	}
 
 	@Override

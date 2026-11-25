@@ -32,7 +32,33 @@ func _exit_tree() -> void:
 	_stop_loopback_server()
 
 func start_google_sign_in() -> void:
-	_start_browser_oauth()
+	if OS.get_name() == "Android" and Engine.has_singleton("WrongWayAccountPicker"):
+		_start_android_in_app_oauth()
+	else:
+		_start_browser_oauth()
+
+func _start_android_in_app_oauth() -> void:
+	var picker = Engine.get_singleton("WrongWayAccountPicker")
+	if picker == null:
+		_start_browser_oauth()
+		return
+	if picker.has_signal("oauth_callback_received") and not picker.is_connected("oauth_callback_received", _on_android_oauth_callback):
+		picker.connect("oauth_callback_received", _on_android_oauth_callback)
+	if picker.has_signal("account_picker_failed") and not picker.is_connected("account_picker_failed", _on_android_oauth_failed):
+		picker.connect("account_picker_failed", _on_android_oauth_failed)
+
+	var supabase_url: String = Env.get_supabase_url()
+	var auth_url := "%s/auth/v1/authorize?provider=google&redirect_to=%s" % [supabase_url, REDIRECT_URI.uri_encode()]
+	print("GoogleAuthService: Android in-app OAuth ochilmoqda: ", auth_url)
+	picker.call("openInAppAuth", auth_url)
+
+func _on_android_oauth_callback(query_str: String) -> void:
+	print("GoogleAuthService: Android deep-link callback keldi!")
+	_parse_auth_query(query_str)
+
+func _on_android_oauth_failed(err_msg: String) -> void:
+	print("GoogleAuthService: Android OAuth xatosi: ", err_msg)
+	auth_failed.emit(err_msg)
 
 # -------------------------------------------------------------
 # Cross-Platform Official Google Browser OAuth (Android + Desktop)
@@ -220,6 +246,9 @@ func _parse_auth_request(req_line: String) -> void:
 		return
 
 	var query_str := path_and_query.split("?")[1]
+	_parse_auth_query(query_str)
+
+func _parse_auth_query(query_str: String) -> void:
 	var query_params := {}
 	for param in query_str.split("&"):
 		var kv := param.split("=")
