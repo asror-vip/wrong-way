@@ -12,6 +12,15 @@ func _ready() -> void:
 	# GameManager autoload tartibda keyinroq yuklanadi, shuning uchun deferred ulaymiz.
 	_connect_gameplay_mode.call_deferred()
 
+func _exit_tree() -> void:
+	if music_vol_tween and music_vol_tween.is_valid():
+		music_vol_tween.kill()
+	if music_player:
+		music_player.stop()
+	for p in players.values():
+		if p is AudioStreamPlayer:
+			p.stop()
+
 func _connect_gameplay_mode() -> void:
 	var gm = get_node_or_null("/root/GameManager")
 	if gm:

@@ -93,7 +93,8 @@ func _apply_safe_insets() -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	if start_box and start_box.visible and not is_transitioning:
-		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) \
+				or (event is InputEventScreenTouch and event.pressed and event.index == 0):
 			_on_start_pressed()
 			accept_event()
 
@@ -125,22 +126,34 @@ func _setup_buttons() -> void:
 	if auth_modal and auth_modal.has_signal("auth_completed"):
 		auth_modal.auth_completed.connect(_on_auth_completed)
 
-	GoogleAuthService.auth_succeeded.connect(func(_u):
-		ProfileManager.has_chosen_auth = true
-		ProfileManager.save_profile()
-		if greeting_label:
-			greeting_label.text = "Xush kelibsiz, " + ProfileManager.username + "!"
-		await get_tree().create_timer(0.3).timeout
+	if not GoogleAuthService.auth_succeeded.is_connected(_on_google_auth_succeeded):
+		GoogleAuthService.auth_succeeded.connect(_on_google_auth_succeeded)
+	if not GoogleAuthService.auth_failed.is_connected(_on_google_auth_failed):
+		GoogleAuthService.auth_failed.connect(_on_google_auth_failed)
+
+func _exit_tree() -> void:
+	if GoogleAuthService:
+		if GoogleAuthService.auth_succeeded.is_connected(_on_google_auth_succeeded):
+			GoogleAuthService.auth_succeeded.disconnect(_on_google_auth_succeeded)
+		if GoogleAuthService.auth_failed.is_connected(_on_google_auth_failed):
+			GoogleAuthService.auth_failed.disconnect(_on_google_auth_failed)
+
+func _on_google_auth_succeeded(_u: Dictionary) -> void:
+	ProfileManager.has_chosen_auth = true
+	ProfileManager.save_profile()
+	if greeting_label:
+		greeting_label.text = "Xush kelibsiz, " + ProfileManager.username + "!"
+	await get_tree().create_timer(0.3).timeout
+	if is_inside_tree():
 		_finish_and_open_main_menu()
-	)
-	GoogleAuthService.auth_failed.connect(func(err):
-		print("SplashScreen: Google kirish xatosi: ", err)
-		if auth_hint and auth_box and auth_box.visible:
-			auth_hint.text = "Google: " + str(err)
-			auth_hint.add_theme_color_override("font_color", Color(1.0, 0.55, 0.45))
-		if greeting_label and start_box and start_box.visible:
-			greeting_label.text = "Google: " + str(err)
-	)
+
+func _on_google_auth_failed(err: String) -> void:
+	print("SplashScreen: Google kirish xatosi: ", err)
+	if auth_hint and auth_box and auth_box.visible:
+		auth_hint.text = "Google: " + str(err)
+		auth_hint.add_theme_color_override("font_color", Color(1.0, 0.55, 0.45))
+	if greeting_label and start_box and start_box.visible:
+		greeting_label.text = "Google: " + str(err)
 
 func _start_background_drift() -> void:
 	if not bg_texture:

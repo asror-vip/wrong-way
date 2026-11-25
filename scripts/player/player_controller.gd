@@ -78,7 +78,9 @@ func _ready() -> void:
 		InputMap.action_add_event("dash", ev_j)
 
 func _physics_process(delta: float) -> void:
-	if is_dead or is_entering_door or GameManager.is_countdown_active:
+	var gm_cd := get_node_or_null("/root/GameManager") if is_inside_tree() else null
+	var is_cd_active := gm_cd != null and bool(gm_cd.get("is_countdown_active"))
+	if is_dead or is_entering_door or is_cd_active:
 		velocity = Vector2.ZERO
 		return
 
@@ -255,7 +257,7 @@ func _physics_process(delta: float) -> void:
 
 	# O'lim tekisligi config'dan o'qiladi yoki 960x540 arena tubiga moslanadi
 	var death_y: float = 536.0
-	var trap_cfg = get_node_or_null("/root/TrapConfig")
+	var trap_cfg = get_node_or_null("/root/TrapConfig") if is_inside_tree() else null
 	if trap_cfg and "death_plane_y" in trap_cfg:
 		death_y = float(trap_cfg.death_plane_y)
 

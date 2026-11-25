@@ -46,22 +46,42 @@ func _ready() -> void:
 	if copy_btn: copy_btn.pressed.connect(_on_copy_tag)
 	if auth_action_btn: auth_action_btn.pressed.connect(_on_auth_action_pressed)
 	
-	ProfileManager.profile_updated.connect(func(_d): _refresh_profile_display())
-	ProfileManager.profile_loaded.connect(func(_d): _refresh_profile_display())
-	
-	GoogleAuthService.auth_succeeded.connect(func(_u):
-		_refresh_profile_display()
-		_load_stats()
-		_show_toast("Google hisobi muvaffaqiyatli ulandi!")
-	)
-	GoogleAuthService.auth_failed.connect(func(err):
-		_show_toast("Google: " + str(err))
-	)
+	if not ProfileManager.profile_updated.is_connected(_on_profile_changed):
+		ProfileManager.profile_updated.connect(_on_profile_changed)
+	if not ProfileManager.profile_loaded.is_connected(_on_profile_changed):
+		ProfileManager.profile_loaded.connect(_on_profile_changed)
+	if not GoogleAuthService.auth_succeeded.is_connected(_on_google_auth_succeeded):
+		GoogleAuthService.auth_succeeded.connect(_on_google_auth_succeeded)
+	if not GoogleAuthService.auth_failed.is_connected(_on_google_auth_failed):
+		GoogleAuthService.auth_failed.connect(_on_google_auth_failed)
 	
 	_apply_modal_styles()
 	_setup_avatar_buttons()
 	if name_input:
 		name_input.max_length = 14
+
+func _exit_tree() -> void:
+	if ProfileManager:
+		if ProfileManager.profile_updated.is_connected(_on_profile_changed):
+			ProfileManager.profile_updated.disconnect(_on_profile_changed)
+		if ProfileManager.profile_loaded.is_connected(_on_profile_changed):
+			ProfileManager.profile_loaded.disconnect(_on_profile_changed)
+	if GoogleAuthService:
+		if GoogleAuthService.auth_succeeded.is_connected(_on_google_auth_succeeded):
+			GoogleAuthService.auth_succeeded.disconnect(_on_google_auth_succeeded)
+		if GoogleAuthService.auth_failed.is_connected(_on_google_auth_failed):
+			GoogleAuthService.auth_failed.disconnect(_on_google_auth_failed)
+
+func _on_profile_changed(_d: Dictionary) -> void:
+	_refresh_profile_display()
+
+func _on_google_auth_succeeded(_u: Dictionary) -> void:
+	_refresh_profile_display()
+	_load_stats()
+	_show_toast("Google hisobi muvaffaqiyatli ulandi!")
+
+func _on_google_auth_failed(err: String) -> void:
+	_show_toast("Google: " + str(err))
 
 func open() -> void:
 	visible = true

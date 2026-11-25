@@ -30,6 +30,7 @@ var http_guest: HTTPRequest
 var http_google: HTTPRequest
 var http_update: HTTPRequest
 var http_cloud: HTTPRequest
+var _cloud_sync_pending: bool = false
 
 var id_overlay: CanvasLayer
 var id_corner_lbl: Label
@@ -235,7 +236,15 @@ func login_with_google(google_email: String, display_name: String = "") -> void:
 	var clean_name := display_name.strip_edges()
 	if clean_name.is_empty() or clean_name.to_lower() == "player":
 		clean_name = get_name_from_email(clean_email)
-		
+
+	# Boshqa Google hisobiga almashtirilganda avvalgi hisob yutuqlari aralashib ketmasligi uchun tozalash
+	if auth_provider == "google" and not email.is_empty() and email != clean_email:
+		var save_sys = get_node_or_null("/root/SaveManager")
+		if save_sys and save_sys.has_method("reset_progress"):
+			save_sys.reset_progress()
+		player_id = ""
+		is_ready_online = false
+
 	username = clean_name
 	email = clean_email
 	auth_provider = "google"
@@ -276,12 +285,6 @@ func _on_google_completed(_result: int, response_code: int, _headers: PackedStri
 			_save_local_cache(get_profile_dict())
 			is_ready_online = true
 			print("ProfileManager: Google hisobi muvaffaqiyatli ulandi! Name: ", username, " Email: ", email, " Tag: ", player_tag)
-			
-			# Bulutli saqlash sinxronlash
-			if parsed.has("save_data") and parsed["save_data"] is Dictionary:
-				var save_sys = get_node_or_null("/root/SaveManager")
-				if save_sys and save_sys.has_method("merge_cloud_save"):
-					save_sys.merge_cloud_save(parsed["save_data"])
 			sync_save_to_cloud()
 			
 			profile_updated.emit(get_profile_dict())
@@ -292,6 +295,7 @@ func _on_google_completed(_result: int, response_code: int, _headers: PackedStri
 	google_login_finished.emit(false, "Serverga ulanishda xatolik (HTTP %d)" % response_code)
 
 func logout_to_guest() -> void:
+	_cloud_sync_pending = false
 	if http_google and http_google.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
 		http_google.cancel_request()
 	if http_cloud and http_cloud.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
@@ -342,7 +346,9 @@ func sync_save_to_cloud() -> void:
 	if not http_cloud:
 		return
 	if http_cloud.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+		_cloud_sync_pending = true
 		return
+	_cloud_sync_pending = false
 		
 	var save_sys = get_node_or_null("/root/SaveManager")
 	if not save_sys or not save_sys.has_method("get_save_payload"):
@@ -370,6 +376,9 @@ func sync_save_to_cloud() -> void:
 func _on_cloud_completed(_result: int, response_code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
 	if response_code in [200, 204]:
 		print("ProfileManager: Yutuqlar bulutga muvaffaqiyatli saqlandi!")
+	if _cloud_sync_pending:
+		_cloud_sync_pending = false
+		sync_save_to_cloud()
 
 func get_known_google_accounts() -> Array:
 	var accounts: Array = []
@@ -502,6 +511,18 @@ func add_recent_friend(tag: String, friend_name: String = "", av_url: String = "
 
 func get_saved_friends() -> Array:
 	return saved_friends
+
+func is_friend(tag_or_id: String) -> bool:
+	var key := tag_or_id.strip_edges().to_upper()
+	if key.is_empty():
+		return false
+	for item in saved_friends:
+		if item is Dictionary:
+			var f_tag := str(item.get("player_tag", "")).strip_edges().to_upper()
+			var f_id := str(item.get("id", "")).strip_edges().to_upper()
+			if key == f_tag or (not f_id.is_empty() and key == f_id):
+				return true
+	return false
 
 # -------------------------------------------------------------
 # Doimiy Pastki O'ng Burchakdagi Player ID (Hamma sahifada)

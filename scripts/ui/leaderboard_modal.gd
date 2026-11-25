@@ -65,8 +65,13 @@ func _ready() -> void:
 	if my_avatar_rect:
 		my_avatar_rect.texture = IconFactory.get_icon("avatar_player", 1.0)
 		
-	LocaleManager.language_changed.connect(_on_language_changed)
+	if not LocaleManager.language_changed.is_connected(_on_language_changed):
+		LocaleManager.language_changed.connect(_on_language_changed)
 	_update_texts()
+
+func _exit_tree() -> void:
+	if LocaleManager and LocaleManager.language_changed.is_connected(_on_language_changed):
+		LocaleManager.language_changed.disconnect(_on_language_changed)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -177,7 +182,7 @@ func _fetch_supabase_leaderboard() -> void:
 	if is_fetching or not http_request:
 		return
 	is_fetching = true
-	var url := Env.get_supabase_url() + "/rest/v1/profiles?select=id,username,avatar_index,stars,time_sec,deaths&order=stars.desc,time_sec.asc&limit=50"
+	var url := Env.get_supabase_url() + "/rest/v1/profiles?select=id,player_tag,username,avatar_url,total_stars,highest_level,save_data&order=total_stars.desc,highest_level.desc&limit=50"
 	var headers := [
 		"apikey: " + Env.get_supabase_anon_key(),
 		"Authorization: Bearer " + Env.get_supabase_anon_key()
@@ -195,19 +200,43 @@ func _on_http_completed(_result: int, response_code: int, _headers: PackedString
 			for row in parsed:
 				if row is Dictionary:
 					var p_id: String = str(row.get("id", ""))
+					var p_tag: String = str(row.get("player_tag", ""))
 					# O'z profilimizni lokal holatda pastda qo'shamiz
-					if p_id == ProfileManager.player_id:
+					if (not ProfileManager.player_id.is_empty() and p_id == ProfileManager.player_id) \
+							or (not ProfileManager.player_tag.is_empty() and p_tag == ProfileManager.player_tag):
 						continue
-					var a_idx: int = int(row.get("avatar_index", 1)) - 1
-					if a_idx < 0 or a_idx >= av_keys.size(): a_idx = 0
+					var av_str: String = str(row.get("avatar_url", "av_1"))
+					var a_idx: int = (av_str.trim_prefix("av_").to_int() - 1) if av_str.begins_with("av_") else 0
+					if a_idx < 0 or a_idx >= av_keys.size():
+						a_idx = 0
 					var u_name: String = str(row.get("username", "O'yinchi"))
+					var sd = row.get("save_data", {})
+					var stars_val: int = int(row.get("total_stars", 0))
+					var total_time_sec: int = 0
+					var total_deaths: int = 0
+					if sd is Dictionary:
+						if stars_val == 0 and sd.has("total_stars"):
+							stars_val = int(sd.get("total_stars", 0))
+						var l_stars = sd.get("level_stars", {})
+						var l_times = sd.get("level_best_times", {})
+						var l_deaths = sd.get("level_best_deaths", {})
+						if l_times is Dictionary:
+							for k in l_times.keys():
+								var t_ms: float = float(l_times[k])
+								if t_ms > 0.0 and t_ms < 999999000.0:
+									total_time_sec += maxi(1, int(round(t_ms / 1000.0)))
+						if l_deaths is Dictionary and l_stars is Dictionary:
+							for k in l_deaths.keys():
+								if int(l_stars.get(str(k), 0)) > 0:
+									total_deaths += int(l_deaths[k])
 					remote_players.append({
 						"id": p_id,
+						"player_tag": p_tag,
 						"name": u_name,
 						"avatar": av_keys[a_idx],
-						"stars": int(row.get("stars", 0)),
-						"time_sec": int(row.get("time_sec", 0)),
-						"deaths": int(row.get("deaths", 0)),
+						"stars": stars_val,
+						"time_sec": total_time_sec,
+						"deaths": total_deaths,
 						"is_me": false
 					})
 			_refresh_list()
@@ -216,6 +245,7 @@ func _refresh_list() -> void:
 	if not list_box:
 		return
 	for ch in list_box.get_children():
+		list_box.remove_child(ch)
 		ch.queue_free()
 		
 	# Live Player Stats
@@ -223,7 +253,7 @@ func _refresh_list() -> void:
 	var my_time: int = SaveManager.get_total_beaten_time_sec()
 	var my_deaths: int = SaveManager.get_total_beaten_deaths()
 	
-	var my_display_name := ProfileManager.username
+	var my_display_name := ProfileManager.username.strip_edges()
 	var my_you_str := LocaleManager.t("player_you")
 	if my_display_name.is_empty() or my_display_name.to_lower() == "player" or my_display_name.to_lower() == my_you_str.to_lower() or my_display_name.to_lower() == "siz":
 		my_display_name = my_you_str
@@ -250,7 +280,9 @@ func _refresh_list() -> void:
 	else:
 		# Do'stlar ro'yxati
 		for p in remote_players:
-			if ProfileManager.is_friend(p.get("id", "")):
+			var p_tag := str(p.get("player_tag", ""))
+			var p_id := str(p.get("id", ""))
+			if ProfileManager.is_friend(p_tag) or ProfileManager.is_friend(p_id):
 				raw_list.append(p)
 		
 	raw_list.append(my_data)
@@ -365,7 +397,7 @@ func _build_row(rank: int, data: Dictionary) -> Control:
 	var name_lbl := Label.new()
 	var player_name: String = data.get("name", "Player")
 	if is_me:
-		name_lbl.text = "%s (SIZ)" % player_name
+		name_lbl.text = player_name
 		name_lbl.add_theme_color_override("font_color", Color("#38bdf8"))
 	else:
 		name_lbl.text = player_name

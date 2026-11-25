@@ -68,6 +68,14 @@ func load_data() -> void:
 	if not OS.has_feature("editor"):
 		debug_unlock_all = false
 
+	# Eskicha/noto'g'ri saqlangan bob kirishlarini tozalash (50 / 55 yulduzsiz 2/3-bobga o'tib ketmasligi uchun)
+	if not is_chapter_unlocked(2):
+		for l in range(21, 41):
+			ad_unlocked_levels.erase(l)
+	if not is_chapter_unlocked(3):
+		for l in range(41, 61):
+			ad_unlocked_levels.erase(l)
+
 	if not unlocked_levels.has(1):
 		unlocked_levels.push_front(1)
 
@@ -150,10 +158,10 @@ func is_level_unlocked(lvl: int) -> bool:
 func get_highest_unlocked_level() -> int:
 	var highest := 1
 	for lvl in unlocked_levels:
-		if lvl > highest:
+		if lvl > highest and is_level_unlocked(lvl):
 			highest = lvl
 	for lvl in ad_unlocked_levels:
-		if lvl > highest:
+		if lvl > highest and is_level_unlocked(lvl):
 			highest = lvl
 	return highest
 
@@ -276,15 +284,45 @@ func merge_cloud_save(cloud_data: Dictionary) -> void:
 				if c_t < l_t:
 					level_best_times[str_k] = c_t
 					changed = true
+
+	# 3b. Best deaths
+	if cloud_data.has("level_best_deaths"):
+		var c_deaths = cloud_data["level_best_deaths"]
+		if c_deaths is Dictionary:
+			for k in c_deaths.keys():
+				var str_k := str(k)
+				var c_d := int(c_deaths[k])
+				if not level_best_deaths.has(str_k) or c_d < int(level_best_deaths[str_k]):
+					level_best_deaths[str_k] = c_d
+					changed = true
 					
 	# 4. Overall best
 	if cloud_data.has("overall_best_ms"):
 		var c_ob := float(cloud_data["overall_best_ms"])
-		if c_ob < overall_best_ms:
+		if c_ob > 0.0 and c_ob < overall_best_ms:
 			overall_best_ms = c_ob
 			if cloud_data.has("overall_best_text"):
 				overall_best_text = str(cloud_data["overall_best_text"])
 			changed = true
+
+	# Bob yulduz shartlari asosida 21/41-darajalar holatini tekislash
+	if not is_chapter_unlocked(2):
+		for l in range(21, 41):
+			if ad_unlocked_levels.has(l):
+				ad_unlocked_levels.erase(l)
+				changed = true
+	elif not unlocked_levels.has(21):
+		unlocked_levels.append(21)
+		changed = true
+
+	if not is_chapter_unlocked(3):
+		for l in range(41, 61):
+			if ad_unlocked_levels.has(l):
+				ad_unlocked_levels.erase(l)
+				changed = true
+	elif not unlocked_levels.has(41):
+		unlocked_levels.append(41)
+		changed = true
 			
 	if not unlocked_levels.has(1):
 		unlocked_levels.push_front(1)
@@ -329,6 +367,10 @@ func is_level_ad_unlockable(lvl: int) -> bool:
 	if not _are_ads_enabled():
 		return false
 	if lvl <= 1 or lvl > 60:
+		return false
+	if lvl >= 21 and lvl <= 40 and not is_chapter_unlocked(2):
+		return false
+	if lvl >= 41 and lvl <= 60 and not is_chapter_unlocked(3):
 		return false
 	if is_level_unlocked(lvl):
 		return false
@@ -520,9 +562,9 @@ func is_chapter_unlocked(chapter: int) -> bool:
 	if chapter == 1:
 		return true
 	elif chapter == 2:
-		return get_chapter_stars(1) >= 50 or ad_unlocked_levels.has(21)
+		return get_chapter_stars(1) >= 50
 	elif chapter == 3:
-		return get_chapter_stars(2) >= 55 or ad_unlocked_levels.has(41)
+		return get_chapter_stars(2) >= 55
 	elif chapter >= 4:
 		return get_chapter_stars(chapter - 1) >= 60
 	return false
@@ -543,6 +585,11 @@ func reset_progress() -> void:
 	level_best_deaths.clear()
 	overall_best_text = "Mavjud emas"
 	overall_best_ms = 999999999.0
+	var bak_path := SAVE_PATH + ".bak"
+	if FileAccess.file_exists(bak_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(bak_path))
+	if FileAccess.file_exists(SAVE_PATH):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
 	save_data()
 
 func reset_all_data() -> void:
