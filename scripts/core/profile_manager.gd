@@ -148,9 +148,10 @@ func _apply_profile_dict(data: Dictionary) -> void:
 	if avatar_index < 1 or avatar_index > 5:
 		avatar_index = 1
 		
-	if data.has("auth_provider"):
+	if not email.is_empty() and email.contains("@"):
+		auth_provider = "google"
+	elif data.has("auth_provider"):
 		var server_provider := str(data["auth_provider"])
-		# Agar lokal holatda mehmonga chiqilgan bo'lsa, serverdagi eski Google ma'lumoti uni bosib ketmasligi kerak
 		if auth_provider == "guest" and email.is_empty() and server_provider == "google":
 			pass
 		else:
@@ -246,6 +247,9 @@ func login_with_google(google_email: String, display_name: String = "") -> void:
 	
 	print("ProfileManager: Google orqali kirish so'rovi yuborilmoqda: ", clean_email, " (", clean_name, ")")
 	
+	if http_google.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+		http_google.cancel_request()
+
 	var url: String = Env.get_supabase_url() + "/rest/v1/rpc/login_or_link_google"
 	var anon_key: String = Env.get_supabase_anon_key()
 	var headers := [
@@ -288,25 +292,40 @@ func _on_google_completed(_result: int, response_code: int, _headers: PackedStri
 	google_login_finished.emit(false, "Serverga ulanishda xatolik (HTTP %d)" % response_code)
 
 func logout_to_guest() -> void:
+	if http_google and http_google.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+		http_google.cancel_request()
+	if http_cloud and http_cloud.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
+		http_cloud.cancel_request()
+
 	auth_provider = "guest"
 	email = ""
 	username = "Player"
 	avatar_index = 1
 	has_chosen_auth = false
-	
+	is_ready_online = false
+
 	# Yangi toza mehmon sessiyasi yaratish (Google hisobi bilan aralashib ketmasligi uchun)
-	device_id = "dev_" + str(Time.get_unix_time_from_system()) + "_" + str(randi() % 100000)
+	randomize()
+	device_id = "dev_%d_%08x_%08x" % [
+		Time.get_unix_time_from_system(),
+		randi(),
+		randi()
+	]
 	var f := FileAccess.open(DEVICE_ID_PATH, FileAccess.WRITE)
 	if f:
 		f.store_string(device_id)
 		f.close()
-		
+
 	player_id = ""
 	player_tag = "WW-" + str(randi_range(1000, 9999))
+
+	var save_sys = get_node_or_null("/root/SaveManager")
+	if save_sys and save_sys.has_method("reset_progress"):
+		save_sys.reset_progress()
+
 	_save_local_cache(get_profile_dict())
 	_update_corner_id_text()
 	profile_updated.emit(get_profile_dict())
-	sync_with_supabase()
 
 func save_profile() -> void:
 	_save_local_cache(get_profile_dict())

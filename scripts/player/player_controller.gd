@@ -331,9 +331,12 @@ func respawn(at_position: Vector2 = spawn_position) -> void:
 		if gm.level_deaths > 0 and gm.level_deaths % 10 == 0:
 			var adm = get_node_or_null("/root/AdManager")
 			if adm and adm.has_method("is_ads_enabled") and bool(adm.is_ads_enabled()) and adm.has_method("show_interstitial_ad"):
-				get_tree().paused = true
+				var tree := get_tree()
+				if tree:
+					tree.paused = true
 				adm.show_interstitial_ad(func():
-					get_tree().paused = false
+					if tree:
+						tree.paused = false
 				)
 
 func add_inverter_zone(zone: Node) -> void:

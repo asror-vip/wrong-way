@@ -51,6 +51,7 @@ func _ready() -> void:
 	
 	GoogleAuthService.auth_succeeded.connect(func(_u):
 		_refresh_profile_display()
+		_load_stats()
 		_show_toast("Google hisobi muvaffaqiyatli ulandi!")
 	)
 	GoogleAuthService.auth_failed.connect(func(err):

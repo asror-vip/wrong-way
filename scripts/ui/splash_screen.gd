@@ -93,8 +93,7 @@ func _apply_safe_insets() -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	if start_box and start_box.visible and not is_transitioning:
-		if (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) \
-				or (event is InputEventScreenTouch and event.pressed):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			_on_start_pressed()
 			accept_event()
 
@@ -104,10 +103,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			if event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
 				_on_start_pressed()
 				get_viewport().set_input_as_handled()
-		elif (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) \
-				or (event is InputEventScreenTouch and event.pressed):
-			_on_start_pressed()
-			get_viewport().set_input_as_handled()
 
 func _setup_buttons() -> void:
 	if google_btn:
@@ -140,9 +135,11 @@ func _setup_buttons() -> void:
 	)
 	GoogleAuthService.auth_failed.connect(func(err):
 		print("SplashScreen: Google kirish xatosi: ", err)
-		if auth_hint:
+		if auth_hint and auth_box and auth_box.visible:
 			auth_hint.text = "Google: " + str(err)
 			auth_hint.add_theme_color_override("font_color", Color(1.0, 0.55, 0.45))
+		if greeting_label and start_box and start_box.visible:
+			greeting_label.text = "Google: " + str(err)
 	)
 
 func _start_background_drift() -> void:
@@ -200,7 +197,7 @@ func _show_auth_selection() -> void:
 		tween.tween_callback(func(): bottom_box.visible = false)
 
 	# Foydalanuvchi allaqachon hisob tanlaganmi / tizimga kirganmi?
-	var is_established: bool = ProfileManager.has_chosen_auth or (ProfileManager.auth_provider == "google" and not ProfileManager.email.is_empty()) or (not ProfileManager.player_id.is_empty() and ProfileManager.username != "Player")
+	var is_established: bool = ProfileManager.has_chosen_auth or (ProfileManager.auth_provider == "google" and not ProfileManager.email.is_empty())
 
 	if is_established:
 		# Avvaldan kirgan o'yinchiga qayta Google/Guest chiqmaydi, uning o'rniga "BOSHLASH" chiqadi!
@@ -244,6 +241,8 @@ func _on_start_pressed() -> void:
 
 func _on_switch_account_pressed() -> void:
 	SoundManager.play("click")
+	if greeting_label:
+		greeting_label.text = "Google hisobingizni tanlang..."
 	GoogleAuthService.start_google_sign_in()
 
 func _on_google_pressed() -> void:
