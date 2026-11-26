@@ -134,6 +134,7 @@ func _update_auth_gate() -> bool:
 		if is_fetching and http_request:
 			http_request.cancel_request()
 		is_fetching = false
+		remote_players.clear()
 		_reset_scroll_state()
 		if list_box:
 			for ch in list_box.get_children():
@@ -197,6 +198,8 @@ func _on_list_scroll_gui_input(event: InputEvent) -> void:
 		elif st.index == _scroll_touch_index:
 			_scroll_touch_index = -1
 			_is_touch_dragging = false
+			if Time.get_ticks_msec() - _scroll_last_msec > 100:
+				_scroll_velocity_y = 0.0
 			list_scroll.accept_event()
 		return
 
@@ -231,6 +234,8 @@ func _on_list_scroll_gui_input(event: InputEvent) -> void:
 				list_scroll.accept_event()
 			else:
 				_is_mouse_dragging = false
+				if Time.get_ticks_msec() - _scroll_last_msec > 100:
+					_scroll_velocity_y = 0.0
 				list_scroll.accept_event()
 		elif mb.button_index == MOUSE_BUTTON_WHEEL_UP or mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			_scroll_velocity_y = 0.0
@@ -259,6 +264,10 @@ func _process(delta: float) -> void:
 			_scroll_velocity_y = move_toward(_scroll_velocity_y, 0.0, decel)
 	else:
 		_scroll_velocity_y = 0.0
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and visible:
+		close()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -332,6 +341,8 @@ func _on_google_auth_failed(error_message: String) -> void:
 
 func _on_profile_updated(_profile_data: Dictionary) -> void:
 	_update_texts()
+	if not _is_google_signed_in():
+		remote_players.clear()
 	if visible:
 		if _update_auth_gate():
 			if remote_players.is_empty() and not is_fetching:

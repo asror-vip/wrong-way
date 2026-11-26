@@ -193,9 +193,18 @@ func _apply_top_bar_layout() -> void:
 	var adm = get_node_or_null("/root/AdManager")
 	var banner_h: float = adm.get_top_banner_height() \
 		if adm and adm.has_method("get_top_banner_height") else 0.0
+	var insets := UIResponsive.get_safe_insets(self)
 	if top_bar:
 		top_bar.offset_top = banner_h
 		top_bar.offset_bottom = banner_h + 56.0
+		var left_group := top_bar.get_node_or_null("LeftGroup") as Control
+		if left_group:
+			left_group.offset_left = 12.0 + float(insets["left"])
+			left_group.offset_right = 210.0 + float(insets["left"])
+		var right_group := top_bar.get_node_or_null("RightGroup") as Control
+		if right_group:
+			right_group.offset_left = -280.0 - float(insets["right"])
+			right_group.offset_right = -12.0 - float(insets["right"])
 
 func _on_canvas_mouse_exited() -> void:
 	if hover_cell != Vector2i(-1, -1):
@@ -249,6 +258,10 @@ func _get_palette_max_scroll() -> int:
 	var content_w: float = maxf(palette_container.size.x, palette_container.get_combined_minimum_size().x)
 	return maxi(0, int(ceil(content_w - palette_scroll.size.x)))
 
+func _clear_palette_drag_flag() -> void:
+	if not is_palette_dragging and _palette_touch_index == -1:
+		_palette_drag_moved = false
+
 func _on_palette_gui_input(event: InputEvent) -> void:
 	if not palette_scroll:
 		return
@@ -264,6 +277,7 @@ func _on_palette_gui_input(event: InputEvent) -> void:
 		elif st.index == _palette_touch_index:
 			_palette_touch_index = -1
 			is_palette_dragging = false
+			call_deferred("_clear_palette_drag_flag")
 		return
 
 	if event is InputEventScreenDrag:
@@ -296,6 +310,7 @@ func _on_palette_gui_input(event: InputEvent) -> void:
 				palette_scroll_start_x = float(palette_scroll.scroll_horizontal)
 			else:
 				is_palette_dragging = false
+				call_deferred("_clear_palette_drag_flag")
 	elif event is InputEventMouseMotion and is_palette_dragging:
 		var mm := event as InputEventMouseMotion
 		var diff := palette_drag_start_x - mm.global_position.x
@@ -578,8 +593,9 @@ func _apply_tool_at_pos(pos: Vector2) -> void:
 	var key := "%d_%d" % [cell.x, cell.y]
 	
 	if current_tool == "erase":
-		if cell_map.has(key):
-			cell_map.erase(key)
+		var erase_key := _find_erasable_key_at_cell(cell)
+		if not erase_key.is_empty():
+			cell_map.erase(erase_key)
 			SoundManager.play("click")
 			canvas.queue_redraw()
 		return
@@ -1150,11 +1166,26 @@ func _on_load_pressed() -> void:
 	SoundManager.play("click")
 	_load_slot(current_slot)
 
+func _find_erasable_key_at_cell(cell: Vector2i) -> String:
+	var direct_key := "%d_%d" % [cell.x, cell.y]
+	if cell_map.has(direct_key):
+		return direct_key
+	# 1x2 fake_door yuqori katagi bosilganda pastki anchor katagini topamiz
+	var below_key := "%d_%d" % [cell.x, cell.y + 1]
+	if cell_map.has(below_key) and str(cell_map[below_key].get("type", "")) == "fake_door":
+		return below_key
+	# 2x2 crusher ning qolgan 3 katagi bosilganda yuqori-chap anchor katagini topamiz
+	for offset in [Vector2i(-1, 0), Vector2i(0, -1), Vector2i(-1, -1)]:
+		var ck := "%d_%d" % [cell.x + offset.x, cell.y + offset.y]
+		if cell_map.has(ck) and str(cell_map[ck].get("type", "")) == "crusher":
+			return ck
+	return ""
+
 func _on_clear_pressed() -> void:
 	SoundManager.play("click")
 	cell_map.clear()
-	player_spawn = Vector2(144, 384)
-	exit_door_pos = Vector2(848, 384)
+	player_spawn = _snap_player_pos(Vector2(144, 384))
+	exit_door_pos = _snap_door_pos(Vector2(848, 384))
 	canvas.queue_redraw()
 	_show_toast(LocaleManager.t("cleared_notice"))
 	_set_save_mode(true)

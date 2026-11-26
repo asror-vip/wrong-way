@@ -292,7 +292,7 @@ func kill() -> void:
 	
 	# O'yin pauza qilinganda taymer to'xtab turishi uchun false (process_always = false) qo'shildi
 	await get_tree().create_timer(0.34, false).timeout
-	if is_instance_valid(self):
+	if is_instance_valid(self) and is_inside_tree():
 		respawn()
 
 func die() -> void:

@@ -31,6 +31,8 @@ func save_custom_level(slot: int, data: Dictionary) -> bool:
 	return true
 
 func load_custom_level(slot: int) -> Dictionary:
+	if slot < 1 or slot > MAX_SLOTS:
+		return get_default_level()
 	var file_path := get_slot_path(slot)
 	if not FileAccess.file_exists(file_path):
 		return get_default_level()

@@ -103,30 +103,38 @@ func _test_editor_layout_and_palette() -> void:
 	_expect(all_cards_pass and ed.tool_cards.size() >= 10, "All BottomPalette tool cards use MOUSE_FILTER_PASS")
 	_expect(all_labels_clip, "All BottomPalette tool card labels enable clip_text")
 
-	# Touch drag on BottomPalette scrolls horizontally and suppresses accidental tool switch
+	# Real Viewport touch drag starting directly on a tool card scrolls horizontally and suppresses accidental tool switch
 	ed.current_tool = "platform"
+	var spikes_btn: Button = ed.tool_cards["spikes"]["btn"]
+	var spikes_center: Vector2 = spikes_btn.get_global_rect().get_center()
 	var st_down := InputEventScreenTouch.new()
 	st_down.index = 0
 	st_down.pressed = true
-	st_down.position = Vector2(300, 30)
-	ed._on_palette_gui_input(st_down)
+	st_down.position = spikes_center
+	root.push_input(st_down)
 	var st_drag := InputEventScreenDrag.new()
 	st_drag.index = 0
-	st_drag.position = Vector2(180, 30)
+	st_drag.position = spikes_center + Vector2(-120, 0)
 	st_drag.relative = Vector2(-120, 0)
-	ed._on_palette_gui_input(st_drag)
+	root.push_input(st_drag)
 	var st_up := InputEventScreenTouch.new()
 	st_up.index = 0
 	st_up.pressed = false
-	st_up.position = Vector2(180, 30)
-	ed._on_palette_gui_input(st_up)
-	_expect(ed.palette_scroll.scroll_horizontal > 0, "BottomPalette touch drag scrolls horizontally (scroll_horizontal=%d)" % ed.palette_scroll.scroll_horizontal)
-	_expect(ed._palette_drag_moved, "BottomPalette drag sets _palette_drag_moved to block accidental tool tap")
+	st_up.position = spikes_center + Vector2(-120, 0)
+	root.push_input(st_up)
+	_expect(ed.palette_scroll.scroll_horizontal > 0, "BottomPalette real Viewport touch drag scrolls horizontally (scroll_horizontal=%d)" % ed.palette_scroll.scroll_horizontal)
+	_expect(ed._palette_drag_moved, "BottomPalette drag sets _palette_drag_moved to block same-frame accidental tool tap")
 
-	# Simulate button pressed right after drag -> should NOT switch tool
+	# Simulate button pressed right after drag (same frame) -> should NOT switch tool
 	var erase_btn: Button = ed.tool_cards["erase"]["btn"]
 	erase_btn.pressed.emit()
 	_expect(ed.current_tool == "platform", "Dragging BottomPalette does not accidentally switch current_tool")
+
+	# Next frame, deferred flag clears so a subsequent click selects tool normally
+	await process_frame
+	_expect(not ed._palette_drag_moved, "BottomPalette _palette_drag_moved resets on next frame")
+	erase_btn.pressed.emit()
+	_expect(ed.current_tool == "erase", "Subsequent tap after drag selects tool cleanly")
 
 	ed.queue_free()
 	await process_frame
@@ -192,6 +200,19 @@ func _test_multi_cell_bounds_and_reload_slot() -> void:
 	ed._apply_tool_at_pos(Vector2(float((cols - 1) * 32 + 4), float(ed.MAX_ROW * 32 + 4)))
 	var expected_crusher_key := "%d_%d" % [cols - 3, ed.MAX_ROW - 1]
 	_expect(ed.cell_map.has(expected_crusher_key), "Crusher at bottom-right corner clamped to %s" % expected_crusher_key)
+
+	# Multi-cell erase: tapping non-anchor cells of crusher (2x2) and fake_door (1x2) removes them cleanly
+	ed.current_tool = "erase"
+	ed.last_placed_cell = Vector2i(-1, -1)
+	ed._apply_tool_at_pos(Vector2(float((cols - 2) * 32 + 4), float(ed.MAX_ROW * 32 + 4))) # bottom-right cell of 2x2 crusher
+	_expect(not ed.cell_map.has(expected_crusher_key), "Eraser on bottom-right cell of 2x2 crusher removes crusher anchor %s" % expected_crusher_key)
+	ed.last_placed_cell = Vector2i(-1, -1)
+	ed._apply_tool_at_pos(Vector2(float(1 * 32 + 4), float(2 * 32 + 4))) # top cell (1,2) of 1x2 fake_door anchored at (1,3)
+	_expect(not ed.cell_map.has("1_3"), "Eraser on top cell of 1x2 fake_door removes fake_door anchor 1_3")
+
+	# CustomLevelManager bounds check on load & save
+	_expect(not clm.save_custom_level(0, {}) and not clm.save_custom_level(99, {}), "CustomLevelManager.save_custom_level rejects out-of-range slots")
+	_expect(clm.load_custom_level(0).has("elements") and clm.load_custom_level(99).has("elements"), "CustomLevelManager.load_custom_level safely falls back for out-of-range slots")
 
 	ed.queue_free()
 	await process_frame
@@ -323,6 +344,22 @@ func _test_trap_spawning_and_spring_physics() -> void:
 		gm.player_respawned.emit()
 		_expect(not trap_floor_node.is_triggered, "TrapFloor resets cleanly on GameManager.player_respawned")
 
+	# Live runtime physics: MovingSaw patrols c -> c + (64, 0), Crusher triggers & slams to target_y=320, PopUpSpikes erupts
+	if saw_node and floor_crusher and popup_node and player_node:
+		var saw_start_x: float = saw_node.start_pos.x
+		var saw_max_x: float = saw_node.global_position.x
+		player_node.is_invulnerable = false
+		player_node.invulnerable_timer = 0.0
+		player_node.global_position = Vector2(10.0 * 32.0 + 32.0, 12.0 * 32.0) # under floor_crusher
+		var crusher_slammed := false
+		for _i in range(40):
+			await physics_frame
+			saw_max_x = maxf(saw_max_x, saw_node.global_position.x)
+			if is_equal_approx(floor_crusher.global_position.y, 320.0):
+				crusher_slammed = true
+		_expect(saw_max_x >= saw_start_x + 60.0 and saw_max_x <= saw_start_x + 65.0, "MovingSawTrap patrols from start_x to start_x + 64 (max_dx=%.1f)" % (saw_max_x - saw_start_x))
+		_expect(crusher_slammed, "Crusher live-triggers and slams down to target_y=320.0 in playtest (y=%.1f)" % floor_crusher.global_position.y)
+
 	ed._on_stop_test_pressed()
 	ed.queue_free()
 	await process_frame
@@ -419,11 +456,19 @@ func _test_playtest_lifecycle_ad_guard_and_touch_controls() -> void:
 	await create_timer(1.3).timeout
 	_expect(ed.is_testing, "Stale _on_custom_level_completed await timer does NOT cancel a newer playtest session")
 
-	# 5. _exit_tree cleans up is_custom_editor_mode & SoundManager gameplay mode
+	# 5. _exit_tree cleans up is_custom_editor_mode, SoundManager gameplay mode & ALL autoload signals (verified via remove_child)
+	root.remove_child(ed)
+	_expect(not gm.is_custom_editor_mode and not snd.is_gameplay_mode, "LevelEditor _exit_tree resets GameManager.is_custom_editor_mode and SoundManager gameplay mode")
+	_expect(
+		not loc.language_changed.is_connected(ed._on_language_changed)
+		and not gm.custom_player_died.is_connected(ed._on_custom_player_died)
+		and not gm.custom_level_completed.is_connected(ed._on_custom_level_completed)
+		and not gm.player_respawned.is_connected(ed._on_custom_player_respawned)
+		and not sm.touch_layout_changed.is_connected(ed._apply_playtest_touch_layout),
+		"LevelEditor _exit_tree disconnects all Autoload signals (verified on valid detached instance)"
+	)
 	ed.queue_free()
 	await process_frame
-	await process_frame
-	_expect(not gm.is_custom_editor_mode and not snd.is_gameplay_mode, "LevelEditor _exit_tree resets GameManager.is_custom_editor_mode and SoundManager gameplay mode")
 
 	# 6. GameManager.go_to_main_menu resets level_deaths = 0
 	gm.level_deaths = 10

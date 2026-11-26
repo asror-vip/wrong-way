@@ -224,6 +224,7 @@ func _assert_all_controls_ignore_mouse(node: Node) -> bool:
 	return true
 
 func _test_leaderboard_modal() -> void:
+	root.size = Vector2i(960, 540)
 	var lm_scn := load("res://scenes/ui/leaderboard_modal.tscn") as PackedScene
 	_expect(lm_scn != null, "leaderboard_modal.tscn loads")
 	var lm := lm_scn.instantiate()
@@ -323,41 +324,77 @@ func _test_leaderboard_modal() -> void:
 			break
 	_expect(all_rows_ignore, "All Leaderboard row nodes & descendants use MOUSE_FILTER_IGNORE")
 
-	# Touch drag scroll
+	# Touch drag scroll through REAL Viewport push_input (including release outside ListScroll)
+	var list_rect: Rect2 = lm.list_scroll.get_global_rect()
+	var list_center: Vector2 = list_rect.get_center()
+	var list_above: Vector2 = Vector2(list_center.x, list_rect.position.y - 50.0)
 	var st_down := InputEventScreenTouch.new()
 	st_down.index = 0
 	st_down.pressed = true
-	st_down.position = Vector2(200, 250)
-	lm._on_list_scroll_gui_input(st_down)
+	st_down.position = list_center
+	root.push_input(st_down)
 	var st_drag := InputEventScreenDrag.new()
 	st_drag.index = 0
-	st_drag.position = Vector2(200, 120)
+	st_drag.position = list_center + Vector2(0, -130)
 	st_drag.relative = Vector2(0, -130)
-	lm._on_list_scroll_gui_input(st_drag)
+	root.push_input(st_drag)
 	var st_up := InputEventScreenTouch.new()
 	st_up.index = 0
 	st_up.pressed = false
-	st_up.position = Vector2(200, 120)
-	lm._on_list_scroll_gui_input(st_up)
-	_expect(lm.list_scroll.scroll_vertical >= 100, "Touch drag on ListScroll scrolls down (scroll_vertical=%d)" % lm.list_scroll.scroll_vertical)
+	st_up.position = list_above
+	root.push_input(st_up)
+	await process_frame
+	_expect(lm.list_scroll.scroll_vertical >= 100 and not lm._is_touch_dragging and lm._scroll_touch_index == -1, "Real Viewport touch drag on ListScroll scrolls down & releases cleanly (scroll_vertical=%d)" % lm.list_scroll.scroll_vertical)
 
-	# Mouse drag scroll upward
+	# Hold-to-stop: pausing >100ms before release zeroes residual fling velocity
+	var hold_down := InputEventScreenTouch.new()
+	hold_down.index = 0
+	hold_down.pressed = true
+	hold_down.position = list_center
+	root.push_input(hold_down)
+	var hold_drag := InputEventScreenDrag.new()
+	hold_drag.index = 0
+	hold_drag.position = list_center + Vector2(0, -40)
+	hold_drag.relative = Vector2(0, -40)
+	root.push_input(hold_drag)
+	lm._scroll_last_msec = Time.get_ticks_msec() - 200
+	var hold_up := InputEventScreenTouch.new()
+	hold_up.index = 0
+	hold_up.pressed = false
+	hold_up.position = list_center + Vector2(0, -40)
+	root.push_input(hold_up)
+	_expect(is_zero_approx(lm._scroll_velocity_y), "Holding finger still >100ms before release zeroes momentum velocity (vel=%.1f)" % lm._scroll_velocity_y)
+
+	# Mouse drag scroll upward through REAL Viewport push_input
 	var before_mouse_scroll: int = lm.list_scroll.scroll_vertical
 	var mb_down := InputEventMouseButton.new()
 	mb_down.button_index = MOUSE_BUTTON_LEFT
 	mb_down.pressed = true
-	mb_down.position = Vector2(200, 150)
-	lm._on_list_scroll_gui_input(mb_down)
+	mb_down.position = list_center
+	mb_down.global_position = list_center
+	root.push_input(mb_down)
 	var mm := InputEventMouseMotion.new()
-	mm.position = Vector2(200, 220)
-	mm.relative = Vector2(0, 70)
-	lm._on_list_scroll_gui_input(mm)
+	mm.position = list_center + Vector2(0, 80)
+	mm.global_position = list_center + Vector2(0, 80)
+	mm.relative = Vector2(0, 80)
+	mm.button_mask = MOUSE_BUTTON_MASK_LEFT
+	root.push_input(mm)
 	var mb_up := InputEventMouseButton.new()
 	mb_up.button_index = MOUSE_BUTTON_LEFT
 	mb_up.pressed = false
-	mb_up.position = Vector2(200, 220)
-	lm._on_list_scroll_gui_input(mb_up)
-	_expect(lm.list_scroll.scroll_vertical < before_mouse_scroll, "Mouse drag on ListScroll scrolls upward (before=%d, after=%d)" % [before_mouse_scroll, lm.list_scroll.scroll_vertical])
+	mb_up.position = list_center + Vector2(0, 80)
+	mb_up.global_position = list_center + Vector2(0, 80)
+	root.push_input(mb_up)
+	await process_frame
+	_expect(lm.list_scroll.scroll_vertical < before_mouse_scroll, "Real Viewport mouse drag on ListScroll scrolls upward (before=%d, after=%d)" % [before_mouse_scroll, lm.list_scroll.scroll_vertical])
+
+	# Android Back notification closes LeaderboardModal cleanly
+	lm.notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	_expect(not lm.visible, "NOTIFICATION_WM_GO_BACK_REQUEST closes LeaderboardModal")
+
+	# Logout clears stale remote_players cache even when modal is closed
+	pm.logout_to_guest()
+	_expect(lm.remote_players.is_empty(), "Logging out clears stale Leaderboard remote_players cache even while closed")
 
 	# All 4 languages localized keys check
 	var prev_lang: String = loc.current_language
@@ -372,11 +409,17 @@ func _test_leaderboard_modal() -> void:
 	loc.current_language = prev_lang
 	_expect(all_loc_ok, "All 4 languages (uz/ru/en/tr) define Leaderboard guest/friends & Dash keys")
 
-	# Disconnect autoload signals cleanly on _exit_tree
+	# Actually verify _exit_tree disconnects ALL 4 Autoload signals while lm is still valid!
+	root.remove_child(lm)
+	_expect(
+		not loc.language_changed.is_connected(lm._on_language_changed)
+		and not gas.auth_succeeded.is_connected(lm._on_google_auth_succeeded)
+		and not gas.auth_failed.is_connected(lm._on_google_auth_failed)
+		and not pm.profile_updated.is_connected(lm._on_profile_updated),
+		"LeaderboardModal _exit_tree disconnects all 4 Autoload signals (verified on valid detached instance)"
+	)
 	lm.queue_free()
 	await process_frame
-	await process_frame
-	_expect(not gas.auth_succeeded.is_connected(lm._on_google_auth_succeeded) if is_instance_valid(lm) else true, "LeaderboardModal freed cleanly without dangling autoload listeners")
 	pm.logout_to_guest()
 
 func _test_win_overlay_ch1_gate() -> void:
