@@ -15,6 +15,9 @@ func get_slot_path(slot: int) -> String:
 	return SAVE_DIR + "custom_level_%d.json" % slot
 
 func save_custom_level(slot: int, data: Dictionary) -> bool:
+	if slot < 1 or slot > MAX_SLOTS:
+		push_error("CustomLevelManager: Noto'g'ri slot raqami: %d" % slot)
+		return false
 	ensure_directory()
 	var file_path := get_slot_path(slot)
 	var file := FileAccess.open(file_path, FileAccess.WRITE)

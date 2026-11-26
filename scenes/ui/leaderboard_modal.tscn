@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/leaderboard_modal.gd" id="1_lm"]
 [ext_resource type="StyleBox" path="res://resources/themes/panel_obsidian_modal.tres" id="2_card"]
@@ -27,6 +27,22 @@ content_margin_right = 14.0
 content_margin_bottom = 6.0
 shadow_color = Color(0.22, 0.74, 0.97, 0.2)
 shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_guest_prompt"]
+bg_color = Color(0.08, 0.11, 0.18, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.24, 0.34, 0.5, 0.7)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+content_margin_left = 22.0
+content_margin_top = 22.0
+content_margin_right = 22.0
+content_margin_bottom = 22.0
 
 [node name="LeaderboardModal" type="Control"]
 process_mode = 3
@@ -146,7 +162,77 @@ horizontal_scroll_mode = 3
 [node name="ListBox" type="VBoxContainer" parent="Card/ListScroll"]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 theme_override_constants/separation = 6
+
+[node name="GuestPrompt" type="CenterContainer" parent="Card"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 56.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PromptCard" type="PanelContainer" parent="Card/GuestPrompt"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_guest_prompt")
+
+[node name="VBox" type="VBoxContainer" parent="Card/GuestPrompt/PromptCard"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="GuestIcon" type="TextureRect" parent="Card/GuestPrompt/PromptCard/VBox"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GuestTitle" type="Label" parent="Card/GuestPrompt/PromptCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "Google hisobi talab qilinadi"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="GuestDesc" type="Label" parent="Card/GuestPrompt/PromptCard/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.68, 0.76, 0.88, 1)
+theme_override_font_sizes/font_size = 12
+text = "Global va Do'stlar reytingini ko'rish hamda natijalaringizni saqlash uchun Google hisobingiz bilan kiring."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="GoogleSignInBtn" type="Button" parent="Card/GuestPrompt/PromptCard/VBox"]
+custom_minimum_size = Vector2(240, 42)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+theme_override_colors/font_color = Color(0.08, 0.08, 0.12, 1)
+theme_override_colors/font_hover_color = Color(0.05, 0.05, 0.1, 1)
+theme_override_colors/font_pressed_color = Color(0.05, 0.05, 0.1, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = ExtResource("3_w_norm")
+theme_override_styles/hover = ExtResource("4_w_hov")
+theme_override_styles/pressed = ExtResource("5_w_press")
+theme_override_styles/focus = ExtResource("9_focus")
+text = "Google orqali kirish"
+
+[node name="GuestStatusLabel" type="Label" parent="Card/GuestPrompt/PromptCard/VBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.97, 0.44, 0.44, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="MyStatsBar" type="PanelContainer" parent="Card"]
 layout_mode = 1

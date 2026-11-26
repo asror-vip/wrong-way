@@ -8,6 +8,7 @@ const TrapBiomeVFX := preload("res://scripts/traps/trap_biome_vfx.gd")
 @export var shake_duration: float = 0.18
 @export var trigger_y_min: float = -9999.0
 @export var trigger_y_max: float = 9999.0
+@export var auto_extend_to_bottom: bool = true
 
 var initial_position: Vector2
 var is_triggered: bool = false
@@ -24,8 +25,8 @@ func _ready() -> void:
 	add_to_group("traps")
 	initial_position = global_position
 	shake_duration = minf(shake_duration, 0.12)
-	# Pastdagi tuzoq polini ham ekranning eng pastigacha uzaytiramiz
-	if position.y >= 360.0 and (position.y + platform_size.y) < 540.0:
+	# Pastdagi tuzoq polini ham ekranning eng pastigacha uzaytiramiz (faqat kampaniya darajalari uchun)
+	if auto_extend_to_bottom and position.y >= 360.0 and (position.y + platform_size.y) < 540.0:
 		platform_size.y = 540.0 - position.y
 	if col_shape:
 		col_shape.shape = RectangleShape2D.new()

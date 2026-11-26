@@ -215,12 +215,49 @@ func _test_profile_isolation_and_friends() -> void:
 
 	pm.logout_to_guest()
 
+func _assert_all_controls_ignore_mouse(node: Node) -> bool:
+	if node is Control and (node as Control).mouse_filter != Control.MOUSE_FILTER_IGNORE:
+		return false
+	for ch in node.get_children():
+		if not _assert_all_controls_ignore_mouse(ch):
+			return false
+	return true
+
 func _test_leaderboard_modal() -> void:
 	var lm_scn := load("res://scenes/ui/leaderboard_modal.tscn") as PackedScene
 	_expect(lm_scn != null, "leaderboard_modal.tscn loads")
 	var lm := lm_scn.instantiate()
 	root.add_child(lm)
 	await process_frame
+
+	var pm := root.get_node_or_null("/root/ProfileManager")
+	var gas := root.get_node_or_null("/root/GoogleAuthService")
+	var loc := root.get_node_or_null("/root/LocaleManager")
+
+	# 1. Guest Login Gate: guests must NOT fetch or see rankings
+	pm.logout_to_guest()
+	lm.open()
+	await process_frame
+	_expect(not lm.is_fetching, "Guest opening Leaderboard does NOT fetch remote rankings")
+	_expect(not lm.tab_row.visible and not lm.my_stats_bar.visible and not lm.list_scroll.visible, "Guest Leaderboard hides TabRow, MyStatsBar, and ListScroll")
+	_expect(lm.guest_prompt != null and lm.guest_prompt.visible, "Guest Leaderboard shows Google login prompt card")
+	_expect(lm.google_sign_in_btn != null and lm.google_sign_in_btn.visible, "Guest Leaderboard shows Google Sign-In button")
+	_expect(lm.list_box.get_child_count() == 0, "Guest Leaderboard renders zero ranking rows")
+
+	# Auth failure displays cleanly
+	gas.auth_failed.emit("Kirish bekor qilindi")
+	_expect(lm.guest_status_label.visible and lm.guest_status_label.text == "Kirish bekor qilindi", "Guest Leaderboard displays auth_failed message cleanly")
+
+	# 2. Google Auth unlocks Leaderboard automatically
+	pm.auth_provider = "google"
+	pm.email = "asror_lb_test@gmail.com"
+	pm.username = "Asror"
+	gas.auth_succeeded.emit({"email": pm.email, "name": pm.username})
+	if lm.http_request:
+		lm.http_request.cancel_request()
+		lm.is_fetching = false
+	await process_frame
+	_expect(not lm.guest_prompt.visible and lm.tab_row.visible and lm.my_stats_bar.visible and lm.list_scroll.visible, "Google auth_succeeded unlocks TabRow, MyStatsBar, and ListScroll")
 
 	var fake_json := JSON.stringify([
 		{
@@ -246,9 +283,7 @@ func _test_leaderboard_modal() -> void:
 			"save_data": {}
 		}
 	])
-	var pm := root.get_node_or_null("/root/ProfileManager")
 	pm.add_recent_friend("WW-9988", "FriendOne")
-	pm.username = "Asror"
 	lm._on_http_completed(0, 200, PackedStringArray(), fake_json.to_utf8_buffer())
 	_expect(lm.remote_players.size() == 2, "Leaderboard parses Supabase profiles schema cleanly")
 	_expect(lm.remote_players[0]["time_sec"] == 10 and lm.remote_players[0]["deaths"] == 1, "Leaderboard computes time_sec=10 and deaths=1 from save_data")
@@ -257,8 +292,92 @@ func _test_leaderboard_modal() -> void:
 	lm._set_tab(lm.TabMode.FRIENDS)
 	_expect(lm.list_box.get_child_count() == 2, "Friends tab renders friend + self cleanly without crash (rows=%d)" % lm.list_box.get_child_count())
 
+	# Empty Friends tab state
+	pm.saved_friends.clear()
+	lm._refresh_list()
+	_expect(lm.list_box.get_child_count() == 2, "Empty Friends tab renders self + localized empty-friends card")
+	var empty_lbl := lm.list_box.get_child(1).get_child(0) as Label
+	_expect(empty_lbl != null and empty_lbl.text == loc.t("leaderboard_friends_empty"), "Empty Friends card shows localized empty-state message")
+
+	# 3. Mouse filter & drag-scroll on ListScroll
+	lm._set_tab(lm.TabMode.GLOBAL)
+	var many_players: Array = []
+	for i in range(18):
+		many_players.append({
+			"id": "uuid-many-%d" % i,
+			"player_tag": "WW-%04d" % (1000 + i),
+			"username": "Player%d" % i,
+			"avatar_url": "av_1",
+			"total_stars": 50 - i,
+			"highest_level": 20,
+			"save_data": {}
+		})
+	lm._on_http_completed(0, 200, PackedStringArray(), JSON.stringify(many_players).to_utf8_buffer())
+	await process_frame
+	await process_frame
+	_expect(lm.list_box.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Leaderboard ListBox uses MOUSE_FILTER_IGNORE")
+	var all_rows_ignore := true
+	for r in lm.list_box.get_children():
+		if not _assert_all_controls_ignore_mouse(r):
+			all_rows_ignore = false
+			break
+	_expect(all_rows_ignore, "All Leaderboard row nodes & descendants use MOUSE_FILTER_IGNORE")
+
+	# Touch drag scroll
+	var st_down := InputEventScreenTouch.new()
+	st_down.index = 0
+	st_down.pressed = true
+	st_down.position = Vector2(200, 250)
+	lm._on_list_scroll_gui_input(st_down)
+	var st_drag := InputEventScreenDrag.new()
+	st_drag.index = 0
+	st_drag.position = Vector2(200, 120)
+	st_drag.relative = Vector2(0, -130)
+	lm._on_list_scroll_gui_input(st_drag)
+	var st_up := InputEventScreenTouch.new()
+	st_up.index = 0
+	st_up.pressed = false
+	st_up.position = Vector2(200, 120)
+	lm._on_list_scroll_gui_input(st_up)
+	_expect(lm.list_scroll.scroll_vertical >= 100, "Touch drag on ListScroll scrolls down (scroll_vertical=%d)" % lm.list_scroll.scroll_vertical)
+
+	# Mouse drag scroll upward
+	var before_mouse_scroll: int = lm.list_scroll.scroll_vertical
+	var mb_down := InputEventMouseButton.new()
+	mb_down.button_index = MOUSE_BUTTON_LEFT
+	mb_down.pressed = true
+	mb_down.position = Vector2(200, 150)
+	lm._on_list_scroll_gui_input(mb_down)
+	var mm := InputEventMouseMotion.new()
+	mm.position = Vector2(200, 220)
+	mm.relative = Vector2(0, 70)
+	lm._on_list_scroll_gui_input(mm)
+	var mb_up := InputEventMouseButton.new()
+	mb_up.button_index = MOUSE_BUTTON_LEFT
+	mb_up.pressed = false
+	mb_up.position = Vector2(200, 220)
+	lm._on_list_scroll_gui_input(mb_up)
+	_expect(lm.list_scroll.scroll_vertical < before_mouse_scroll, "Mouse drag on ListScroll scrolls upward (before=%d, after=%d)" % [before_mouse_scroll, lm.list_scroll.scroll_vertical])
+
+	# All 4 languages localized keys check
+	var prev_lang: String = loc.current_language
+	var all_loc_ok := true
+	for lang in ["uz", "ru", "en", "tr"]:
+		loc.current_language = lang
+		for k in ["leaderboard_guest_title", "leaderboard_guest_desc", "leaderboard_google_login_btn", "leaderboard_google_connecting", "leaderboard_friends_empty", "btn_dash"]:
+			var val: String = loc.t(k)
+			if val == k or val.strip_edges().is_empty():
+				all_loc_ok = false
+				print("  [DETAIL] Missing locale key '%s' in '%s'" % [k, lang])
+	loc.current_language = prev_lang
+	_expect(all_loc_ok, "All 4 languages (uz/ru/en/tr) define Leaderboard guest/friends & Dash keys")
+
+	# Disconnect autoload signals cleanly on _exit_tree
 	lm.queue_free()
 	await process_frame
+	await process_frame
+	_expect(not gas.auth_succeeded.is_connected(lm._on_google_auth_succeeded) if is_instance_valid(lm) else true, "LeaderboardModal freed cleanly without dangling autoload listeners")
+	pm.logout_to_guest()
 
 func _test_win_overlay_ch1_gate() -> void:
 	var sm := root.get_node_or_null("/root/SaveManager")

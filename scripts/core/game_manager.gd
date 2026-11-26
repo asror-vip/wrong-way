@@ -167,6 +167,8 @@ func go_to_level_select() -> void:
 func go_to_main_menu() -> void:
 	get_tree().paused = false
 	is_level_running = false
+	is_custom_editor_mode = false
+	level_deaths = 0
 	SoundManager.set_gameplay_mode(false)
 	get_tree().change_scene_to_file("res://scenes/main/main_menu.tscn")
 

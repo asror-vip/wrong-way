@@ -9,6 +9,7 @@ const TrapBiomeVFX := preload("res://scripts/traps/trap_biome_vfx.gd")
 @export var bounce_force: float = 0.0
 @export var trigger_y_min: float = -9999.0
 @export var trigger_y_max: float = 9999.0
+@export var visible_when_idle: bool = false
 
 @onready var col_shape: CollisionShape2D = $CollisionShape2D
 
@@ -55,11 +56,16 @@ func _physics_process(_delta: float) -> void:
 		_trigger_launch(player)
 
 func _draw() -> void:
-	# Tinch holatda (idle) pol ichida hech qanday purjina ko'rinmasligi shart
-	if not is_springing or extension <= 1.0:
-		return
+	var draw_ext := extension
+	if not is_springing or draw_ext <= 1.0:
+		if not visible_when_idle:
+			# Tinch holatda (idle) pol ichida hech qanday purjina ko'rinmasligi shart
+			return
+		draw_ext = 14.0
+	elif visible_when_idle:
+		draw_ext = maxf(draw_ext, 14.0)
 	var ch := TrapBiomeArt.get_chapter(self)
-	TrapBiomeArt.draw_spring_mechanism(self, spring_size.x, extension, ch)
+	TrapBiomeArt.draw_spring_mechanism(self, spring_size.x, draw_ext, ch)
 
 func _on_body_entered(body: Node2D) -> void:
 	if (body is PlayerController or body.is_in_group("player")) and _can_trigger_player(body):

@@ -2,7 +2,7 @@ extends Control
 
 const GRID_SIZE: int = 32
 const MIN_ROW: int = 2 # y = 64px (TopBar osti)
-const MAX_ROW: int = 14 # y = 448px (BottomPalette usti)
+const MAX_ROW: int = 13 # y = 416..448px (BottomPalette y=460 usti, to'qnashuvsiz)
 
 func _get_canvas_width() -> float:
 	return get_viewport_rect().size.x
@@ -55,7 +55,9 @@ var cell_map: Dictionary = {}
 var is_testing: bool = false
 var is_pointer_down: bool = false
 var last_placed_cell: Vector2i = Vector2i(-1, -1)
-var hover_cell: Vector2i = Vector2i(0, 0)
+var hover_cell: Vector2i = Vector2i(-1, -1)
+var _playtest_session_id: int = 0
+var _toast_tween: Tween = null
 
 # Palitra kartalari uslubi
 var card_norm_style := StyleBoxFlat.new()
@@ -69,6 +71,11 @@ var card_act_style := StyleBoxFlat.new()
 @onready var canvas: Control = $Canvas
 @onready var playtest_world: Node2D = $PlaytestWorld
 @onready var playtest_ui: Control = $PlaytestUI
+@onready var touch_controls: Control = get_node_or_null("PlaytestUI/TouchControls")
+@onready var left_btn: Button = get_node_or_null("PlaytestUI/TouchControls/LeftBtn")
+@onready var right_btn: Button = get_node_or_null("PlaytestUI/TouchControls/RightBtn")
+@onready var dash_btn: Button = get_node_or_null("PlaytestUI/TouchControls/DashBtn")
+@onready var jump_btn: Button = get_node_or_null("PlaytestUI/TouchControls/JumpBtn")
 @onready var toast_lbl: Label = $ToastLabel
 @onready var slot_btn: OptionButton = $TopBar/LeftGroup/SlotSelect
 @onready var palette_container: HBoxContainer = $BottomPalette/Scroll/HBox
@@ -84,22 +91,36 @@ var tool_cards: Dictionary = {}
 
 # Palitrani sensorli surish (Touch/Drag Scroll)
 var is_palette_dragging: bool = false
+var _palette_touch_index: int = -1
+var _palette_drag_moved: bool = false
 var palette_drag_start_x: float = 0.0
 var palette_scroll_start_x: float = 0.0
+
+# Playtest multi-touch barmoq kuzatuvi (GameHUD bilan bir xil)
+var _touch_fingers: Dictionary = {}
+var _active_touch_actions: Dictionary = {}
 
 func _ready() -> void:
 	var adm = get_node_or_null("/root/AdManager")
 	if adm and adm.has_method("show_banner"):
 		adm.show_banner()
-	var banner_h: float = adm.get_top_banner_height() \
-		if adm and adm.has_method("get_top_banner_height") else 0.0
-	if top_bar:
-		top_bar.offset_top = banner_h
-		top_bar.offset_bottom = banner_h + 56.0
+	if adm and adm.has_signal("banner_visibility_changed") and not adm.banner_visibility_changed.is_connected(_on_banner_visibility_changed):
+		adm.banner_visibility_changed.connect(_on_banner_visibility_changed)
+	_apply_top_bar_layout()
 		
-	LocaleManager.language_changed.connect(_on_language_changed)
-	GameManager.custom_player_died.connect(_on_custom_player_died)
-	GameManager.custom_level_completed.connect(_on_custom_level_completed)
+	if not LocaleManager.language_changed.is_connected(_on_language_changed):
+		LocaleManager.language_changed.connect(_on_language_changed)
+	if not GameManager.custom_player_died.is_connected(_on_custom_player_died):
+		GameManager.custom_player_died.connect(_on_custom_player_died)
+	if not GameManager.custom_level_completed.is_connected(_on_custom_level_completed):
+		GameManager.custom_level_completed.connect(_on_custom_level_completed)
+	if not GameManager.player_respawned.is_connected(_on_custom_player_respawned):
+		GameManager.player_respawned.connect(_on_custom_player_respawned)
+	if SaveManager and not SaveManager.touch_layout_changed.is_connected(_apply_playtest_touch_layout):
+		SaveManager.touch_layout_changed.connect(_apply_playtest_touch_layout)
+	var vp := get_viewport()
+	if vp and not vp.size_changed.is_connected(_on_viewport_size_changed):
+		vp.size_changed.connect(_on_viewport_size_changed)
 	
 	_setup_palette_styles()
 	_setup_palette_scroll()
@@ -111,6 +132,76 @@ func _ready() -> void:
 	
 	canvas.draw.connect(_on_canvas_draw)
 	canvas.gui_input.connect(_on_canvas_gui_input)
+	canvas.mouse_exited.connect(_on_canvas_mouse_exited)
+
+func _exit_tree() -> void:
+	_playtest_session_id += 1
+	is_testing = false
+	_release_all_touch_actions()
+	if _toast_tween and _toast_tween.is_valid():
+		_toast_tween.kill()
+	if GameManager:
+		GameManager.is_custom_editor_mode = false
+		if GameManager.custom_player_died.is_connected(_on_custom_player_died):
+			GameManager.custom_player_died.disconnect(_on_custom_player_died)
+		if GameManager.custom_level_completed.is_connected(_on_custom_level_completed):
+			GameManager.custom_level_completed.disconnect(_on_custom_level_completed)
+		if GameManager.player_respawned.is_connected(_on_custom_player_respawned):
+			GameManager.player_respawned.disconnect(_on_custom_player_respawned)
+	if SoundManager:
+		SoundManager.set_gameplay_mode(false)
+	if LocaleManager and LocaleManager.language_changed.is_connected(_on_language_changed):
+		LocaleManager.language_changed.disconnect(_on_language_changed)
+	if SaveManager and SaveManager.touch_layout_changed.is_connected(_apply_playtest_touch_layout):
+		SaveManager.touch_layout_changed.disconnect(_apply_playtest_touch_layout)
+	var vp := get_viewport()
+	if vp and vp.size_changed.is_connected(_on_viewport_size_changed):
+		vp.size_changed.disconnect(_on_viewport_size_changed)
+	var adm = get_node_or_null("/root/AdManager")
+	if adm and adm.has_signal("banner_visibility_changed") and adm.banner_visibility_changed.is_connected(_on_banner_visibility_changed):
+		adm.banner_visibility_changed.disconnect(_on_banner_visibility_changed)
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_handle_back_action()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE:
+			_handle_back_action()
+			var vp := get_viewport()
+			if vp:
+				vp.set_input_as_handled()
+
+func _handle_back_action() -> void:
+	if is_testing:
+		_on_stop_test_pressed()
+	else:
+		_on_back_pressed()
+
+func _on_banner_visibility_changed(_is_visible: bool) -> void:
+	_apply_top_bar_layout()
+	_apply_playtest_touch_layout()
+
+func _on_viewport_size_changed() -> void:
+	_apply_top_bar_layout()
+	_apply_playtest_touch_layout()
+	if canvas:
+		canvas.queue_redraw()
+
+func _apply_top_bar_layout() -> void:
+	var adm = get_node_or_null("/root/AdManager")
+	var banner_h: float = adm.get_top_banner_height() \
+		if adm and adm.has_method("get_top_banner_height") else 0.0
+	if top_bar:
+		top_bar.offset_top = banner_h
+		top_bar.offset_bottom = banner_h + 56.0
+
+func _on_canvas_mouse_exited() -> void:
+	if hover_cell != Vector2i(-1, -1):
+		hover_cell = Vector2i(-1, -1)
+		if canvas:
+			canvas.queue_redraw()
 
 func _setup_palette_styles() -> void:
 	card_norm_style.bg_color = Color("#0d111a")
@@ -152,12 +243,55 @@ func _setup_palette_scroll() -> void:
 		palette_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
 		palette_scroll.gui_input.connect(_on_palette_gui_input)
 
+func _get_palette_max_scroll() -> int:
+	if not palette_scroll or not palette_container:
+		return 0
+	var content_w: float = maxf(palette_container.size.x, palette_container.get_combined_minimum_size().x)
+	return maxi(0, int(ceil(content_w - palette_scroll.size.x)))
+
 func _on_palette_gui_input(event: InputEvent) -> void:
+	if not palette_scroll:
+		return
+	if event is InputEventScreenTouch:
+		var st := event as InputEventScreenTouch
+		if st.pressed:
+			if _palette_touch_index == -1:
+				_palette_touch_index = st.index
+				is_palette_dragging = true
+				_palette_drag_moved = false
+				palette_drag_start_x = st.position.x
+				palette_scroll_start_x = float(palette_scroll.scroll_horizontal)
+		elif st.index == _palette_touch_index:
+			_palette_touch_index = -1
+			is_palette_dragging = false
+		return
+
+	if event is InputEventScreenDrag:
+		var sd := event as InputEventScreenDrag
+		if _palette_touch_index == -1:
+			_palette_touch_index = sd.index
+			is_palette_dragging = true
+			_palette_drag_moved = false
+			palette_drag_start_x = sd.position.x - sd.relative.x
+			palette_scroll_start_x = float(palette_scroll.scroll_horizontal)
+		if sd.index == _palette_touch_index:
+			var diff: float = palette_drag_start_x - sd.position.x
+			if absf(diff) > 10.0:
+				_palette_drag_moved = true
+			var max_sx := _get_palette_max_scroll()
+			palette_scroll.scroll_horizontal = clampi(int(round(palette_scroll_start_x + diff)), 0, max_sx)
+			palette_scroll.accept_event()
+		return
+
+	if _palette_touch_index != -1 or event.device == InputEvent.DEVICE_ID_EMULATION:
+		return
+
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_LEFT:
 			if mb.pressed:
 				is_palette_dragging = true
+				_palette_drag_moved = false
 				palette_drag_start_x = mb.global_position.x
 				palette_scroll_start_x = float(palette_scroll.scroll_horizontal)
 			else:
@@ -165,7 +299,10 @@ func _on_palette_gui_input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion and is_palette_dragging:
 		var mm := event as InputEventMouseMotion
 		var diff := palette_drag_start_x - mm.global_position.x
-		palette_scroll.scroll_horizontal = clampi(int(palette_scroll_start_x + diff), 0, 1000)
+		if absf(diff) > 10.0:
+			_palette_drag_moved = true
+		var max_sx := _get_palette_max_scroll()
+		palette_scroll.scroll_horizontal = clampi(int(round(palette_scroll_start_x + diff)), 0, max_sx)
 
 func _setup_slots() -> void:
 	if not slot_btn: return
@@ -272,13 +409,15 @@ func _select_current_slot_in_dropdown() -> void:
 
 func _build_palette() -> void:
 	for child in palette_container.get_children():
+		palette_container.remove_child(child)
 		child.queue_free()
 	tool_cards.clear()
 	
 	for item in TOOLS:
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(70, 62)
+		btn.custom_minimum_size = Vector2(78, 62)
 		btn.focus_mode = Control.FOCUS_NONE
+		btn.mouse_filter = Control.MOUSE_FILTER_PASS
 		btn.flat = false
 		btn.add_theme_stylebox_override("normal", card_norm_style)
 		btn.add_theme_stylebox_override("hover", card_hov_style)
@@ -287,6 +426,8 @@ func _build_palette() -> void:
 		# Ichki karta tartibi: Ikona yuqorida, Yozuv pastda
 		var vbox := VBoxContainer.new()
 		vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		vbox.offset_left = 4.0
+		vbox.offset_right = -4.0
 		vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 		vbox.add_theme_constant_override("separation", 3)
@@ -303,13 +444,20 @@ func _build_palette() -> void:
 		lbl.text = LocaleManager.t(item.loc_key)
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lbl.clip_text = true
+		lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		lbl.add_theme_font_size_override("font_size", 10)
 		lbl.add_theme_color_override("font_color", Color("#cbd5e1"))
 		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		vbox.add_child(lbl)
 		
 		btn.add_child(vbox)
-		btn.pressed.connect(func(): _select_tool(item.id))
+		btn.pressed.connect(func():
+			if _palette_drag_moved:
+				return
+			_select_tool(item.id)
+		)
 		palette_container.add_child(btn)
 		
 		tool_cards[item.id] = {
@@ -356,6 +504,10 @@ func _update_all_texts() -> void:
 	if stop_test_btn:
 		stop_test_btn.icon = IconFactory.get_icon("stop", 0.85)
 		stop_test_btn.text = " " + LocaleManager.t("btn_stop_test")
+	if jump_btn:
+		jump_btn.text = LocaleManager.t("btn_jump")
+	if dash_btn:
+		dash_btn.text = LocaleManager.t("btn_dash")
 		
 	for id in tool_cards:
 		var data = tool_cards[id]
@@ -363,9 +515,36 @@ func _update_all_texts() -> void:
 		lbl.text = LocaleManager.t(data["loc_key"])
 
 func _snap_to_cell(pos: Vector2) -> Vector2i:
-	var gx: int = clampi(int(pos.x / float(GRID_SIZE)), 0, _get_cols() - 1)
+	var gx: int = clampi(int(pos.x / float(GRID_SIZE)), 0, maxi(0, _get_cols() - 1))
 	var gy: int = clampi(int(pos.y / float(GRID_SIZE)), MIN_ROW, MAX_ROW)
 	return Vector2i(gx, gy)
+
+func _clamp_cell_for_tool(cell: Vector2i, tool_id: String) -> Vector2i:
+	var cols := _get_cols()
+	var max_col := maxi(0, cols - 1)
+	var min_inner_col := 1 if cols >= 3 else 0
+	var max_inner_col := maxi(min_inner_col, cols - 2)
+	match tool_id:
+		"player":
+			return Vector2i(clampi(cell.x, min_inner_col, max_inner_col), clampi(cell.y, MIN_ROW, MAX_ROW))
+		"door", "fake_door":
+			return Vector2i(clampi(cell.x, min_inner_col, max_inner_col), clampi(cell.y, maxi(3, MIN_ROW + 1), MAX_ROW))
+		"crusher":
+			var max_crusher_x := maxi(min_inner_col, cols - 3)
+			return Vector2i(clampi(cell.x, min_inner_col, max_crusher_x), clampi(cell.y, MIN_ROW, maxi(MIN_ROW, MAX_ROW - 1)))
+		_:
+			return Vector2i(clampi(cell.x, 0, max_col), clampi(cell.y, MIN_ROW, MAX_ROW))
+
+func _compute_crusher_target_y(gx: int, gy: int) -> float:
+	var start_y: float = float(gy * GRID_SIZE)
+	for scan_gy in range(gy + 2, MAX_ROW + 1):
+		for col_offset in [0, 1]:
+			var k := "%d_%d" % [gx + col_offset, scan_gy]
+			if cell_map.has(k):
+				var ct: String = str(cell_map[k].get("type", ""))
+				if ct == "platform" or ct == "trap_floor":
+					return maxf(start_y, float(scan_gy * GRID_SIZE) - 64.0)
+	return maxf(start_y, float((MAX_ROW + 1) * GRID_SIZE) - 64.0)
 
 func _on_canvas_gui_input(event: InputEvent) -> void:
 	if is_testing:
@@ -388,7 +567,7 @@ func _on_canvas_gui_input(event: InputEvent) -> void:
 		canvas.queue_redraw()
 
 func _apply_tool_at_pos(pos: Vector2) -> void:
-	var cell := _snap_to_cell(pos)
+	var cell := _clamp_cell_for_tool(_snap_to_cell(pos), current_tool)
 	if cell == last_placed_cell:
 		return
 	last_placed_cell = cell
@@ -433,15 +612,16 @@ func _apply_tool_at_pos(pos: Vector2) -> void:
 			pass
 		"saw":
 			elem["move_distance"] = 64.0
+			elem["radius"] = 16.0
 		"circular_saw":
 			elem["orbit_radius"] = 64.0
-			elem["saw_radius"] = 20.0
+			elem["saw_radius"] = 16.0
 		"crusher":
 			pass
 		"spring":
-			elem["bounce_force"] = -580.0
+			elem["bounce_force"] = 580.0
 		"falling":
-			elem["trigger_dist"] = 280.0
+			elem["trigger_distance"] = 340.0
 		"fake_door":
 			pass
 			
@@ -472,9 +652,10 @@ func _on_canvas_draw() -> void:
 	_draw_player(player_spawn)
 	
 	# 4. Kursor indikatori (Hover)
-	if not is_testing:
-		var hx: float = float(hover_cell.x * GRID_SIZE)
-		var hy: float = float(hover_cell.y * GRID_SIZE)
+	if not is_testing and hover_cell.x >= 0 and hover_cell.y >= MIN_ROW:
+		var hc := _clamp_cell_for_tool(hover_cell, current_tool)
+		var hx: float = float(hc.x * GRID_SIZE)
+		var hy: float = float(hc.y * GRID_SIZE)
 		if current_tool == "crusher":
 			# 2x2 katak (64x64px)
 			canvas.draw_rect(Rect2(hx, hy, 64.0, 64.0), Color(0.85, 0.92, 1.0, 0.8), false, 2.0)
@@ -525,14 +706,18 @@ func _draw_cell_element(elem: Dictionary) -> void:
 			canvas.draw_line(Vector2(x + 24, y + sz - 4), Vector2(x + 16, y + 14), Color("#ef4444"), 2.0)
 		"saw":
 			var c := Vector2(x + 16, y + 16)
-			canvas.draw_circle(c, 16.0, Color("#3f3f46"))
-			canvas.draw_circle(c, 7.0, Color("#dc2626"))
+			var srad_m: float = float(elem.get("radius", 16.0))
+			var move_dist: float = float(elem.get("move_distance", 64.0))
+			var end_c := c + Vector2(move_dist, 0.0)
+			canvas.draw_dashed_line(c, end_c, Color(0.95, 0.45, 0.25, 0.55), 1.5, 4.0)
+			canvas.draw_circle(end_c, 3.0, Color(0.95, 0.45, 0.25, 0.65))
+			canvas.draw_circle(c, srad_m, Color("#3f3f46"))
+			canvas.draw_circle(c, srad_m * 0.44, Color("#dc2626"))
 			canvas.draw_circle(c, 2.5, Color("#f8fafc"))
-			canvas.draw_dashed_line(c - Vector2(32, 0), c + Vector2(32, 0), Color(0.8, 0.4, 0.2, 0.4), 1.0, 4.0)
 		"circular_saw":
 			var center := Vector2(x + 16, y + 16)
 			var orad: float = float(elem.get("orbit_radius", 64.0))
-			var srad: float = 16.0
+			var srad: float = float(elem.get("saw_radius", 16.0))
 			canvas.draw_arc(center, orad, 0, TAU, 32, Color(0.9, 0.4, 0.4, 0.25), 1.0)
 			canvas.draw_circle(center, 4.0, Color("#334155"))
 			var bpos := center + Vector2(orad, 0)
@@ -541,6 +726,23 @@ func _draw_cell_element(elem: Dictionary) -> void:
 			canvas.draw_circle(bpos, srad * 0.65, Color("#dc2626"))
 			canvas.draw_circle(bpos, 2.5, Color("#f8fafc"))
 		"crusher":
+			# Pastga tushish yo'li preview chizig'i
+			var drop_target_y: float = _compute_crusher_target_y(gx, gy)
+			var drop_bottom_y: float = drop_target_y + 64.0
+			if drop_bottom_y > y + 66.0:
+				canvas.draw_dashed_line(
+					Vector2(x + 32.0, y + 64.0),
+					Vector2(x + 32.0, drop_bottom_y),
+					Color(0.95, 0.40, 0.40, 0.45),
+					1.5,
+					5.0
+				)
+				canvas.draw_line(
+					Vector2(x + 12.0, drop_bottom_y),
+					Vector2(x + 52.0, drop_bottom_y),
+					Color(0.95, 0.40, 0.40, 0.55),
+					1.5
+				)
 			# 2x standart: 64x64px siluet blok
 			canvas.draw_rect(Rect2(x, y, 64, 64), Color("#0c0e14"), true)
 			canvas.draw_line(Vector2(x, y + 1), Vector2(x + 64, y + 1), Color("#2a3548"), 2.0)
@@ -629,22 +831,32 @@ func _draw_player(pos: Vector2) -> void:
 # --- Playtest rejimi ---
 func _on_test_pressed() -> void:
 	SoundManager.play("click")
+	_playtest_session_id += 1
 	is_testing = true
+	is_pointer_down = false
+	hover_cell = Vector2i(-1, -1)
 	top_bar.visible = false
 	bottom_palette.visible = false
 	canvas.visible = false
 	playtest_ui.visible = true
+	_update_playtest_touch_visibility()
+	_apply_playtest_touch_layout()
 	
 	GameManager.is_custom_editor_mode = true
+	SoundManager.set_gameplay_mode(true)
 	_spawn_test_world()
 
 func _on_stop_test_pressed() -> void:
 	SoundManager.play("click")
+	_playtest_session_id += 1
+	_release_all_touch_actions()
 	_clear_test_world()
 	GameManager.is_custom_editor_mode = false
+	SoundManager.set_gameplay_mode(false)
 	is_testing = false
 	
 	playtest_ui.visible = false
+	_update_playtest_touch_visibility()
 	top_bar.visible = true
 	bottom_palette.visible = true
 	canvas.visible = true
@@ -653,34 +865,66 @@ func _on_stop_test_pressed() -> void:
 func _spawn_test_world() -> void:
 	_clear_test_world()
 	
-	var processed_platforms: Dictionary = {}
-	
+	# 1. Platformalarni (gy, gx) bo'yicha tartiblab gorizontal birlashtiramiz (o'ngdan-chapga dublikatlarsiz!)
+	var platform_cells: Array[Dictionary] = []
 	for key in cell_map:
 		var elem: Dictionary = cell_map[key]
-		var t: String = elem.get("type", "platform")
+		if str(elem.get("type", "")) == "platform":
+			platform_cells.append(elem)
+	platform_cells.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var ay := int(a.get("gy", 0))
+		var by := int(b.get("gy", 0))
+		if ay != by:
+			return ay < by
+		return int(a.get("gx", 0)) < int(b.get("gx", 0))
+	)
+	
+	var processed_platforms: Dictionary = {}
+	for pe in platform_cells:
+		var gx: int = int(pe.get("gx", 0))
+		var gy: int = int(pe.get("gy", 0))
+		var pkey := "%d_%d" % [gx, gy]
+		if processed_platforms.has(pkey):
+			continue
+		var has_above: bool = cell_map.has("%d_%d" % [gx, gy - 1]) \
+			and str(cell_map["%d_%d" % [gx, gy - 1]].get("type", "")) == "platform"
+		processed_platforms[pkey] = true
+		var span: int = 1
+		while true:
+			var nkey := "%d_%d" % [gx + span, gy]
+			if processed_platforms.has(nkey) or not cell_map.has(nkey):
+				break
+			if str(cell_map[nkey].get("type", "")) != "platform":
+				break
+			var n_has_above: bool = cell_map.has("%d_%d" % [gx + span, gy - 1]) \
+				and str(cell_map["%d_%d" % [gx + span, gy - 1]].get("type", "")) == "platform"
+			if n_has_above != has_above:
+				break
+			processed_platforms[nkey] = true
+			span += 1
+		
+		var plat = SCENE_PLATFORM.instantiate()
+		plat.set("platform_size", Vector2(span * GRID_SIZE, GRID_SIZE))
+		plat.set("is_extension_or_wall", has_above)
+		plat.position = Vector2(float(gx * GRID_SIZE), float(gy * GRID_SIZE))
+		playtest_world.add_child(plat)
+	
+	# 2. Qolgan barcha tuzoqlar va obyektlarni yaratish
+	for key in cell_map:
+		var elem: Dictionary = cell_map[key]
+		var t: String = str(elem.get("type", "platform"))
+		if t == "platform":
+			continue
 		var gx: int = int(elem.get("gx", 0))
 		var gy: int = int(elem.get("gy", 0))
 		var x: float = float(gx * GRID_SIZE)
 		var y: float = float(gy * GRID_SIZE)
-		
-		if t == "platform":
-			if processed_platforms.has(key):
-				continue
-			var span: int = 1
-			while cell_map.has("%d_%d" % [gx + span, gy]) and cell_map["%d_%d" % [gx + span, gy]].get("type") == "platform":
-				processed_platforms["%d_%d" % [gx + span, gy]] = true
-				span += 1
-			
-			var plat = SCENE_PLATFORM.instantiate()
-			plat.set("platform_size", Vector2(span * GRID_SIZE, GRID_SIZE))
-			plat.position = Vector2(x, y)
-			playtest_world.add_child(plat)
-			continue
 			
 		var node: Node2D = null
 		match t:
 			"trap_floor":
 				node = SCENE_TRAP_FLOOR.instantiate()
+				node.set("auto_extend_to_bottom", false)
 				node.set("platform_size", Vector2(GRID_SIZE, GRID_SIZE))
 				node.position = Vector2(x, y)
 			"spikes":
@@ -690,29 +934,33 @@ func _spawn_test_world() -> void:
 			"pop_up_spikes":
 				node = SCENE_POP_UP_SPIKES.instantiate()
 				node.set("spike_width", float(GRID_SIZE))
-				node.set("max_height", float(GRID_SIZE))
+				node.set("max_spike_height", float(GRID_SIZE))
 				node.position = Vector2(x, y + GRID_SIZE)
 			"saw":
 				node = SCENE_SAW.instantiate()
 				node.position = Vector2(x + 16, y + 16)
 				node.set("patrol_distance", float(elem.get("move_distance", 64.0)))
-				node.set("saw_radius", 16.0)
+				node.set("radius", float(elem.get("radius", 16.0)))
 			"circular_saw":
 				node = SCENE_CIRCULAR_SAW.instantiate()
 				node.position = Vector2(x + 16, y + 16)
 				node.set("orbit_radius", float(elem.get("orbit_radius", 64.0)))
-				node.set("saw_radius", 16.0)
+				node.set("saw_radius", float(elem.get("saw_radius", 16.0)))
 			"crusher":
 				node = SCENE_CRUSHER.instantiate()
 				node.position = Vector2(x, y)
 				node.set("crusher_size", Vector2(64, 64))
-				node.set("target_y", y + 160.0)
+				node.set("target_y", _compute_crusher_target_y(gx, gy))
 			"spring":
 				node = SCENE_SPRING.instantiate()
-				node.position = Vector2(x, y)
+				node.position = Vector2(x, y + GRID_SIZE)
+				node.set("spring_size", Vector2(GRID_SIZE, GRID_SIZE))
+				node.set("bounce_force", absf(float(elem.get("bounce_force", 580.0))))
+				node.set("visible_when_idle", true)
 			"falling":
 				node = SCENE_FALLING_SPIKE.instantiate()
 				node.position = Vector2(x + 16, y)
+				node.set("trigger_distance", float(elem.get("trigger_distance", elem.get("trigger_dist", 340.0))))
 			"fake_door":
 				node = SCENE_FAKE_DOOR.instantiate()
 				node.position = Vector2(x + 16, y + 32)
@@ -728,16 +976,21 @@ func _spawn_test_world() -> void:
 	# Chegaraviy devorlar va shift
 	var cw := _get_canvas_width()
 	var left_w = SCENE_PLATFORM.instantiate()
+	left_w.name = "LeftWall"
 	left_w.position = Vector2(0, 0)
 	left_w.set("platform_size", Vector2(32, 540))
+	left_w.set("is_extension_or_wall", true)
 	playtest_world.add_child(left_w)
 	
 	var right_w = SCENE_PLATFORM.instantiate()
+	right_w.name = "RightWall"
 	right_w.position = Vector2(cw - 32, 0)
 	right_w.set("platform_size", Vector2(32, 540))
+	right_w.set("is_extension_or_wall", true)
 	playtest_world.add_child(right_w)
 	
 	var ceiling = SCENE_PLATFORM.instantiate()
+	ceiling.name = "Ceiling"
 	ceiling.position = Vector2(0, 0)
 	ceiling.set("platform_size", Vector2(cw, 60))
 	playtest_world.add_child(ceiling)
@@ -747,6 +1000,8 @@ func _spawn_test_world() -> void:
 
 func _spawn_test_player_once() -> void:
 	for p in get_tree().get_nodes_in_group("player"):
+		if p.get_parent():
+			p.get_parent().remove_child(p)
 		p.queue_free()
 		
 	var player = SCENE_PLAYER.instantiate()
@@ -756,35 +1011,44 @@ func _spawn_test_player_once() -> void:
 	playtest_world.add_child(player)
 
 func _clear_test_world() -> void:
+	if not playtest_world:
+		return
+	TrapBiomeVFX.clear_level(playtest_world)
 	for c in playtest_world.get_children():
+		playtest_world.remove_child(c)
 		c.queue_free()
 
 func _on_custom_player_died() -> void:
-	SoundManager.play("die")
-	await get_tree().create_timer(0.35).timeout
-	if is_testing:
-		TrapBiomeVFX.clear_level(playtest_world)
-		for c in playtest_world.get_children():
-			if c.has_method("reset_trap"):
-				c.reset_trap()
+	# PlayerController.kill() allaqachon "die" SFX chaladi; tuzoqlar respawn'da tozalanadi.
+	pass
+
+func _on_custom_player_respawned() -> void:
+	if not is_testing or not is_instance_valid(playtest_world):
+		return
+	TrapBiomeVFX.clear_level(playtest_world)
+	for c in playtest_world.get_children():
+		if c.has_method("reset_trap"):
+			c.reset_trap()
+		elif c.has_method("reset_door"):
+			c.reset_door()
 
 func _on_custom_level_completed() -> void:
-	SoundManager.play("win")
+	# ExitDoor._on_body_entered() allaqachon "win" SFX chaladi.
+	var session := _playtest_session_id
 	_show_toast(LocaleManager.t("test_won_notice"))
 	await get_tree().create_timer(1.2).timeout
-	if is_testing:
+	if is_inside_tree() and is_testing and _playtest_session_id == session:
 		_on_stop_test_pressed()
 
 # --- Saqlash va Yuklash ---
 func _on_slot_selected(idx: int) -> void:
 	var id := slot_btn.get_item_id(idx)
 	if id == 99:
-		# Qayta yuklash (Revert)
+		# Qayta yuklash (Revert) — bo'sh slot bo'lsa Save rejimi saqlanadi
 		SoundManager.play("click")
 		_load_slot(current_slot)
 		_show_toast(LocaleManager.t("reloaded_notice", [current_slot]))
 		_select_current_slot_in_dropdown()
-		_set_save_mode(false)
 		return
 		
 	if id >= 1 and id <= 5:
@@ -795,37 +1059,52 @@ func _on_slot_selected(idx: int) -> void:
 		_select_current_slot_in_dropdown()
 
 func _snap_door_pos(raw: Vector2) -> Vector2:
-	var gx: int = clampi(int(floor(raw.x / float(GRID_SIZE))), 0, _get_cols() - 1)
-	var gy: int = clampi(int(round(raw.y / float(GRID_SIZE))), MIN_ROW, MAX_ROW + 1)
+	var cols := _get_cols()
+	var min_x := 1 if cols >= 3 else 0
+	var max_x := maxi(min_x, cols - 2)
+	var gx: int = clampi(int(floor(raw.x / float(GRID_SIZE))), min_x, max_x)
+	var gy: int = clampi(int(round(raw.y / float(GRID_SIZE))), maxi(4, MIN_ROW + 2), MAX_ROW + 1)
 	return Vector2(float(gx * GRID_SIZE + 16), float(gy * GRID_SIZE))
 
 func _snap_player_pos(raw: Vector2) -> Vector2:
-	var gx: int = clampi(int(floor(raw.x / float(GRID_SIZE))), 0, _get_cols() - 1)
-	var gy: int = clampi(int(round(raw.y / float(GRID_SIZE))), MIN_ROW, MAX_ROW + 1)
+	var cols := _get_cols()
+	var min_x := 1 if cols >= 3 else 0
+	var max_x := maxi(min_x, cols - 2)
+	var gx: int = clampi(int(floor(raw.x / float(GRID_SIZE))), min_x, max_x)
+	var gy: int = clampi(int(round(raw.y / float(GRID_SIZE))), MIN_ROW + 1, MAX_ROW + 1)
 	return Vector2(float(gx * GRID_SIZE + 16), float(gy * GRID_SIZE))
 
 func _load_slot(slot: int) -> void:
 	cell_map.clear()
 	var data: Dictionary = CustomLevelManager.load_custom_level(slot)
 	var raw_p = data.get("player_spawn", [144, 384])
-	player_spawn = _snap_player_pos(Vector2(float(raw_p[0]), float(raw_p[1])))
+	if raw_p is Array and raw_p.size() >= 2:
+		player_spawn = _snap_player_pos(Vector2(float(raw_p[0]), float(raw_p[1])))
+	else:
+		player_spawn = _snap_player_pos(Vector2(144.0, 384.0))
 	
 	var raw_d = data.get("exit_door", [848, 384])
-	exit_door_pos = _snap_door_pos(Vector2(float(raw_d[0]), float(raw_d[1])))
+	if raw_d is Array and raw_d.size() >= 2:
+		exit_door_pos = _snap_door_pos(Vector2(float(raw_d[0]), float(raw_d[1])))
+	else:
+		exit_door_pos = _snap_door_pos(Vector2(848.0, 384.0))
 	
-	var raw_elements: Array = data.get("elements", [])
-	for elem in raw_elements:
-		var gx: int = int(elem.get("gx", int(elem.get("x", 0) / float(GRID_SIZE))))
-		var gy: int = int(elem.get("gy", int(elem.get("y", 0) / float(GRID_SIZE))))
-		gx = clampi(gx, 0, _get_cols() - 1)
-		gy = clampi(gy, MIN_ROW, MAX_ROW)
-		var key := "%d_%d" % [gx, gy]
-		var clean_elem: Dictionary = elem.duplicate()
-		clean_elem["gx"] = gx
-		clean_elem["gy"] = gy
-		clean_elem["x"] = gx * GRID_SIZE
-		clean_elem["y"] = gy * GRID_SIZE
-		cell_map[key] = clean_elem
+	var raw_elements = data.get("elements", [])
+	if raw_elements is Array:
+		for elem in raw_elements:
+			if not (elem is Dictionary):
+				continue
+			var t: String = str(elem.get("type", "platform"))
+			var gx: int = int(elem.get("gx", int(elem.get("x", 0) / float(GRID_SIZE))))
+			var gy: int = int(elem.get("gy", int(elem.get("y", 0) / float(GRID_SIZE))))
+			var clamped := _clamp_cell_for_tool(Vector2i(gx, gy), t)
+			var key := "%d_%d" % [clamped.x, clamped.y]
+			var clean_elem: Dictionary = elem.duplicate()
+			clean_elem["gx"] = clamped.x
+			clean_elem["gy"] = clamped.y
+			clean_elem["x"] = clamped.x * GRID_SIZE
+			clean_elem["y"] = clamped.y * GRID_SIZE
+			cell_map[key] = clean_elem
 		
 	canvas.queue_redraw()
 	
@@ -882,6 +1161,10 @@ func _on_clear_pressed() -> void:
 
 func _on_back_pressed() -> void:
 	SoundManager.play("click")
+	_playtest_session_id += 1
+	_release_all_touch_actions()
+	GameManager.is_custom_editor_mode = false
+	SoundManager.set_gameplay_mode(false)
 	var adm = get_node_or_null("/root/AdManager")
 	if adm and adm.has_method("show_banner"):
 		adm.show_banner()
@@ -889,27 +1172,137 @@ func _on_back_pressed() -> void:
 
 func _show_toast(msg: String) -> void:
 	if not toast_lbl: return
+	if _toast_tween and _toast_tween.is_valid():
+		_toast_tween.kill()
 	toast_lbl.text = msg
 	toast_lbl.visible = true
-	var tw := create_tween()
 	toast_lbl.modulate.a = 1.0
-	tw.tween_interval(1.8)
-	tw.tween_property(toast_lbl, "modulate:a", 0.0, 0.4)
-	tw.tween_callback(func(): toast_lbl.visible = false)
+	_toast_tween = create_tween()
+	_toast_tween.tween_interval(1.8)
+	_toast_tween.tween_property(toast_lbl, "modulate:a", 0.0, 0.4)
+	_toast_tween.tween_callback(func(): toast_lbl.visible = false)
+
+func _is_mobile_touch_platform() -> bool:
+	return (
+		OS.has_feature("android")
+		or OS.has_feature("ios")
+		or OS.has_feature("mobile")
+		or OS.has_feature("web_android")
+		or OS.has_feature("web_ios")
+	)
 
 func _setup_touch_controls() -> void:
-	var left_btn = get_node_or_null("PlaytestUI/TouchControls/DPad/LeftBtn")
-	var right_btn = get_node_or_null("PlaytestUI/TouchControls/DPad/RightBtn")
-	var jump_btn = get_node_or_null("PlaytestUI/TouchControls/Action/JumpBtn")
-	
-	if left_btn: _bind_touch(left_btn, "move_left")
-	if right_btn: _bind_touch(right_btn, "move_right")
-	if jump_btn: _bind_touch(jump_btn, "jump")
+	for btn in [left_btn, right_btn, dash_btn, jump_btn]:
+		if btn:
+			btn.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			btn.focus_mode = Control.FOCUS_NONE
+	_apply_playtest_touch_layout()
+	_update_playtest_touch_visibility()
 
-func _bind_touch(btn: Button, action: String) -> void:
-	btn.button_down.connect(func(): Input.action_press(action))
-	btn.button_up.connect(func(): Input.action_release(action))
-	btn.mouse_exited.connect(func():
-		if Input.is_action_pressed(action):
-			Input.action_release(action)
-	)
+func _update_playtest_touch_visibility() -> void:
+	var show_touch := is_testing and _is_mobile_touch_platform()
+	if touch_controls:
+		touch_controls.visible = show_touch
+	if not show_touch:
+		_release_all_touch_actions()
+
+func _apply_playtest_touch_layout() -> void:
+	var def_positions := UIResponsive.get_default_touch_positions(self)
+	var insets := UIResponsive.get_safe_insets(self)
+	var adm = get_node_or_null("/root/AdManager")
+	var banner_h: float = adm.get_top_banner_height() \
+		if adm and adm.has_method("get_top_banner_height") else 0.0
+
+	if stop_test_btn:
+		stop_test_btn.position = Vector2(18.0 + float(insets["left"]), banner_h + 16.0 + float(insets["top"]))
+
+	var sm = get_node_or_null("/root/SaveManager")
+	var btn_sc: float = float(sm.touch_button_scale) if sm else 1.0
+	var sz_lr := Vector2(82.0, 82.0) * btn_sc
+	var sz_dash := Vector2(78.0, 78.0) * btn_sc
+	var sz_jump := Vector2(88.0, 88.0) * btn_sc
+
+	if left_btn:
+		left_btn.custom_minimum_size = sz_lr
+		left_btn.size = sz_lr
+	if right_btn:
+		right_btn.custom_minimum_size = sz_lr
+		right_btn.size = sz_lr
+	if dash_btn:
+		dash_btn.custom_minimum_size = sz_dash
+		dash_btn.size = sz_dash
+	if jump_btn:
+		jump_btn.custom_minimum_size = sz_jump
+		jump_btn.size = sz_jump
+
+	if sm and not sm.custom_touch_layout.is_empty():
+		if left_btn: left_btn.position = sm.get_touch_pos("left", def_positions["left"])
+		if right_btn: right_btn.position = sm.get_touch_pos("right", def_positions["right"])
+		if dash_btn: dash_btn.position = sm.get_touch_pos("dash", def_positions["dash"])
+		if jump_btn: jump_btn.position = sm.get_touch_pos("jump", def_positions["jump"])
+	else:
+		if left_btn: left_btn.position = def_positions["left"]
+		if right_btn: right_btn.position = def_positions["right"]
+		if dash_btn: dash_btn.position = def_positions["dash"]
+		if jump_btn: jump_btn.position = def_positions["jump"]
+
+func _input(event: InputEvent) -> void:
+	if not is_testing or not touch_controls or not touch_controls.visible or get_tree().paused:
+		if not _active_touch_actions.is_empty():
+			_release_all_touch_actions()
+		return
+
+	if event is InputEventScreenTouch:
+		var st := event as InputEventScreenTouch
+		if st.pressed:
+			var act := _get_touch_action_at(st.position)
+			if not act.is_empty():
+				_touch_fingers[st.index] = act
+				_sync_touch_actions()
+		elif _touch_fingers.has(st.index):
+			_touch_fingers.erase(st.index)
+			_sync_touch_actions()
+	elif event is InputEventScreenDrag:
+		var sd := event as InputEventScreenDrag
+		if _touch_fingers.has(sd.index):
+			var cur_act := str(_touch_fingers[sd.index])
+			if cur_act == "move_left" or cur_act == "move_right":
+				var new_act := _get_touch_action_at(sd.position)
+				if (new_act == "move_left" or new_act == "move_right") \
+						and new_act != cur_act:
+					_touch_fingers[sd.index] = new_act
+					_sync_touch_actions()
+
+func _get_touch_action_at(screen_pos: Vector2) -> String:
+	var local_pos := get_global_transform_with_canvas().affine_inverse() * screen_pos
+	var pad := 16.0
+	if jump_btn and Rect2(jump_btn.position, jump_btn.size).grow(pad).has_point(local_pos):
+		return "jump"
+	if dash_btn and Rect2(dash_btn.position, dash_btn.size).grow(pad).has_point(local_pos):
+		return "dash"
+	if left_btn and Rect2(left_btn.position, left_btn.size).grow(pad).has_point(local_pos):
+		return "move_left"
+	if right_btn and Rect2(right_btn.position, right_btn.size).grow(pad).has_point(local_pos):
+		return "move_right"
+	return ""
+
+func _sync_touch_actions() -> void:
+	var next_actions: Dictionary = {}
+	for act in _touch_fingers.values():
+		next_actions[str(act)] = true
+
+	for act in _active_touch_actions.keys():
+		if not next_actions.has(act):
+			Input.action_release(str(act))
+
+	for act in next_actions.keys():
+		if not _active_touch_actions.has(act):
+			Input.action_press(str(act))
+
+	_active_touch_actions = next_actions
+
+func _release_all_touch_actions() -> void:
+	_touch_fingers.clear()
+	for act in _active_touch_actions.keys():
+		Input.action_release(str(act))
+	_active_touch_actions.clear()

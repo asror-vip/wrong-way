@@ -46,6 +46,11 @@ const STRINGS = {
 		"tab_global": "GLOBAL",
 		"tab_friends": "DO'STLAR",
 		"player_you": "Siz",
+		"leaderboard_guest_title": "Google hisobi talab qilinadi",
+		"leaderboard_guest_desc": "Global va Do'stlar reytingini ko'rish hamda natijalaringizni saqlash uchun Google hisobingiz bilan kiring.",
+		"leaderboard_google_login_btn": "Google orqali kirish",
+		"leaderboard_google_connecting": "Google hisobiga ulanmoqda...",
+		"leaderboard_friends_empty": "Hozircha do'stlar yo'q. Do'stlaringiz reytingini ko'rish uchun ular bilan o'ynang yoki qo'shing.",
 		
 		# Settings Modal
 		"settings_title": "SOZLAMALAR",
@@ -112,6 +117,7 @@ const STRINGS = {
 		"hud_time": "%.2fs",
 		"hud_deaths": "%d ta o'lim",
 		"btn_jump": "SAKRA",
+		"btn_dash": "DASH",
 		"btn_hud_menu": "Menyu",
 		
 		# Pause Modal
@@ -198,6 +204,11 @@ const STRINGS = {
 		"tab_global": "ГЛОБАЛ",
 		"tab_friends": "ДРУЗЬЯ",
 		"player_you": "Вы",
+		"leaderboard_guest_title": "Требуется аккаунт Google",
+		"leaderboard_guest_desc": "Войдите через Google, чтобы видеть глобальный рейтинг и таблицу друзей, а также сохранять рекорды.",
+		"leaderboard_google_login_btn": "Войти через Google",
+		"leaderboard_google_connecting": "Подключение к Google...",
+		"leaderboard_friends_empty": "Пока нет друзей в рейтинге. Сыграйте с друзьями, чтобы увидеть их здесь.",
 		
 		# Settings Modal
 		"settings_title": "НАСТРОЙКИ",
@@ -264,6 +275,7 @@ const STRINGS = {
 		"hud_time": "%.2fs",
 		"hud_deaths": "%d смертей",
 		"btn_jump": "ПРЫЖОК",
+		"btn_dash": "РЫВОК",
 		"btn_hud_menu": "Меню",
 		
 		# Pause Modal
@@ -350,6 +362,11 @@ const STRINGS = {
 		"tab_global": "GLOBAL",
 		"tab_friends": "FRIENDS",
 		"player_you": "You",
+		"leaderboard_guest_title": "Google Account Required",
+		"leaderboard_guest_desc": "Sign in with Google to view Global and Friends rankings and sync your records.",
+		"leaderboard_google_login_btn": "Sign in with Google",
+		"leaderboard_google_connecting": "Connecting to Google...",
+		"leaderboard_friends_empty": "No friends in the rankings yet. Play with friends to see them here.",
 		
 		# Settings Modal
 		"settings_title": "SETTINGS",
@@ -416,6 +433,7 @@ const STRINGS = {
 		"hud_time": "%.2fs",
 		"hud_deaths": "%d deaths",
 		"btn_jump": "JUMP",
+		"btn_dash": "DASH",
 		"btn_hud_menu": "Menu",
 		
 		# Pause Modal
@@ -502,6 +520,11 @@ const STRINGS = {
 		"tab_global": "GLOBAL",
 		"tab_friends": "ARKADAŞLAR",
 		"player_you": "Sen",
+		"leaderboard_guest_title": "Google Hesabı Gerekli",
+		"leaderboard_guest_desc": "Global ve Arkadaşlar sıralamasını görmek ve rekorlarınızı kaydetmek için Google hesabınızla giriş yapın.",
+		"leaderboard_google_login_btn": "Google ile giriş yap",
+		"leaderboard_google_connecting": "Google'a bağlanılıyor...",
+		"leaderboard_friends_empty": "Henüz sıralamada arkadaşınız yok. Arkadaşlarınızla oynayarak onları burada görün.",
 		
 		# Settings Modal
 		"settings_title": "AYARLAR",
@@ -568,6 +591,7 @@ const STRINGS = {
 		"hud_time": "%.2fs",
 		"hud_deaths": "%d ölüm",
 		"btn_jump": "ZIPLA",
+		"btn_dash": "ATIL",
 		"btn_hud_menu": "Menü",
 		
 		# Pause Modal

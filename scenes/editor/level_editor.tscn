@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/editor/level_editor.gd" id="1_edt"]
 [ext_resource type="Texture2D" path="res://assets/images/home-img.png" id="2_bg_tex"]
@@ -48,6 +48,18 @@ corner_radius_top_right = 22
 corner_radius_bottom_right = 22
 corner_radius_bottom_left = 22
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_touch_dash"]
+bg_color = Color(0.08, 0.16, 0.24, 0.82)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.22, 0.74, 0.97, 0.9)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
+
 [node name="LevelEditor" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -66,7 +78,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_bg_tex")
 expand_mode = 1
-stretch_mode = 5
+stretch_mode = 6
 modulate = Color(0.38, 0.42, 0.50, 1)
 
 [node name="PlaytestWorld" type="Node2D" parent="."]
@@ -219,6 +231,7 @@ vertical_scroll_mode = 3
 [node name="HBox" type="HBoxContainer" parent="BottomPalette/Scroll"]
 layout_mode = 2
 size_flags_vertical = 3
+mouse_filter = 2
 theme_override_constants/separation = 8
 
 [node name="PlaytestUI" type="Control" parent="."]
@@ -256,26 +269,15 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="DPad" type="Control" parent="PlaytestUI/TouchControls"]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = -90.0
-offset_right = 180.0
-offset_bottom = -20.0
-grow_vertical = 0
-
-[node name="LeftBtn" type="Button" parent="PlaytestUI/TouchControls/DPad"]
-layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_top = -30.0
-offset_right = 65.0
-offset_bottom = 30.0
-grow_vertical = 2
+[node name="LeftBtn" type="Button" parent="PlaytestUI/TouchControls"]
+custom_minimum_size = Vector2(82, 82)
+layout_mode = 0
+offset_left = 42.0
+offset_top = 428.0
+offset_right = 124.0
+offset_bottom = 510.0
+focus_mode = 0
+mouse_filter = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_touch")
@@ -285,18 +287,15 @@ theme_override_styles/focus = ExtResource("5_focus")
 text = "◀"
 action_mode = 0
 
-[node name="RightBtn" type="Button" parent="PlaytestUI/TouchControls/DPad"]
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -65.0
-offset_top = -30.0
-offset_bottom = 30.0
-grow_horizontal = 0
-grow_vertical = 2
+[node name="RightBtn" type="Button" parent="PlaytestUI/TouchControls"]
+custom_minimum_size = Vector2(82, 82)
+layout_mode = 0
+offset_left = 148.0
+offset_top = 428.0
+offset_right = 230.0
+offset_bottom = 510.0
+focus_mode = 0
+mouse_filter = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_touch")
@@ -306,29 +305,35 @@ theme_override_styles/focus = ExtResource("5_focus")
 text = "▶"
 action_mode = 0
 
-[node name="Action" type="Control" parent="PlaytestUI/TouchControls"]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -140.0
-offset_top = -90.0
-offset_right = -24.0
-offset_bottom = -20.0
-grow_horizontal = 0
-grow_vertical = 0
+[node name="DashBtn" type="Button" parent="PlaytestUI/TouchControls"]
+custom_minimum_size = Vector2(78, 78)
+layout_mode = 0
+offset_left = 728.0
+offset_top = 432.0
+offset_right = 806.0
+offset_bottom = 510.0
+focus_mode = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.85, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 14
+theme_override_styles/normal = SubResource("StyleBoxFlat_touch_dash")
+theme_override_styles/hover = SubResource("StyleBoxFlat_touch_dash")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_touch_dash")
+theme_override_styles/focus = ExtResource("5_focus")
+text = "DASH"
+action_mode = 0
 
-[node name="JumpBtn" type="Button" parent="PlaytestUI/TouchControls/Action"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="JumpBtn" type="Button" parent="PlaytestUI/TouchControls"]
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 0
+offset_left = 830.0
+offset_top = 422.0
+offset_right = 918.0
+offset_bottom = 510.0
+focus_mode = 0
+mouse_filter = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_touch")
 theme_override_styles/hover = SubResource("StyleBoxFlat_touch")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_touch")

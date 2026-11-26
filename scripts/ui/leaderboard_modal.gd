@@ -9,14 +9,24 @@ signal closed
 @onready var title_label: Label = $Card/TitleRow/TitleLabel
 @onready var title_icon_rect: TextureRect = $Card/TitleRow/TitleIcon
 
+@onready var tab_row: HBoxContainer = $Card/TabRow
 @onready var btn_global: Button = $Card/TabRow/BtnGlobal
 @onready var btn_friends: Button = $Card/TabRow/BtnFriends
 
+@onready var list_scroll: ScrollContainer = $Card/ListScroll
 @onready var list_box: VBoxContainer = $Card/ListScroll/ListBox
+@onready var my_stats_bar: PanelContainer = $Card/MyStatsBar
 @onready var my_rank_label: Label = get_node_or_null("Card/MyStatsBar/HBox/RankLabel")
 @onready var my_avatar_rect: TextureRect = get_node_or_null("Card/MyStatsBar/HBox/AvatarRect")
 @onready var my_name_label: Label = get_node_or_null("Card/MyStatsBar/HBox/VBox/NameLabel")
 @onready var my_stats_label: Label = get_node_or_null("Card/MyStatsBar/HBox/VBox/StatsLabel")
+
+@onready var guest_prompt: Control = get_node_or_null("Card/GuestPrompt")
+@onready var guest_icon: TextureRect = get_node_or_null("Card/GuestPrompt/PromptCard/VBox/GuestIcon")
+@onready var guest_title: Label = get_node_or_null("Card/GuestPrompt/PromptCard/VBox/GuestTitle")
+@onready var guest_desc: Label = get_node_or_null("Card/GuestPrompt/PromptCard/VBox/GuestDesc")
+@onready var google_sign_in_btn: Button = get_node_or_null("Card/GuestPrompt/PromptCard/VBox/GoogleSignInBtn")
+@onready var guest_status_label: Label = get_node_or_null("Card/GuestPrompt/PromptCard/VBox/GuestStatusLabel")
 
 var style_white = preload("res://resources/themes/btn_capsule_white.tres")
 var style_white_hov = preload("res://resources/themes/btn_capsule_white_hover.tres")
@@ -31,6 +41,16 @@ var current_tab: TabMode = TabMode.GLOBAL
 var http_request: HTTPRequest = null
 var remote_players: Array = []
 var is_fetching: bool = false
+var _entry_tween: Tween = null
+
+# Touch & mouse drag-scroll + momentum state on ListScroll
+var _scroll_touch_index: int = -1
+var _is_touch_dragging: bool = false
+var _is_mouse_dragging: bool = false
+var _scroll_last_y: float = 0.0
+var _scroll_last_msec: int = 0
+var _scroll_pos_f: float = 0.0
+var _scroll_velocity_y: float = 0.0
 
 func _ready() -> void:
 	visible = false
@@ -64,14 +84,181 @@ func _ready() -> void:
 		
 	if my_avatar_rect:
 		my_avatar_rect.texture = IconFactory.get_icon("avatar_player", 1.0)
+	if guest_icon:
+		guest_icon.texture = IconFactory.get_icon("trophy_white", 1.2)
+	if google_sign_in_btn:
+		google_sign_in_btn.icon = IconFactory.get_icon("google", 0.9)
+		google_sign_in_btn.pressed.connect(_on_google_sign_in_pressed)
+	if list_box:
+		list_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if list_scroll:
+		list_scroll.gui_input.connect(_on_list_scroll_gui_input)
 		
 	if not LocaleManager.language_changed.is_connected(_on_language_changed):
 		LocaleManager.language_changed.connect(_on_language_changed)
+	if GoogleAuthService:
+		if not GoogleAuthService.auth_succeeded.is_connected(_on_google_auth_succeeded):
+			GoogleAuthService.auth_succeeded.connect(_on_google_auth_succeeded)
+		if not GoogleAuthService.auth_failed.is_connected(_on_google_auth_failed):
+			GoogleAuthService.auth_failed.connect(_on_google_auth_failed)
+	if ProfileManager and not ProfileManager.profile_updated.is_connected(_on_profile_updated):
+		ProfileManager.profile_updated.connect(_on_profile_updated)
 	_update_texts()
 
 func _exit_tree() -> void:
+	if _entry_tween and _entry_tween.is_valid():
+		_entry_tween.kill()
 	if LocaleManager and LocaleManager.language_changed.is_connected(_on_language_changed):
 		LocaleManager.language_changed.disconnect(_on_language_changed)
+	if GoogleAuthService:
+		if GoogleAuthService.auth_succeeded.is_connected(_on_google_auth_succeeded):
+			GoogleAuthService.auth_succeeded.disconnect(_on_google_auth_succeeded)
+		if GoogleAuthService.auth_failed.is_connected(_on_google_auth_failed):
+			GoogleAuthService.auth_failed.disconnect(_on_google_auth_failed)
+	if ProfileManager and ProfileManager.profile_updated.is_connected(_on_profile_updated):
+		ProfileManager.profile_updated.disconnect(_on_profile_updated)
+
+func _is_google_signed_in() -> bool:
+	return ProfileManager != null \
+		and ProfileManager.auth_provider == "google" \
+		and not ProfileManager.email.strip_edges().is_empty()
+
+func _update_auth_gate() -> bool:
+	var signed_in := _is_google_signed_in()
+	if signed_in:
+		if guest_prompt: guest_prompt.visible = false
+		if tab_row: tab_row.visible = true
+		if list_scroll: list_scroll.visible = true
+		if my_stats_bar: my_stats_bar.visible = true
+	else:
+		if is_fetching and http_request:
+			http_request.cancel_request()
+		is_fetching = false
+		_reset_scroll_state()
+		if list_box:
+			for ch in list_box.get_children():
+				list_box.remove_child(ch)
+				ch.queue_free()
+		if tab_row: tab_row.visible = false
+		if list_scroll: list_scroll.visible = false
+		if my_stats_bar: my_stats_bar.visible = false
+		if guest_prompt: guest_prompt.visible = true
+	return signed_in
+
+func _reset_scroll_state() -> void:
+	_scroll_touch_index = -1
+	_is_touch_dragging = false
+	_is_mouse_dragging = false
+	_scroll_velocity_y = 0.0
+	_scroll_pos_f = float(list_scroll.scroll_vertical) if list_scroll else 0.0
+
+func _get_max_list_scroll() -> float:
+	if not list_scroll:
+		return 0.0
+	var max_from_box := 0.0
+	if list_box:
+		var content_h: float = maxf(list_box.size.y, list_box.get_combined_minimum_size().y)
+		max_from_box = maxf(0.0, content_h - list_scroll.size.y)
+	var max_from_bar := 0.0
+	var vbar := list_scroll.get_v_scroll_bar()
+	if vbar:
+		max_from_bar = maxf(0.0, vbar.max_value - vbar.page)
+	return maxf(max_from_box, max_from_bar)
+
+func _apply_list_scroll_delta(delta_scroll_y: float) -> void:
+	if not list_scroll:
+		return
+	var max_scroll := _get_max_list_scroll()
+	_scroll_pos_f = clampf(_scroll_pos_f + delta_scroll_y, 0.0, max_scroll)
+	list_scroll.scroll_vertical = int(round(_scroll_pos_f))
+
+	var now_ms := Time.get_ticks_msec()
+	var dt := maxf(float(now_ms - _scroll_last_msec) / 1000.0, 0.016)
+	_scroll_last_msec = now_ms
+	var instant_vel := clampf(delta_scroll_y / dt, -2400.0, 2400.0)
+	_scroll_velocity_y = lerpf(_scroll_velocity_y, instant_vel, 0.45)
+
+func _on_list_scroll_gui_input(event: InputEvent) -> void:
+	if not list_scroll or not list_scroll.visible:
+		return
+
+	if event is InputEventScreenTouch:
+		var st := event as InputEventScreenTouch
+		if st.pressed:
+			if _scroll_touch_index == -1:
+				_scroll_touch_index = st.index
+				_is_touch_dragging = true
+				_is_mouse_dragging = false
+				_scroll_last_y = st.position.y
+				_scroll_last_msec = Time.get_ticks_msec()
+				_scroll_pos_f = float(list_scroll.scroll_vertical)
+				_scroll_velocity_y = 0.0
+				list_scroll.accept_event()
+		elif st.index == _scroll_touch_index:
+			_scroll_touch_index = -1
+			_is_touch_dragging = false
+			list_scroll.accept_event()
+		return
+
+	if event is InputEventScreenDrag:
+		var sd := event as InputEventScreenDrag
+		if _scroll_touch_index == -1:
+			_scroll_touch_index = sd.index
+			_is_touch_dragging = true
+			_scroll_last_y = sd.position.y - sd.relative.y
+			_scroll_last_msec = Time.get_ticks_msec()
+			_scroll_pos_f = float(list_scroll.scroll_vertical)
+		if sd.index == _scroll_touch_index:
+			var dy: float = sd.relative.y if absf(sd.relative.y) > 0.001 else (sd.position.y - _scroll_last_y)
+			_scroll_last_y = sd.position.y
+			_apply_list_scroll_delta(-dy)
+			list_scroll.accept_event()
+		return
+
+	# Ignore touch-emulated mouse events to prevent double-scrolling on Android
+	if _is_touch_dragging or _scroll_touch_index != -1 or event.device == InputEvent.DEVICE_ID_EMULATION:
+		return
+
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT:
+			if mb.pressed:
+				_is_mouse_dragging = true
+				_scroll_last_y = mb.position.y
+				_scroll_last_msec = Time.get_ticks_msec()
+				_scroll_pos_f = float(list_scroll.scroll_vertical)
+				_scroll_velocity_y = 0.0
+				list_scroll.accept_event()
+			else:
+				_is_mouse_dragging = false
+				list_scroll.accept_event()
+		elif mb.button_index == MOUSE_BUTTON_WHEEL_UP or mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_scroll_velocity_y = 0.0
+			_scroll_pos_f = float(list_scroll.scroll_vertical)
+	elif event is InputEventMouseMotion and _is_mouse_dragging:
+		var mm := event as InputEventMouseMotion
+		var dy: float = mm.relative.y if absf(mm.relative.y) > 0.001 else (mm.position.y - _scroll_last_y)
+		_scroll_last_y = mm.position.y
+		_apply_list_scroll_delta(-dy)
+		list_scroll.accept_event()
+
+func _process(delta: float) -> void:
+	if not visible or not list_scroll or not list_scroll.visible:
+		return
+	if _is_touch_dragging or _is_mouse_dragging:
+		return
+	if absf(_scroll_velocity_y) > 8.0:
+		var max_scroll := _get_max_list_scroll()
+		var next_pos := clampf(_scroll_pos_f + _scroll_velocity_y * delta, 0.0, max_scroll)
+		_scroll_pos_f = next_pos
+		list_scroll.scroll_vertical = int(round(_scroll_pos_f))
+		if next_pos <= 0.0 or next_pos >= max_scroll:
+			_scroll_velocity_y = 0.0
+		else:
+			var decel := absf(_scroll_velocity_y) * minf(1.0, delta * 7.5) + 60.0 * delta
+			_scroll_velocity_y = move_toward(_scroll_velocity_y, 0.0, decel)
+	else:
+		_scroll_velocity_y = 0.0
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -83,26 +270,77 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func open() -> void:
 	visible = true
+	_reset_scroll_state()
+	if list_scroll:
+		list_scroll.scroll_vertical = 0
+		_scroll_pos_f = 0.0
+	if google_sign_in_btn:
+		google_sign_in_btn.disabled = false
+	if guest_status_label:
+		guest_status_label.text = ""
+		guest_status_label.visible = false
 	_update_texts()
 	_update_tab_buttons()
-	_fetch_supabase_leaderboard()
-	_refresh_list()
+	if _update_auth_gate():
+		_fetch_supabase_leaderboard()
+		_refresh_list()
 	
 	# Smooth entry tween
 	if card:
+		if _entry_tween and _entry_tween.is_valid():
+			_entry_tween.kill()
 		card.scale = Vector2(0.92, 0.92)
 		card.pivot_offset = card.size / 2.0
-		var tw = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		tw.tween_property(card, "scale", Vector2.ONE, 0.20)
+		_entry_tween = create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_entry_tween.tween_property(card, "scale", Vector2.ONE, 0.20)
 
 func close() -> void:
 	SoundManager.play("click")
+	_reset_scroll_state()
 	visible = false
 	closed.emit()
 
-func _on_language_changed(_lang: String) -> void:
+func _on_google_sign_in_pressed() -> void:
+	SoundManager.play("click")
+	if google_sign_in_btn:
+		google_sign_in_btn.disabled = true
+	if guest_status_label:
+		guest_status_label.text = LocaleManager.t("leaderboard_google_connecting")
+		guest_status_label.add_theme_color_override("font_color", Color("#38bdf8"))
+		guest_status_label.visible = true
+	if GoogleAuthService:
+		GoogleAuthService.start_google_sign_in()
+
+func _on_google_auth_succeeded(_user_data: Dictionary) -> void:
+	if google_sign_in_btn:
+		google_sign_in_btn.disabled = false
+	if guest_status_label:
+		guest_status_label.text = ""
+		guest_status_label.visible = false
+	_update_texts()
+	if visible and _update_auth_gate():
+		_fetch_supabase_leaderboard()
+		_refresh_list()
+
+func _on_google_auth_failed(error_message: String) -> void:
+	if google_sign_in_btn:
+		google_sign_in_btn.disabled = false
+	if visible and guest_status_label:
+		guest_status_label.text = error_message
+		guest_status_label.add_theme_color_override("font_color", Color("#f87171"))
+		guest_status_label.visible = not error_message.strip_edges().is_empty()
+
+func _on_profile_updated(_profile_data: Dictionary) -> void:
 	_update_texts()
 	if visible:
+		if _update_auth_gate():
+			if remote_players.is_empty() and not is_fetching:
+				_fetch_supabase_leaderboard()
+			_refresh_list()
+
+func _on_language_changed(_lang: String) -> void:
+	_update_texts()
+	if visible and _is_google_signed_in():
 		_refresh_list()
 
 func _update_texts() -> void:
@@ -112,6 +350,12 @@ func _update_texts() -> void:
 		btn_global.text = LocaleManager.t("tab_global")
 	if btn_friends:
 		btn_friends.text = LocaleManager.t("tab_friends")
+	if guest_title:
+		guest_title.text = LocaleManager.t("leaderboard_guest_title")
+	if guest_desc:
+		guest_desc.text = LocaleManager.t("leaderboard_guest_desc")
+	if google_sign_in_btn:
+		google_sign_in_btn.text = " " + LocaleManager.t("leaderboard_google_login_btn")
 		
 	var display_name := ProfileManager.username
 	var you_str := LocaleManager.t("player_you")
@@ -134,8 +378,13 @@ func _set_tab(mode: TabMode) -> void:
 		return
 	SoundManager.play("click")
 	current_tab = mode
+	_reset_scroll_state()
+	if list_scroll:
+		list_scroll.scroll_vertical = 0
+		_scroll_pos_f = 0.0
 	_update_tab_buttons()
-	_refresh_list()
+	if _is_google_signed_in():
+		_refresh_list()
 
 func _update_tab_buttons() -> void:
 	if not btn_global or not btn_friends:
@@ -179,6 +428,8 @@ func _sort_players(a: Dictionary, b: Dictionary) -> bool:
 	return a_deaths < b_deaths
 
 func _fetch_supabase_leaderboard() -> void:
+	if not _is_google_signed_in():
+		return
 	if is_fetching or not http_request:
 		return
 	is_fetching = true
@@ -239,7 +490,8 @@ func _on_http_completed(_result: int, response_code: int, _headers: PackedString
 						"deaths": total_deaths,
 						"is_me": false
 					})
-			_refresh_list()
+			if _is_google_signed_in():
+				_refresh_list()
 
 func _refresh_list() -> void:
 	if not list_box:
@@ -247,6 +499,10 @@ func _refresh_list() -> void:
 	for ch in list_box.get_children():
 		list_box.remove_child(ch)
 		ch.queue_free()
+
+	if not _is_google_signed_in():
+		_update_auth_gate()
+		return
 		
 	# Live Player Stats
 	var my_stars: int = SaveManager.get_total_stars()
@@ -275,6 +531,7 @@ func _refresh_list() -> void:
 	}
 	
 	var raw_list: Array = []
+	var friends_count: int = 0
 	if current_tab == TabMode.GLOBAL:
 		raw_list = remote_players.duplicate(true)
 	else:
@@ -284,6 +541,7 @@ func _refresh_list() -> void:
 			var p_id := str(p.get("id", ""))
 			if ProfileManager.is_friend(p_tag) or ProfileManager.is_friend(p_id):
 				raw_list.append(p)
+				friends_count += 1
 		
 	raw_list.append(my_data)
 	raw_list.sort_custom(_sort_players)
@@ -296,6 +554,9 @@ func _refresh_list() -> void:
 			my_rank = rank
 		var row: Control = _build_row(rank, player_data)
 		list_box.add_child(row)
+
+	if current_tab == TabMode.FRIENDS and friends_count == 0:
+		list_box.add_child(_build_empty_friends_card())
 		
 	# Update pinned bottom stats bar
 	if my_rank_label:
@@ -311,6 +572,38 @@ func _refresh_list() -> void:
 			
 	if my_stats_label:
 		my_stats_label.text = "%d yulduz   •   %ds   •   %d o'lim" % [my_stars, my_time, my_deaths]
+
+func _set_ignore_mouse_recursive(node: Node) -> void:
+	if node is Control:
+		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		_set_ignore_mouse_recursive(child)
+
+func _build_empty_friends_card() -> Control:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(0, 68)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.10, 0.16, 0.65)
+	style.border_color = Color(0.22, 0.28, 0.40, 0.45)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(10)
+	style.content_margin_left = 14.0
+	style.content_margin_right = 14.0
+	style.content_margin_top = 12.0
+	style.content_margin_bottom = 12.0
+	panel.add_theme_stylebox_override("panel", style)
+
+	var lbl := Label.new()
+	lbl.text = LocaleManager.t("leaderboard_friends_empty")
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl.add_theme_font_size_override("font_size", 12)
+	lbl.add_theme_color_override("font_color", Color("#94a3b8"))
+	panel.add_child(lbl)
+
+	_set_ignore_mouse_recursive(panel)
+	return panel
 
 func _build_row(rank: int, data: Dictionary) -> Control:
 	var row := PanelContainer.new()
@@ -436,5 +729,6 @@ func _build_row(rank: int, data: Dictionary) -> Control:
 		rank_lbl.add_theme_font_size_override("font_size", 13)
 	hbox.add_child(rank_lbl)
 	
+	_set_ignore_mouse_recursive(row)
 	return row
 

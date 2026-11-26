@@ -329,8 +329,8 @@ func respawn(at_position: Vector2 = spawn_position) -> void:
 		if gm.has_signal("player_respawned"):
 			gm.player_respawned.emit()
 
-		# Qayta tirilgandan SO'NG (xavfsiz holatda) 10-chi o'lim reklamasini ko'rsatamiz (faqat ads yoqilganda)
-		if gm.level_deaths > 0 and gm.level_deaths % 10 == 0:
+		# Qayta tirilgandan SO'NG (xavfsiz holatda) 10-chi o'lim reklamasini ko'rsatamiz (faqat ads yoqilganda, editor rejimida emas)
+		if gm.level_deaths > 0 and gm.level_deaths % 10 == 0 and not gm.is_custom_editor_mode:
 			var adm = get_node_or_null("/root/AdManager")
 			if adm and adm.has_method("is_ads_enabled") and bool(adm.is_ads_enabled()) and adm.has_method("show_interstitial_ad"):
 				var tree := get_tree()
