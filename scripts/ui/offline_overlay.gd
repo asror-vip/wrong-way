@@ -32,7 +32,8 @@ static func is_network_error(err_msg: String) -> bool:
 	var low := err_msg.strip_edges().to_lower()
 	if low.is_empty():
 		return false
-	if low.contains("bekor") or low.contains("canceled") or low.contains("cancelled") or low.contains("no_credential"):
+	if low.contains("bekor") or low.contains("canceled") or low.contains("cancelled") \
+			or low.contains("no_credential") or low.contains("vaqti tugadi"):
 		return false
 	for kw in [
 		"offline", "no_network", "network_error", "network", "internet",
@@ -72,7 +73,7 @@ func _build_ui() -> void:
 	blur_backdrop = ColorRect.new()
 	blur_backdrop.name = "BlurBackdrop"
 	blur_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	blur_backdrop.color = Color(0.04, 0.06, 0.11, 0.84)
+	blur_backdrop.color = Color.WHITE
 	blur_backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
 	var mat := ShaderMaterial.new()
 	mat.shader = FROSTED_SHADER

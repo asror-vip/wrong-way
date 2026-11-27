@@ -157,6 +157,14 @@ func _setup_offline_overlay() -> void:
 	offline_overlay.show_close_button = true
 	add_child(offline_overlay)
 	offline_overlay.retry_pressed.connect(_on_offline_retry_pressed)
+	offline_overlay.dismissed.connect(_on_offline_dismissed)
+
+func _on_offline_dismissed() -> void:
+	if auth_hint and auth_box and auth_box.visible:
+		auth_hint.text = "Hisob bilan yutuqlaringiz bulutda saqlanadi"
+		auth_hint.remove_theme_color_override("font_color")
+	if greeting_label and start_box and start_box.visible:
+		greeting_label.text = "Xush kelibsiz, " + ProfileManager.username + "!"
 
 func _on_offline_retry_pressed() -> void:
 	if start_box and start_box.visible:

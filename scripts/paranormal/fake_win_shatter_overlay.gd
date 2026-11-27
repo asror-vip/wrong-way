@@ -49,12 +49,20 @@ var _crack_rays: Array = []      # Array of PackedVector2Array
 var _crack_rings: Array = []     # Array of PackedVector2Array
 var _shards: Array = []          # Array of Dictionary
 var _splinters: Array = []       # Array of Dictionary
+var _snapshot_tex: ImageTexture = null
 
 func _ready() -> void:
+	add_to_group("fake_win_overlay")
 	layer = 20
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 	_build_ui()
+
+func _exit_tree() -> void:
+	_snapshot_tex = null
+
+func is_blocking_input() -> bool:
+	return state == State.SHOWING or state == State.CRACKING
 
 func _build_ui() -> void:
 	_root_ctrl = Control.new()
@@ -67,14 +75,14 @@ func _build_ui() -> void:
 	_fake_win_root = Control.new()
 	_fake_win_root.name = "FakeWinRoot"
 	_fake_win_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_fake_win_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fake_win_root.mouse_filter = Control.MOUSE_FILTER_STOP
 	_root_ctrl.add_child(_fake_win_root)
 
 	var backdrop := ColorRect.new()
 	backdrop.name = "Backdrop"
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	backdrop.color = Color(0.04, 0.05, 0.07, 0.82)
-	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	backdrop.mouse_filter = Control.MOUSE_FILTER_STOP
 	_fake_win_root.add_child(backdrop)
 
 	_spotlight_fx = Control.new()
@@ -350,6 +358,7 @@ func open_fake_win(elapsed_sec: int, deaths: int) -> void:
 func reset_overlay() -> void:
 	state = State.IDLE
 	_elapsed_in_state = 0.0
+	_snapshot_tex = null
 	_crack_rays.clear()
 	_crack_rings.clear()
 	_shards.clear()
@@ -372,14 +381,14 @@ func _to_canvas_pos(screen_pos: Vector2) -> Vector2:
 	return screen_pos
 
 func _input(event: InputEvent) -> void:
-	if state != State.SHOWING:
+	if not is_blocking_input():
 		return
 
 	if event is InputEventScreenTouch:
 		var st := event as InputEventScreenTouch
 		if st.pressed:
 			get_viewport().set_input_as_handled()
-			if _elapsed_in_state >= TOUCH_GRACE_SEC:
+			if state == State.SHOWING and _elapsed_in_state >= TOUCH_GRACE_SEC:
 				trigger_shatter(_to_canvas_pos(st.position))
 		return
 
@@ -389,7 +398,7 @@ func _input(event: InputEvent) -> void:
 			if event.device == InputEvent.DEVICE_ID_EMULATION:
 				return
 			get_viewport().set_input_as_handled()
-			if _elapsed_in_state >= TOUCH_GRACE_SEC:
+			if state == State.SHOWING and _elapsed_in_state >= TOUCH_GRACE_SEC:
 				trigger_shatter(_to_canvas_pos(mb.position))
 		return
 
@@ -397,7 +406,7 @@ func _input(event: InputEvent) -> void:
 		var k := event as InputEventKey
 		if k.pressed and not k.echo:
 			get_viewport().set_input_as_handled()
-			if _elapsed_in_state >= KEY_GRACE_SEC:
+			if state == State.SHOWING and _elapsed_in_state >= KEY_GRACE_SEC:
 				var vp := _get_canvas_size()
 				trigger_shatter(Vector2(vp.x * 0.5, vp.y * 0.56))
 
@@ -406,9 +415,25 @@ func _notification(what: int) -> void:
 		var vp := _get_canvas_size()
 		trigger_shatter(Vector2(vp.x * 0.5, vp.y * 0.50))
 
+func _capture_fake_win_snapshot() -> void:
+	_snapshot_tex = null
+	if DisplayServer.get_name() == "headless":
+		return
+	var vp := get_viewport()
+	if vp == null:
+		return
+	var vp_tex := vp.get_texture()
+	if vp_tex == null:
+		return
+	var img := vp_tex.get_image()
+	if img == null or img.is_empty():
+		return
+	_snapshot_tex = ImageTexture.create_from_image(img)
+
 func trigger_shatter(impact_pos: Vector2) -> void:
 	if state != State.SHOWING:
 		return
+	_capture_fake_win_snapshot()
 	var vp := _get_canvas_size()
 	last_impact_pos = Vector2(
 		clampf(impact_pos.x, 12.0, maxf(12.0, vp.x - 12.0)),
@@ -478,59 +503,71 @@ func _build_mirror_fracture(impact: Vector2, vp: Vector2) -> void:
 		ring_pts.append(ring_verts[r_idx][0])
 		_crack_rings.append(ring_pts)
 
-	# 3. Shattered mirror shards from every radial wedge
+	# 3. Shattered mirror shards from every radial wedge, clipped strictly to viewport for pixel-perfect UVs
+	var vp_rect_poly := PackedVector2Array([
+		Vector2.ZERO,
+		Vector2(vp.x, 0.0),
+		Vector2(vp.x, vp.y),
+		Vector2(0.0, vp.y)
+	])
 	var ui_center_rect := Rect2(vp.x * 0.5 - 220.0, 80.0, 440.0, 310.0)
 	for r_idx in range(ring_radii.size()):
 		for i in range(ray_count):
 			var next_i := (i + 1) % ray_count
-			var poly := PackedVector2Array()
+			var raw_poly := PackedVector2Array()
 			if r_idx == 0:
-				poly = PackedVector2Array([impact, ring_verts[0][i], ring_verts[0][next_i]])
+				raw_poly = PackedVector2Array([impact, ring_verts[0][i], ring_verts[0][next_i]])
 			else:
-				poly = PackedVector2Array([
+				raw_poly = PackedVector2Array([
 					ring_verts[r_idx - 1][i],
 					ring_verts[r_idx][i],
 					ring_verts[r_idx][next_i],
 					ring_verts[r_idx - 1][next_i]
 				])
 
-			var centroid := Vector2.ZERO
-			for p in poly:
-				centroid += p
-			centroid /= float(poly.size())
+			var clipped_list := Geometry2D.intersect_polygons(raw_poly, vp_rect_poly)
+			for cpoly in clipped_list:
+				if cpoly.size() < 3:
+					continue
+				var centroid := Vector2.ZERO
+				for p in cpoly:
+					centroid += p
+				centroid /= float(cpoly.size())
 
-			# Skip outer shards completely outside viewport
-			if centroid.x < -120.0 or centroid.x > vp.x + 120.0 or centroid.y < -120.0 or centroid.y > vp.y + 120.0:
-				continue
+				var local_pts := PackedVector2Array()
+				var uvs := PackedVector2Array()
+				for p in cpoly:
+					local_pts.append(p - centroid)
+					uvs.append(Vector2(
+						clampf(p.x / maxf(1.0, vp.x), 0.0, 1.0),
+						clampf(p.y / maxf(1.0, vp.y), 0.0, 1.0)
+					))
 
-			var local_pts := PackedVector2Array()
-			for p in poly:
-				local_pts.append(p - centroid)
+				var out_dir := (centroid - impact).normalized()
+				if out_dir.length_squared() < 0.01:
+					out_dir = Vector2.UP
+				var dist := centroid.distance_to(impact)
+				var impulse := lerpf(390.0, 145.0, clampf(dist / 420.0, 0.0, 1.0)) * rng.randf_range(0.75, 1.25)
+				var vel := out_dir * impulse + Vector2(rng.randf_range(-55.0, 55.0), -rng.randf_range(65.0, 195.0))
 
-			var out_dir := (centroid - impact).normalized()
-			if out_dir.length_squared() < 0.01:
-				out_dir = Vector2.UP
-			var dist := centroid.distance_to(impact)
-			var impulse := lerpf(390.0, 145.0, clampf(dist / 420.0, 0.0, 1.0)) * rng.randf_range(0.75, 1.25)
-			var vel := out_dir * impulse + Vector2(rng.randf_range(-55.0, 55.0), -rng.randf_range(65.0, 195.0))
+				var overlaps_ui := ui_center_rect.has_point(centroid)
+				var base_shade := rng.randf_range(0.05, 0.11)
+				var fill_col := Color(base_shade, base_shade + 0.02, base_shade + 0.06, 0.88)
+				if overlaps_ui:
+					fill_col = Color(base_shade + 0.06, base_shade + 0.09, base_shade + 0.14, 0.90)
 
-			var overlaps_ui := ui_center_rect.has_point(centroid)
-			var base_shade := rng.randf_range(0.05, 0.11)
-			var fill_col := Color(base_shade, base_shade + 0.02, base_shade + 0.06, 0.88)
-			if overlaps_ui:
-				fill_col = Color(base_shade + 0.06, base_shade + 0.09, base_shade + 0.14, 0.90)
-
-			_shards.append({
-				"pos": centroid,
-				"local_pts": local_pts,
-				"vel": vel,
-				"rot": 0.0,
-				"rot_vel": rng.randf_range(-6.8, 6.8),
-				"glint_phase": rng.randf_range(0.0, TAU),
-				"glint_speed": rng.randf_range(6.0, 13.0),
-				"fill_col": fill_col,
-				"overlaps_ui": overlaps_ui
-			})
+				_shards.append({
+					"pos": centroid,
+					"local_pts": local_pts,
+					"uvs": uvs,
+					"vel": vel,
+					"rot": 0.0,
+					"rot_vel": rng.randf_range(-6.8, 6.8),
+					"glint_phase": rng.randf_range(0.0, TAU),
+					"glint_speed": rng.randf_range(6.0, 13.0),
+					"fill_col": fill_col,
+					"overlaps_ui": overlaps_ui
+				})
 
 	# 4. Crisp sparkling glass micro-splinters spraying from impact point
 	for _s in range(26):
@@ -639,14 +676,24 @@ func _on_fx_draw() -> void:
 				world_pts[idx] = center + Vector2(lp.x * cs - lp.y * sn, lp.x * sn + lp.y * cs)
 
 			var glint := pow(maxf(0.0, sin(float(sh["glint_phase"]))), 3.0)
-			var base_col: Color = sh["fill_col"]
-			var col := Color(
-				lerpf(base_col.r, 0.88, glint * 0.72),
-				lerpf(base_col.g, 0.96, glint * 0.76),
-				lerpf(base_col.b, 1.00, glint * 0.80),
-				base_col.a * fade
-			)
-			_fx_canvas.draw_colored_polygon(world_pts, col)
+			if _snapshot_tex != null and sh.has("uvs"):
+				var uvs: PackedVector2Array = sh["uvs"]
+				if uvs.size() == world_pts.size():
+					_fx_canvas.draw_polygon(world_pts, PackedColorArray([Color(1.0, 1.0, 1.0, fade)]), uvs, _snapshot_tex)
+					# Cool reflective mirror flash across the tumbling glass UI shard
+					_fx_canvas.draw_colored_polygon(world_pts, Color(0.80, 0.94, 1.0, (0.06 + glint * 0.42) * fade))
+				else:
+					var fallback_col: Color = sh["fill_col"]
+					_fx_canvas.draw_colored_polygon(world_pts, Color(fallback_col.r, fallback_col.g, fallback_col.b, fallback_col.a * fade))
+			else:
+				var base_col: Color = sh["fill_col"]
+				var col := Color(
+					lerpf(base_col.r, 0.88, glint * 0.72),
+					lerpf(base_col.g, 0.96, glint * 0.76),
+					lerpf(base_col.b, 1.00, glint * 0.80),
+					base_col.a * fade
+				)
+				_fx_canvas.draw_colored_polygon(world_pts, col)
 
 			# Crisp frosty mirror edge highlight
 			var outline := PackedVector2Array(world_pts)

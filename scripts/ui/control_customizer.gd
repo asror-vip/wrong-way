@@ -366,7 +366,8 @@ func _pick_widget_at(local_pos: Vector2) -> Control:
 	if _is_over_top_bar(local_pos):
 		return null
 	var widgets := _get_drag_widgets()
-	# Check top-most drawn widget first
+	widgets.sort_custom(func(a: Control, b: Control) -> bool: return a.get_index() < b.get_index())
+	# Check visually top-most drawn widget first
 	for i in range(widgets.size() - 1, -1, -1):
 		var w := widgets[i]
 		if Rect2(w.position, w.size).grow(8.0).has_point(local_pos):

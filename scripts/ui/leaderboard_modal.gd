@@ -313,6 +313,9 @@ func open() -> void:
 func close() -> void:
 	SoundManager.play("click")
 	_reset_scroll_state()
+	if is_fetching and http_request:
+		http_request.cancel_request()
+	is_fetching = false
 	if offline_overlay:
 		offline_overlay.hide_overlay()
 	visible = false
@@ -321,6 +324,7 @@ func close() -> void:
 func _setup_offline_overlay() -> void:
 	if not card or offline_overlay != null:
 		return
+	card.clip_contents = true
 	offline_overlay = OfflineOverlayScript.new()
 	offline_overlay.name = "OfflineOverlay"
 	offline_overlay.show_close_button = false
@@ -497,6 +501,8 @@ func _fetch_supabase_leaderboard() -> void:
 
 func _on_http_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	is_fetching = false
+	if not visible:
+		return
 	if result != HTTPRequest.RESULT_SUCCESS or response_code <= 0 or response_code >= 500:
 		_show_offline_overlay()
 		return

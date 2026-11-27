@@ -117,6 +117,7 @@ func _test_offline_overlays() -> void:
 	_expect(OfflineOverlayScript.is_network_error("OFFLINE"), "OfflineOverlay classifies OFFLINE as network error")
 	_expect(OfflineOverlayScript.is_network_error("HTTP 0 connection timeout"), "OfflineOverlay classifies timeout/HTTP 0 as network error")
 	_expect(not OfflineOverlayScript.is_network_error("Kirish bekor qilindi"), "OfflineOverlay does NOT classify user cancel as network error")
+	_expect(not OfflineOverlayScript.is_network_error("Google orqali kirish vaqti tugadi (Timeout)"), "OfflineOverlay does NOT classify OAuth abandonment timeout as offline")
 	_expect(not OfflineOverlayScript.is_network_error(""), "OfflineOverlay does NOT classify empty string as network error")
 
 	var pm := root.get_node_or_null("/root/ProfileManager")
@@ -161,6 +162,13 @@ func _test_offline_overlays() -> void:
 	await process_frame
 	gas.auth_failed.emit("OFFLINE")
 	_expect(lm.offline_overlay.visible, "LeaderboardModal shows OfflineOverlay when Google Sign-In fails offline")
+
+	# Closing LeaderboardModal cancels in-flight fetch and ignores late HTTP failure callbacks
+	lm.is_fetching = true
+	lm.close()
+	_expect(not lm.is_fetching, "LeaderboardModal.close() resets is_fetching so reopen fetches cleanly")
+	lm._on_http_completed(HTTPRequest.RESULT_CANT_CONNECT, 0, PackedStringArray(), PackedByteArray())
+	_expect(not lm.offline_overlay.visible, "Late HTTP failure while LeaderboardModal is closed does NOT show OfflineOverlay")
 	lm.queue_free()
 	await process_frame
 
@@ -170,10 +178,15 @@ func _test_offline_overlays() -> void:
 	var sp := (load("res://scenes/main/splash_screen.tscn") as PackedScene).instantiate()
 	root.add_child(sp)
 	await process_frame
+	sp._on_google_pressed()
+	if gas._net_check_http:
+		gas._net_check_http.cancel_request()
+		gas._checking_network = false
 	gas.auth_failed.emit("OFFLINE")
 	_expect(sp.offline_overlay != null and sp.offline_overlay.visible, "SplashScreen shows OfflineOverlay on offline Google Sign-In failure")
 	sp.offline_overlay._on_close_pressed()
 	_expect(not sp.offline_overlay.visible, "SplashScreen OfflineOverlay dismisses cleanly via Close button")
+	_expect(sp.auth_hint != null and not sp.auth_hint.text.contains("tanlang"), "Dismissing SplashScreen OfflineOverlay restores default auth_hint text")
 	sp.queue_free()
 	await process_frame
 
@@ -318,8 +331,16 @@ func _test_control_customizer_overhaul() -> void:
 	cc._on_save_pressed()
 	_expect(not cc.visible and is_equal_approx(sm.touch_button_scale, 1.0) and sm.custom_touch_layout.is_empty(), "Saving after Reset persists default touch layout & scale=1.0")
 
-	# 5. ESC closes ControlCustomizer
+	# 5. Overlapping widgets pick visually top-most (highest child index) widget
 	cc.open()
+	cc.drag_left.position = cc.drag_jump.position
+	cc.move_child(cc.drag_left, cc.get_child_count() - 1)
+	if cc.top_bar:
+		cc.move_child(cc.top_bar, cc.get_child_count() - 1)
+	var picked_top: Control = cc._pick_widget_at(cc.drag_left.position + cc.drag_left.size * 0.5)
+	_expect(picked_top == cc.drag_left, "ControlCustomizer picks visually top-most widget when buttons overlap")
+
+	# 6. ESC closes ControlCustomizer
 	var esc := InputEventKey.new()
 	esc.keycode = KEY_ESCAPE
 	esc.pressed = true
@@ -370,10 +391,19 @@ func _test_level1_tutorial_and_trap_toast() -> void:
 	hud.evaluate_tutorial_for_x(720.0)
 	_expect(not hud._tutorial_pulse_overlay.visible, "Mobile Step 3 near door hides button pulse overlay")
 
-	# Bonus #3: TrapFloorMid toast displays localized message
+	# Bonus #3: Real Level 1 TrapFloorMid automatically triggers playful toast on first fall
 	loc.current_language = "uz"
-	hud.show_trap_floor_toast()
-	_expect(hud.is_trap_toast_visible() and hud._trap_toast_lbl.text == loc.t("tut_trap_floor_toast"), "Level 1 TrapFloorMid playful toast renders localized message")
+	var lvl1 := (load("res://scenes/levels/level_01.tscn") as PackedScene).instantiate()
+	root.add_child(lvl1)
+	await physics_frame
+	var trap_mid := lvl1.get_node_or_null("Traps/TrapFloorMid")
+	_expect(trap_mid != null, "Level 1 contains Traps/TrapFloorMid node")
+	if trap_mid:
+		trap_mid.is_triggered = true
+		hud._update_tutorial_runtime(0.016)
+	_expect(hud.is_trap_toast_visible() and hud._trap_toast_lbl.text == loc.t("tut_trap_floor_toast"), "Level 1 TrapFloorMid trigger automatically renders localized playful toast")
+	lvl1.queue_free()
+	await process_frame
 
 	# Completing Level 1 persists tutorial_completed = true and hides tutorial
 	sm.record_result(1, 5200.0, 0)
@@ -389,6 +419,7 @@ func _test_level1_tutorial_and_trap_toast() -> void:
 	await process_frame
 
 func _test_main_menu_double_back_exit() -> void:
+	_expect(not is_quit_on_go_back(), "SceneTree.is_quit_on_go_back() is disabled so Android Back never force-quits app")
 	var loc := root.get_node_or_null("/root/LocaleManager")
 	var mm := (load("res://scenes/main/main_menu.tscn") as PackedScene).instantiate()
 	root.add_child(mm)
@@ -448,6 +479,24 @@ func _test_shattering_mirror_fake_victory() -> void:
 	ov._process(0.65)
 	_expect(ov.state == FakeWinOverlayScript.State.SHOWING and ov._fake_win_root.visible, "FakeWinShatterOverlay stays convincing until player actually touches screen")
 
+	# Verify GameHUD releases held touch controls and blocks touch bleed-through while FakeWinShatterOverlay is open
+	var hud := (load("res://scenes/game/game_hud.tscn") as PackedScene).instantiate()
+	root.add_child(hud)
+	await process_frame
+	hud.set_mobile_mode_override(1)
+	hud._touch_fingers[0] = "move_right"
+	hud._sync_touch_actions()
+	hud._process(0.016)
+	_expect(hud._active_touch_actions.is_empty(), "GameHUD immediately releases held touch actions when FakeWinShatterOverlay is showing")
+	var bleed_tap := InputEventScreenTouch.new()
+	bleed_tap.index = 1
+	bleed_tap.pressed = true
+	bleed_tap.position = hud.jump_btn.position + hud.jump_btn.size * 0.5
+	hud._input(bleed_tap)
+	_expect(hud._active_touch_actions.is_empty(), "GameHUD blocks touch bleed-through onto Jump/Move buttons while FakeWinShatterOverlay is showing")
+	hud.queue_free()
+	await process_frame
+
 	# Touch ANYWHERE on screen (empty top-left area, NOT a button!) via real Viewport push_input
 	var tap_pos := Vector2(180.0, 140.0)
 	var st := InputEventScreenTouch.new()
@@ -456,9 +505,21 @@ func _test_shattering_mirror_fake_victory() -> void:
 	st.position = tap_pos
 	root.push_input(st)
 
-	_expect(ov.state == FakeWinOverlayScript.State.CRACKING, "Touching anywhere on screen cracks FakeWinShatterOverlay immediately")
+	_expect(ov.state == FakeWinOverlayScript.State.CRACKING and ov.is_blocking_input(), "Touching anywhere on screen cracks FakeWinShatterOverlay immediately & keeps blocking input")
 	_expect(ov.last_impact_pos.distance_to(tap_pos) < 2.0, "Mirror fracture epicenter matches exact touch point (%s)" % ov.last_impact_pos)
 	_expect(ov._crack_rays.size() >= 10 and ov._shards.size() >= 20, "Mirror shatter builds spiderweb crack rays (%d) & tumbling shards (%d)" % [ov._crack_rays.size(), ov._shards.size()])
+	var uvs_ok := true
+	for sh in ov._shards:
+		var uvs: PackedVector2Array = sh.get("uvs", PackedVector2Array())
+		var lpts: PackedVector2Array = sh["local_pts"]
+		if uvs.size() != lpts.size():
+			uvs_ok = false
+			break
+		for uv in uvs:
+			if uv.x < -0.001 or uv.x > 1.001 or uv.y < -0.001 or uv.y > 1.001:
+				uvs_ok = false
+				break
+	_expect(uvs_ok, "Every shattered mirror shard has normalized [0..1] viewport-clipped UVs matching its polygon vertices")
 
 	# Step past crack hold -> shards explode, fake win UI hides, player released, real ExitDoor revealed!
 	ov._process(0.18)

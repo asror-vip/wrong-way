@@ -186,6 +186,12 @@ func _apply_responsive_layout() -> void:
 		menu_stack.position.x = target_x
 		menu_stack.position.y = maxf(84.0, (vp.y - (menu_stack.size.y * s)) * 0.5)
 
+	var exit_anchor := get_node_or_null("ExitToastAnchor") as Control
+	if exit_anchor:
+		var b_in: float = float(insets.get("bottom", 0.0))
+		exit_anchor.offset_top = -72.0 - b_in
+		exit_anchor.offset_bottom = -26.0 - b_in
+
 func _setup_exit_toast() -> void:
 	if _exit_toast_panel != null:
 		return

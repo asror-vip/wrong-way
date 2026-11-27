@@ -53,6 +53,8 @@ func _enter_tree() -> void:
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Handle Android Back button explicitly in menus, modals, customizer, and overlays
+	get_tree().set_quit_on_go_back(false)
 	if OS.has_feature("mobile") or OS.has_feature("android"):
 		DisplayServer.screen_set_orientation(DisplayServer.SCREEN_SENSOR_LANDSCAPE)
 	elif not OS.has_feature("web"):

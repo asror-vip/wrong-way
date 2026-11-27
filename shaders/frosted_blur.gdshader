@@ -17,5 +17,5 @@ void fragment() {
 	col += texture(screen_texture, SCREEN_UV + vec2(-px.x, -px.y)).rgb * 0.08;
 
 	vec3 frosted = mix(col, tint_color.rgb, tint_color.a);
-	COLOR = vec4(frosted, 1.0);
+	COLOR = vec4(frosted, COLOR.a);
 }

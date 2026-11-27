@@ -170,6 +170,8 @@ func _apply_custom_touch_layout() -> void:
 	_position_tutorial_ui(banner_h, float(insets["top"]))
 
 func _process(delta: float) -> void:
+	if not _active_touch_actions.is_empty() and _is_fake_win_blocking():
+		_release_all_touch_actions()
 	if time_label:
 		if GameManager.is_level_running:
 			var elapsed_sec: float = (float(Time.get_ticks_msec()) - GameManager.level_start_time) / 1000.0
@@ -177,6 +179,14 @@ func _process(delta: float) -> void:
 		elif GameManager.level_timer_ms > 0:
 			time_label.text = "%ds" % int(GameManager.level_timer_ms / 1000.0)
 	_update_tutorial_runtime(delta)
+
+func _is_fake_win_blocking() -> bool:
+	if not is_inside_tree():
+		return false
+	for ov in get_tree().get_nodes_in_group("fake_win_overlay"):
+		if ov != null and is_instance_valid(ov) and ov.has_method("is_blocking_input") and bool(ov.is_blocking_input()):
+			return true
+	return false
 
 func _setup_icons() -> void:
 	if pause_btn:
@@ -274,7 +284,7 @@ func _setup_touch_btn(btn: Button) -> void:
 	btn.focus_mode = Control.FOCUS_NONE
 
 func _input(event: InputEvent) -> void:
-	if not touch_controls or not touch_controls.visible or get_tree().paused:
+	if not touch_controls or not touch_controls.visible or get_tree().paused or _is_fake_win_blocking():
 		if not _active_touch_actions.is_empty():
 			_release_all_touch_actions()
 		return
