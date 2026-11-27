@@ -43,7 +43,7 @@ static func get_viewport_size(caller: Control = null) -> Vector2:
 	return Vector2(960.0, 540.0)
 
 ## Computes responsive, ergonomic touch button layout across any aspect ratio and resolution.
-static func get_default_touch_positions(caller: Control = null) -> Dictionary:
+static func get_default_touch_positions(caller: Control = null, scale_override: float = -1.0) -> Dictionary:
 	var vp := get_viewport_size(caller)
 	var insets := get_safe_insets(caller)
 	
@@ -52,7 +52,9 @@ static func get_default_touch_positions(caller: Control = null) -> Dictionary:
 	var margin_b: float = 30.0 + insets["bottom"]
 	
 	var sc: float = 1.0
-	if Engine.get_main_loop() and Engine.get_main_loop().root:
+	if scale_override > 0.0:
+		sc = clampf(scale_override, 0.65, 1.45)
+	elif Engine.get_main_loop() and Engine.get_main_loop().root:
 		var sm = Engine.get_main_loop().root.get_node_or_null("/root/SaveManager")
 		if sm and "touch_button_scale" in sm:
 			sc = float(sm.touch_button_scale)

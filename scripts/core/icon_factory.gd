@@ -61,6 +61,11 @@ const SVG_ICONS = {
 		<polyline points="21,3 21,8 16,8" fill="none" stroke="#f3f4f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
 	</svg>""",
 
+	"restart_dark": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+		<path d="M21 12a9 9 0 1 1-2.6-6.4L21 8" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+		<polyline points="21,3 21,8 16,8" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+	</svg>""",
+
 	"map": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
 		<polygon points="3,6 9,3 15,6 21,3 21,18 15,21 9,18 3,21" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
 		<line x1="9" y1="3" x2="9" y2="18" stroke="#38bdf8" stroke-width="2.2"/>
@@ -659,6 +664,16 @@ const SVG_ICONS = {
 		<circle cx="15" cy="10" r="2.2" fill="#ffffff"/>
 		<circle cx="9.8" cy="10" r="1.2" fill="#000000"/>
 		<circle cx="15.8" cy="10" r="1.2" fill="#000000"/>
+	</svg>""",
+
+	"wifi_off": """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+		<path d="M1.42 9a16 16 0 0 1 2.11-1.69" fill="none" stroke="#94a3b8" stroke-width="2.1" stroke-linecap="round"/>
+		<path d="M8.53 5.11A16 16 0 0 1 22.58 9" fill="none" stroke="#94a3b8" stroke-width="2.1" stroke-linecap="round"/>
+		<path d="M5 12.55a11 11 0 0 1 5.17-2.39" fill="none" stroke="#94a3b8" stroke-width="2.1" stroke-linecap="round"/>
+		<path d="M14.23 10.24a11 11 0 0 1 4.77 2.31" fill="none" stroke="#94a3b8" stroke-width="2.1" stroke-linecap="round"/>
+		<path d="M8.53 16.11a6 6 0 0 1 6.95 0" fill="none" stroke="#cbd5e1" stroke-width="2.1" stroke-linecap="round"/>
+		<circle cx="12" cy="20" r="1.4" fill="#e2e8f0"/>
+		<line x1="2.5" y1="2.5" x2="21.5" y2="21.5" stroke="#f87171" stroke-width="2.3" stroke-linecap="round"/>
 	</svg>"""
 }
 

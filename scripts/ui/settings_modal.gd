@@ -47,6 +47,9 @@ var style_glass = preload("res://resources/themes/btn_capsule_glass.tres")
 var style_glass_hov = preload("res://resources/themes/btn_capsule_glass_hover.tres")
 var style_glass_press = preload("res://resources/themes/btn_capsule_glass_pressed.tres")
 
+# -1 = auto detect via OS.has_feature, 0 = force desktop, 1 = force mobile (for tests)
+var _mobile_mode_override: int = -1
+
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -146,9 +149,18 @@ func _setup_signals() -> void:
 				close()
 		)
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and visible:
+		if control_customizer and control_customizer.visible:
+			return
+		SoundManager.play("click")
+		close()
+
 func _unhandled_input(event: InputEvent) -> void:
 	if visible and event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
+			if control_customizer and control_customizer.visible:
+				return
 			SoundManager.play("click")
 			close()
 			get_viewport().set_input_as_handled()
@@ -186,16 +198,33 @@ func open() -> void:
 	if card:
 		card.queue_redraw()
 
-func _update_platform_controls() -> void:
-	var is_mob := (
+func is_mobile_platform() -> bool:
+	if _mobile_mode_override == 1:
+		return true
+	if _mobile_mode_override == 0:
+		return false
+	return (
 		OS.has_feature("android")
 		or OS.has_feature("ios")
 		or OS.has_feature("mobile")
 		or OS.has_feature("web_android")
 		or OS.has_feature("web_ios")
 	)
+
+func set_mobile_mode_override(mode: int) -> void:
+	_mobile_mode_override = mode
+	_update_platform_controls()
+	_update_ui_texts()
+
+func _update_platform_controls() -> void:
+	var is_mob := is_mobile_platform()
 	if customize_controls_btn:
 		customize_controls_btn.visible = is_mob
+	if controls_title:
+		controls_title.text = LocaleManager.t("controls_title_mobile" if is_mob else "controls_title_desktop")
+	if controls_desc:
+		controls_desc.text = LocaleManager.t("controls_desc_mobile" if is_mob else "controls_desc_desktop")
+		controls_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
 func close() -> void:
 	if card: card.visible = true
@@ -222,9 +251,13 @@ func _update_ui_texts() -> void:
 	if sound_label: sound_label.text = LocaleManager.t("setting_sound")
 	if sound_vol_label: sound_vol_label.text = LocaleManager.t("setting_sound_volume")
 	if shake_label: shake_label.text = LocaleManager.t("setting_shake")
-	if controls_title: controls_title.text = LocaleManager.t("controls_title")
-	if controls_desc: controls_desc.text = LocaleManager.t("controls_desc")
+	var is_mob := is_mobile_platform()
+	if controls_title:
+		controls_title.text = LocaleManager.t("controls_title_mobile" if is_mob else "controls_title_desktop")
+	if controls_desc:
+		controls_desc.text = LocaleManager.t("controls_desc_mobile" if is_mob else "controls_desc_desktop")
 	if customize_controls_btn:
+		customize_controls_btn.visible = is_mob
 		customize_controls_btn.text = "  " + LocaleManager.t("btn_customize_controls")
 		customize_controls_btn.icon = IconFactory.get_icon("gamepad", 0.85)
 

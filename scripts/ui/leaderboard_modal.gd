@@ -1,6 +1,8 @@
 extends Control
 class_name LeaderboardModal
 
+const OfflineOverlayScript := preload("res://scripts/ui/offline_overlay.gd")
+
 signal closed
 
 @onready var backdrop: ColorRect = $Backdrop
@@ -42,6 +44,7 @@ var http_request: HTTPRequest = null
 var remote_players: Array = []
 var is_fetching: bool = false
 var _entry_tween: Tween = null
+var offline_overlay: Control = null
 
 # Touch & mouse drag-scroll + momentum state on ListScroll
 var _scroll_touch_index: int = -1
@@ -93,6 +96,8 @@ func _ready() -> void:
 		list_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if list_scroll:
 		list_scroll.gui_input.connect(_on_list_scroll_gui_input)
+
+	_setup_offline_overlay()
 		
 	if not LocaleManager.language_changed.is_connected(_on_language_changed):
 		LocaleManager.language_changed.connect(_on_language_changed)
@@ -288,6 +293,8 @@ func open() -> void:
 	if guest_status_label:
 		guest_status_label.text = ""
 		guest_status_label.visible = false
+	if offline_overlay:
+		offline_overlay.hide_overlay()
 	_update_texts()
 	_update_tab_buttons()
 	if _update_auth_gate():
@@ -306,8 +313,34 @@ func open() -> void:
 func close() -> void:
 	SoundManager.play("click")
 	_reset_scroll_state()
+	if offline_overlay:
+		offline_overlay.hide_overlay()
 	visible = false
 	closed.emit()
+
+func _setup_offline_overlay() -> void:
+	if not card or offline_overlay != null:
+		return
+	offline_overlay = OfflineOverlayScript.new()
+	offline_overlay.name = "OfflineOverlay"
+	offline_overlay.show_close_button = false
+	offline_overlay.card_max_width = 330.0
+	card.add_child(offline_overlay)
+	offline_overlay.offset_left = 4.0
+	offline_overlay.offset_top = 48.0
+	offline_overlay.offset_right = -4.0
+	offline_overlay.offset_bottom = -4.0
+	offline_overlay.retry_pressed.connect(_on_offline_retry_pressed)
+
+func _show_offline_overlay() -> void:
+	if offline_overlay:
+		offline_overlay.show_overlay()
+
+func _on_offline_retry_pressed() -> void:
+	if _is_google_signed_in():
+		_fetch_supabase_leaderboard()
+	else:
+		_on_google_sign_in_pressed()
 
 func _on_google_sign_in_pressed() -> void:
 	SoundManager.play("click")
@@ -326,6 +359,8 @@ func _on_google_auth_succeeded(_user_data: Dictionary) -> void:
 	if guest_status_label:
 		guest_status_label.text = ""
 		guest_status_label.visible = false
+	if offline_overlay:
+		offline_overlay.hide_overlay()
 	_update_texts()
 	if visible and _update_auth_gate():
 		_fetch_supabase_leaderboard()
@@ -334,6 +369,12 @@ func _on_google_auth_succeeded(_user_data: Dictionary) -> void:
 func _on_google_auth_failed(error_message: String) -> void:
 	if google_sign_in_btn:
 		google_sign_in_btn.disabled = false
+	if visible and OfflineOverlayScript.is_network_error(error_message):
+		if guest_status_label:
+			guest_status_label.text = ""
+			guest_status_label.visible = false
+		_show_offline_overlay()
+		return
 	if visible and guest_status_label:
 		guest_status_label.text = error_message
 		guest_status_label.add_theme_color_override("font_color", Color("#f87171"))
@@ -449,11 +490,19 @@ func _fetch_supabase_leaderboard() -> void:
 		"apikey: " + Env.get_supabase_anon_key(),
 		"Authorization: Bearer " + Env.get_supabase_anon_key()
 	]
-	http_request.request(url, headers, HTTPClient.METHOD_GET)
+	var req_err := http_request.request(url, headers, HTTPClient.METHOD_GET)
+	if req_err != OK:
+		is_fetching = false
+		_show_offline_overlay()
 
-func _on_http_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+func _on_http_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	is_fetching = false
+	if result != HTTPRequest.RESULT_SUCCESS or response_code <= 0 or response_code >= 500:
+		_show_offline_overlay()
+		return
 	if response_code == 200:
+		if offline_overlay:
+			offline_overlay.hide_overlay()
 		var txt := body.get_string_from_utf8()
 		var parsed = JSON.parse_string(txt)
 		if parsed is Array:

@@ -68,11 +68,34 @@ const STRINGS = {
 			+ "Dash (Tezlashuv): Shift / J\nQayta boshlash: R\n"
 			+ "Pauza / Menyu: Esc / P\nTo'liq ekran: F11"
 		),
-				"btn_close": "Yopish",
+		"controls_title_desktop": "Klaviatura boshqaruvi:",
+		"controls_desc_desktop": (
+			"Yurish: A / D yoki ◄ / ►\nSakrash: W / Space / ▲\n"
+			+ "Dash (Tezlashuv): Shift / J\nQayta boshlash: R  •  Pauza: Esc / P  •  To'liq ekran: F11"
+		),
+		"controls_title_mobile": "Sensor boshqaruv:",
+		"controls_desc_mobile": (
+			"Chap / O'ng — Yurish  •  Sakrash  •  Dash\n"
+			+ "Tugmalar joyi va hajmini o'zingizga moslang."
+		),
+		"btn_close": "Yopish",
 		"btn_customize_controls": "Tugmalar joyini sozlash",
 		"controls_customizer_title": "TUGMALAR JOYINI SOZLASH",
 		"controls_customizer_hint": "Tugmalarni xohlagan joyga surib joylashtiring",
+		"customizer_size": "Hajmi:",
 		"btn_reset_default": "Asliga qaytarish",
+		"offline_title": "Internet aloqasi yo'q",
+		"offline_desc": "Reyting va Google hisobi uchun internet kerak. Darajalar va Zona Yaratish oflayn ishlaydi.",
+		"btn_retry": "Qayta urinish",
+		"exit_press_again": "Chiqish uchun yana bir marta bosing",
+		"tut_step_move_mobile": "Yurish uchun ◄ / ► tugmalarini bosing",
+		"tut_step_move_pc": "Yurish uchun [A / D] yoki [◄ / ►] bosing",
+		"tut_step_jump_mobile": "Tikanlardan sakrab o'ting!",
+		"tut_step_jump_pc": "[SPACE] yoki [W] bilan tikanlardan sakrang!",
+		"tut_step_dash_mobile": "Jarlikdan o'tish uchun DASH bosing!",
+		"tut_step_dash_pc": "[SHIFT] yoki [J] bilan jarlikdan Dash qiling!",
+		"tut_step_door": "Keyingi daraja uchun kamida 2 ★ yulduz oling (≤ 2 o'lim)!",
+		"tut_trap_floor_toast": "Hech qachon polga ishonmang! 😈",
 		
 		# Level Select
 		"map_title": "DARAJALAR",
@@ -226,11 +249,34 @@ const STRINGS = {
 			+ "Рывок (Dash): Shift / J\nБыстрый рестарт: R\n"
 			+ "Пауза / Меню: Esc / P\nПолный экран: F11"
 		),
-				"btn_close": "Закрыть",
+		"controls_title_desktop": "Управление с клавиатуры:",
+		"controls_desc_desktop": (
+			"Движение: A / D или ◄ / ►\nПрыжок: W / Пробел / ▲\n"
+			+ "Рывок (Dash): Shift / J\nРестарт: R  •  Пауза: Esc / P  •  Полный экран: F11"
+		),
+		"controls_title_mobile": "Сенсорное управление:",
+		"controls_desc_mobile": (
+			"Влево / Вправо — Движение  •  Прыжок  •  Рывок\n"
+			+ "Настройте расположение и размер кнопок под себя."
+		),
+		"btn_close": "Закрыть",
 		"btn_customize_controls": "Настроить кнопки",
 		"controls_customizer_title": "НАСТРОЙКА КНОПОК",
 		"controls_customizer_hint": "Перетащите кнопки в любое удобное место",
+		"customizer_size": "Размер:",
 		"btn_reset_default": "По умолчанию",
+		"offline_title": "Нет подключения к интернету",
+		"offline_desc": "Для рейтинга и входа через Google нужен интернет. Уровни и Редактор зон работают офлайн.",
+		"btn_retry": "Повторить",
+		"exit_press_again": "Нажмите ещё раз для выхода",
+		"tut_step_move_mobile": "Нажимайте ◄ / ► для движения",
+		"tut_step_move_pc": "Нажмите [A / D] или [◄ / ►] для движения",
+		"tut_step_jump_mobile": "Перепрыгните через шипы!",
+		"tut_step_jump_pc": "Нажмите [SPACE] или [W], чтобы перепрыгнуть шипы!",
+		"tut_step_dash_mobile": "Нажмите РЫВОК (DASH), чтобы перелететь пропасть!",
+		"tut_step_dash_pc": "Нажмите [SHIFT] или [J] для рывка через пропасть!",
+		"tut_step_door": "Для следующего уровня нужно минимум 2 ★ звезды (≤ 2 смертей)!",
+		"tut_trap_floor_toast": "Никогда не доверяй полу! 😈",
 		
 		# Level Select
 		"map_title": "УРОВНИ",
@@ -384,11 +430,34 @@ const STRINGS = {
 			+ "Dash: Shift / J\nQuick Restart: R\n"
 			+ "Pause / Menu: Esc / P\nFullscreen: F11"
 		),
-				"btn_close": "Close",
+		"controls_title_desktop": "Keyboard Controls:",
+		"controls_desc_desktop": (
+			"Move: A / D or ◄ / ►\nJump: W / Space / ▲\n"
+			+ "Dash: Shift / J\nRestart: R  •  Pause: Esc / P  •  Fullscreen: F11"
+		),
+		"controls_title_mobile": "Touch Controls:",
+		"controls_desc_mobile": (
+			"Left / Right — Move  •  Jump  •  Dash\n"
+			+ "Customize button positions and size to fit your hands."
+		),
+		"btn_close": "Close",
 		"btn_customize_controls": "Customize Controls",
 		"controls_customizer_title": "CUSTOMIZE CONTROLS",
 		"controls_customizer_hint": "Drag buttons to your preferred positions",
+		"customizer_size": "Size:",
 		"btn_reset_default": "Reset Default",
+		"offline_title": "No Internet Connection",
+		"offline_desc": "Internet is required for Rankings and Google Sign-In. Campaign levels & Zone Creator work offline.",
+		"btn_retry": "Retry",
+		"exit_press_again": "Press back again to exit",
+		"tut_step_move_mobile": "Tap ◄ / ► buttons to move",
+		"tut_step_move_pc": "Press [A / D] or [◄ / ►] to move",
+		"tut_step_jump_mobile": "Jump over the spikes!",
+		"tut_step_jump_pc": "Press [SPACE] or [W] to jump over the spikes!",
+		"tut_step_dash_mobile": "Tap DASH to boost across the gap!",
+		"tut_step_dash_pc": "Press [SHIFT] or [J] to Dash across the gap!",
+		"tut_step_door": "Earn at least 2 ★ stars (≤ 2 deaths) to unlock the next level!",
+		"tut_trap_floor_toast": "Never trust the floor! 😈",
 		
 		# Level Select
 		"map_title": "LEVELS",
@@ -542,11 +611,34 @@ const STRINGS = {
 			+ "Hızlı Koşu (Dash): Shift / J\nHızlı Yeniden Başlat: R\n"
 			+ "Menü / Duraklat: Esc / P\nTam Ekran: F11"
 		),
-				"btn_close": "Kapat",
+		"controls_title_desktop": "Klavye Kontrolleri:",
+		"controls_desc_desktop": (
+			"Hareket: A / D veya ◄ / ►\nZıplama: W / Boşluk / ▲\n"
+			+ "Hızlı Koşu (Dash): Shift / J\nYeniden Başlat: R  •  Duraklat: Esc / P  •  Tam Ekran: F11"
+		),
+		"controls_title_mobile": "Dokunmatik Kontroller:",
+		"controls_desc_mobile": (
+			"Sol / Sağ — Hareket  •  Zıpla  •  Atıl (Dash)\n"
+			+ "Düğme konumlarını ve boyutunu kendinize göre ayarlayın."
+		),
+		"btn_close": "Kapat",
 		"btn_customize_controls": "Tuşları Özelleştir",
 		"controls_customizer_title": "TUŞLARI ÖZELLEŞTİR",
 		"controls_customizer_hint": "Düğmeleri istediğiniz yere sürükleyin",
+		"customizer_size": "Boyut:",
 		"btn_reset_default": "Sıfırla",
+		"offline_title": "İnternet Bağlantısı Yok",
+		"offline_desc": "Sıralama ve Google girişi için internet gerekir. Seviyeler ve Bölge Oluşturucu çevrimdışı çalışır.",
+		"btn_retry": "Tekrar Dene",
+		"exit_press_again": "Çıkmak için tekrar basın",
+		"tut_step_move_mobile": "Hareket etmek için ◄ / ► tuşlarına dokun",
+		"tut_step_move_pc": "Hareket etmek için [A / D] veya [◄ / ►] tuşuna bas",
+		"tut_step_jump_mobile": "Dikenlerin üzerinden zıpla!",
+		"tut_step_jump_pc": "Dikenleri aşmak için [SPACE] veya [W] tuşuna bas!",
+		"tut_step_dash_mobile": "Boşluğu geçmek için ATIL (DASH) tuşuna dokun!",
+		"tut_step_dash_pc": "Boşluğu aşmak için [SHIFT] veya [J] ile Atıl!",
+		"tut_step_door": "Sonraki seviye için en az 2 ★ yıldız kazan (≤ 2 ölüm)!",
+		"tut_trap_floor_toast": "Asla zemine güvenme! 😈",
 		
 		# Level Select
 		"map_title": "SEVİYELER",

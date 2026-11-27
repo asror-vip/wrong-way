@@ -1,5 +1,7 @@
 extends Control
 
+const OfflineOverlayScript := preload("res://scripts/ui/offline_overlay.gd")
+
 # ProfileModal - Wrong Way Modern Player Identity & Stats Card
 # - High-fidelity dark obsidian & glowing glass aesthetic
 # - Live Avatar Preview (Hero Frame)
@@ -37,6 +39,7 @@ extends Control
 var selected_avatar_idx: int = 1
 const AVATAR_KEYS: Array[String] = ["avatar_player", "avatar_ninja", "avatar_shadow", "avatar_robot", "avatar_pro"]
 var avatar_buttons: Array[Button] = []
+var offline_overlay: Control = null
 
 func _ready() -> void:
 	visible = false
@@ -57,8 +60,28 @@ func _ready() -> void:
 	
 	_apply_modal_styles()
 	_setup_avatar_buttons()
+	_setup_offline_overlay()
 	if name_input:
 		name_input.max_length = 14
+
+func _setup_offline_overlay() -> void:
+	if offline_overlay != null:
+		return
+	offline_overlay = OfflineOverlayScript.new()
+	offline_overlay.name = "OfflineOverlay"
+	offline_overlay.show_close_button = true
+	add_child(offline_overlay)
+	offline_overlay.retry_pressed.connect(_on_offline_retry_pressed)
+
+func _on_offline_retry_pressed() -> void:
+	if GoogleAuthService:
+		GoogleAuthService.start_google_sign_in()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and visible:
+		if offline_overlay and offline_overlay.visible:
+			return
+		close()
 
 func _exit_tree() -> void:
 	if ProfileManager:
@@ -76,14 +99,22 @@ func _on_profile_changed(_d: Dictionary) -> void:
 	_refresh_profile_display()
 
 func _on_google_auth_succeeded(_u: Dictionary) -> void:
+	if offline_overlay:
+		offline_overlay.hide_overlay()
 	_refresh_profile_display()
 	_load_stats()
 	_show_toast("Google hisobi muvaffaqiyatli ulandi!")
 
 func _on_google_auth_failed(err: String) -> void:
+	if visible and OfflineOverlayScript.is_network_error(err):
+		if offline_overlay:
+			offline_overlay.show_overlay()
+		return
 	_show_toast("Google: " + str(err))
 
 func open() -> void:
+	if offline_overlay:
+		offline_overlay.hide_overlay()
 	visible = true
 	modulate.a = 0.0
 	var tween := create_tween()
@@ -137,6 +168,8 @@ func _on_auth_action_pressed() -> void:
 		GoogleAuthService.start_google_sign_in()
 
 func close() -> void:
+	if offline_overlay:
+		offline_overlay.hide_overlay()
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.15)
 	await tween.finished

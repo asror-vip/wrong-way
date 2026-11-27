@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/control_customizer.gd" id="1_cc"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_glass.tres" id="2_g_norm"]
@@ -7,13 +7,13 @@
 [ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white.tres" id="5_w_norm"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_capsule_white_hover.tres" id="6_w_hov"]
 [ext_resource type="StyleBox" path="res://resources/themes/btn_focus_empty.tres" id="7_focus"]
+[ext_resource type="StyleBox" path="res://resources/themes/slider_track.tres" id="8_track"]
+[ext_resource type="StyleBox" path="res://resources/themes/slider_fill.tres" id="9_fill"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_topbar"]
 bg_color = Color(0.06, 0.07, 0.10, 0.95)
 border_width_bottom = 1
 border_color = Color(0.20, 0.25, 0.35, 0.7)
-content_margin_left = 16.0
-content_margin_right = 16.0
 
 [node name="ControlCustomizer" type="Control"]
 process_mode = 3
@@ -32,84 +32,126 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.04, 0.05, 0.08, 0.90)
+mouse_filter = 2
+color = Color(0.04, 0.05, 0.08, 0.18)
 
 [node name="TopBar" type="Panel" parent="."]
-custom_minimum_size = Vector2(0, 54)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 54.0
+offset_bottom = 56.0
 grow_horizontal = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_topbar")
 
-[node name="TitleBox" type="VBoxContainer" parent="TopBar"]
+[node name="TopMargin" type="MarginContainer" parent="TopBar"]
 layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_left = 20.0
-offset_top = -20.0
-offset_right = 380.0
-offset_bottom = 20.0
-grow_vertical = 2
-theme_override_constants/separation = 2
-
-[node name="TitleLbl" type="Label" parent="TopBar/TitleBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.97, 1, 1)
-theme_override_font_sizes/font_size = 14
-text = "TUGMALAR JOYINI SOZLASH"
-
-[node name="SubtitleLbl" type="Label" parent="TopBar/TitleBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.60, 0.68, 0.80, 1)
-theme_override_font_sizes/font_size = 11
-text = "Tugmalarni xohlagan joyga surib joylashtiring"
-
-[node name="BtnBox" type="HBoxContainer" parent="TopBar"]
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
+anchors_preset = 15
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -340.0
-offset_top = -18.0
-offset_right = -16.0
-offset_bottom = 18.0
-grow_horizontal = 0
+anchor_bottom = 1.0
+grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 10
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 6
+
+[node name="TopRow" type="HBoxContainer" parent="TopBar/TopMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="TitleBox" type="VBoxContainer" parent="TopBar/TopMargin/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+clip_contents = true
+theme_override_constants/separation = 1
+
+[node name="TitleLbl" type="Label" parent="TopBar/TopMargin/TopRow/TitleBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.96, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 13
+text = "TUGMALAR JOYINI SOZLASH"
+text_overrun_behavior = 3
+
+[node name="SubtitleLbl" type="Label" parent="TopBar/TopMargin/TopRow/TitleBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.60, 0.68, 0.80, 1)
+theme_override_font_sizes/font_size = 10
+text = "Tugmalarni xohlagan joyga surib joylashtiring"
+text_overrun_behavior = 3
+
+[node name="SizeBox" type="HBoxContainer" parent="TopBar/TopMargin/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="SizeTitleLbl" type="Label" parent="TopBar/TopMargin/TopRow/SizeBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.90, 0.98, 1)
+theme_override_font_sizes/font_size = 12
+text = "Hajmi:"
+
+[node name="SizeSlider" type="HSlider" parent="TopBar/TopMargin/TopRow/SizeBox"]
+custom_minimum_size = Vector2(105, 24)
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 0
+theme_override_styles/slider = ExtResource("8_track")
+theme_override_styles/grabber_area = ExtResource("9_fill")
+theme_override_styles/grabber_area_highlight = ExtResource("9_fill")
+min_value = 65.0
+max_value = 145.0
+step = 5.0
+value = 100.0
+
+[node name="SizeValLbl" type="Label" parent="TopBar/TopMargin/TopRow/SizeBox"]
+custom_minimum_size = Vector2(38, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.38, 0.82, 1, 1)
+theme_override_font_sizes/font_size = 12
+text = "100%"
+horizontal_alignment = 2
+
+[node name="BtnBox" type="HBoxContainer" parent="TopBar/TopMargin/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+theme_override_constants/separation = 8
 alignment = 2
 
-[node name="ResetBtn" type="Button" parent="TopBar/BtnBox"]
-custom_minimum_size = Vector2(130, 34)
+[node name="ResetBtn" type="Button" parent="TopBar/TopMargin/TopRow/BtnBox"]
+custom_minimum_size = Vector2(96, 34)
 layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = ExtResource("2_g_norm")
 theme_override_styles/hover = ExtResource("3_g_hov")
 theme_override_styles/pressed = ExtResource("4_g_press")
 theme_override_styles/focus = ExtResource("7_focus")
 text = "Asliga qaytarish"
 
-[node name="SaveBtn" type="Button" parent="TopBar/BtnBox"]
-custom_minimum_size = Vector2(100, 34)
+[node name="SaveBtn" type="Button" parent="TopBar/TopMargin/TopRow/BtnBox"]
+custom_minimum_size = Vector2(88, 34)
 layout_mode = 2
 focus_mode = 0
 theme_override_colors/font_color = Color(0.06, 0.07, 0.1, 1)
 theme_override_colors/font_hover_color = Color(0.02, 0.03, 0.05, 1)
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = ExtResource("5_w_norm")
 theme_override_styles/hover = ExtResource("6_w_hov")
 theme_override_styles/pressed = ExtResource("6_w_hov")
 theme_override_styles/focus = ExtResource("7_focus")
 text = "Saqlash"
 
-[node name="CloseBtn" type="Button" parent="TopBar/BtnBox"]
+[node name="CloseBtn" type="Button" parent="TopBar/TopMargin/TopRow/BtnBox"]
 custom_minimum_size = Vector2(34, 34)
 layout_mode = 2
 focus_mode = 0
@@ -123,29 +165,37 @@ theme_override_styles/focus = ExtResource("7_focus")
 text = "✕"
 
 [node name="DragLeft" type="Control" parent="."]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(82, 82)
 layout_mode = 3
 anchors_preset = 0
-offset_left = 32.0
-offset_top = 452.0
-offset_right = 96.0
-offset_bottom = 516.0
+offset_left = 42.0
+offset_top = 428.0
+offset_right = 124.0
+offset_bottom = 510.0
 
 [node name="DragRight" type="Control" parent="."]
-custom_minimum_size = Vector2(64, 64)
+custom_minimum_size = Vector2(82, 82)
 layout_mode = 3
 anchors_preset = 0
-offset_left = 112.0
-offset_top = 452.0
-offset_right = 176.0
-offset_bottom = 516.0
+offset_left = 148.0
+offset_top = 428.0
+offset_right = 230.0
+offset_bottom = 510.0
+
+[node name="DragDash" type="Control" parent="."]
+custom_minimum_size = Vector2(78, 78)
+layout_mode = 3
+anchors_preset = 0
+offset_left = 728.0
+offset_top = 432.0
+offset_right = 806.0
+offset_bottom = 510.0
 
 [node name="DragJump" type="Control" parent="."]
-custom_minimum_size = Vector2(68, 68)
+custom_minimum_size = Vector2(88, 88)
 layout_mode = 3
 anchors_preset = 0
-offset_left = 860.0
-offset_top = 448.0
-offset_right = 928.0
-offset_bottom = 516.0
-
+offset_left = 830.0
+offset_top = 422.0
+offset_right = 918.0
+offset_bottom = 510.0

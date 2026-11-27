@@ -1,5 +1,7 @@
 extends Control
 
+signal exit_confirmed
+
 # Wrong Way - Main Menu Controller
 # Reimagined with Dark Atmospheric Silhouette Art Style & Glowing White Glass UI
 
@@ -31,6 +33,11 @@ extends Control
 @onready var invite_text_lbl: Label = get_node_or_null("IncomingInviteCard/HBox/InviteText")
 
 var pending_invite_duel_id: String = ""
+var _last_back_press_ms: int = 0
+var _exit_toast_panel: PanelContainer = null
+var _exit_toast_lbl: Label = null
+var _exit_toast_tween: Tween = null
+var _suppress_quit_for_test: bool = false
 
 @onready var info_modal: Control = get_node_or_null("InfoModal")
 @onready var info_title_icon: TextureRect = get_node_or_null("InfoModal/Card/TitleRow/TitleIcon")
@@ -57,6 +64,7 @@ func _ready() -> void:
 		)
 	
 	_setup_icons()
+	_setup_exit_toast()
 	_update_all_texts()
 	_update_record()
 	_update_profile_button()
@@ -101,6 +109,8 @@ func _ready() -> void:
 	SoundManager.play_music()
 
 func _exit_tree() -> void:
+	if _exit_toast_tween and _exit_toast_tween.is_valid():
+		_exit_toast_tween.kill()
 	if LocaleManager and LocaleManager.language_changed.is_connected(_on_language_changed):
 		LocaleManager.language_changed.disconnect(_on_language_changed)
 	if ProfileManager:
@@ -175,6 +185,93 @@ func _apply_responsive_layout() -> void:
 			target_x = maxf(280.0, vp.x - (310.0 * s) - right_pad)
 		menu_stack.position.x = target_x
 		menu_stack.position.y = maxf(84.0, (vp.y - (menu_stack.size.y * s)) * 0.5)
+
+func _setup_exit_toast() -> void:
+	if _exit_toast_panel != null:
+		return
+	var anchor := CenterContainer.new()
+	anchor.name = "ExitToastAnchor"
+	anchor.anchor_left = 0.0
+	anchor.anchor_right = 1.0
+	anchor.anchor_top = 1.0
+	anchor.anchor_bottom = 1.0
+	anchor.offset_top = -72.0
+	anchor.offset_bottom = -26.0
+	anchor.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(anchor)
+
+	_exit_toast_panel = PanelContainer.new()
+	_exit_toast_panel.name = "ExitToast"
+	_exit_toast_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_exit_toast_panel.visible = false
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.05, 0.07, 0.12, 0.92)
+	sb.border_color = Color(0.38, 0.55, 0.78, 0.65)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(18)
+	sb.shadow_color = Color(0.0, 0.0, 0.0, 0.45)
+	sb.shadow_size = 10
+	sb.content_margin_left = 20.0
+	sb.content_margin_right = 20.0
+	sb.content_margin_top = 8.0
+	sb.content_margin_bottom = 8.0
+	_exit_toast_panel.add_theme_stylebox_override("panel", sb)
+	anchor.add_child(_exit_toast_panel)
+
+	_exit_toast_lbl = Label.new()
+	_exit_toast_lbl.name = "ExitToastLbl"
+	_exit_toast_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_exit_toast_lbl.add_theme_font_size_override("font_size", 13)
+	_exit_toast_lbl.add_theme_color_override("font_color", Color(0.95, 0.97, 1.0))
+	_exit_toast_panel.add_child(_exit_toast_lbl)
+
+func _has_open_modal() -> bool:
+	if settings_modal and settings_modal.visible:
+		return true
+	if leaderboard_modal and leaderboard_modal.visible:
+		return true
+	if profile_modal and profile_modal.visible:
+		return true
+	if duel_lobby_modal and duel_lobby_modal.visible:
+		return true
+	if info_modal and info_modal.visible:
+		return true
+	return false
+
+func _show_exit_toast() -> void:
+	if not _exit_toast_panel or not _exit_toast_lbl:
+		return
+	_exit_toast_lbl.text = LocaleManager.t("exit_press_again")
+	_exit_toast_panel.visible = true
+	_exit_toast_panel.modulate.a = 0.0
+	if _exit_toast_tween and _exit_toast_tween.is_valid():
+		_exit_toast_tween.kill()
+	_exit_toast_tween = create_tween()
+	_exit_toast_tween.tween_property(_exit_toast_panel, "modulate:a", 1.0, 0.14)
+	_exit_toast_tween.tween_interval(1.65)
+	_exit_toast_tween.tween_property(_exit_toast_panel, "modulate:a", 0.0, 0.25)
+	_exit_toast_tween.tween_callback(func():
+		if _exit_toast_panel:
+			_exit_toast_panel.visible = false
+	)
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		if info_modal and info_modal.visible:
+			_on_info_close_pressed()
+			return
+		if _has_open_modal():
+			return
+		var now_ms := Time.get_ticks_msec()
+		if _last_back_press_ms > 0 and (now_ms - _last_back_press_ms) <= 2000:
+			_last_back_press_ms = 0
+			exit_confirmed.emit()
+			if not _suppress_quit_for_test:
+				get_tree().quit()
+		else:
+			_last_back_press_ms = now_ms
+			SoundManager.play("click")
+			_show_exit_toast()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:

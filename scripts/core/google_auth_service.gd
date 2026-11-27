@@ -20,6 +20,8 @@ var _stop_requested: bool = false
 var _server_thread: Thread = null
 var auth_timeout_timer: SceneTreeTimer
 var http_user: HTTPRequest
+var _net_check_http: HTTPRequest
+var _checking_network: bool = false
 var _pending_google_user: Dictionary = {}
 
 func _ready() -> void:
@@ -30,10 +32,37 @@ func _ready() -> void:
 	add_child(http_user)
 	http_user.request_completed.connect(_on_user_info_completed)
 
+	_net_check_http = HTTPRequest.new()
+	_net_check_http.name = "GoogleAuthNetCheckHTTP"
+	_net_check_http.timeout = 3.5
+	add_child(_net_check_http)
+	_net_check_http.request_completed.connect(_on_net_check_completed)
+
 func _exit_tree() -> void:
 	_stop_loopback_server()
 
 func start_google_sign_in() -> void:
+	if _checking_network:
+		return
+	if _net_check_http == null:
+		_proceed_google_sign_in()
+		return
+	_checking_network = true
+	var url := Env.get_supabase_url() + "/rest/v1/"
+	var headers := ["apikey: " + Env.get_supabase_anon_key()]
+	var err := _net_check_http.request(url, headers, HTTPClient.METHOD_HEAD)
+	if err != OK:
+		_checking_network = false
+		auth_failed.emit("OFFLINE")
+
+func _on_net_check_completed(result: int, response_code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
+	_checking_network = false
+	if result != HTTPRequest.RESULT_SUCCESS or response_code <= 0:
+		auth_failed.emit("OFFLINE")
+		return
+	_proceed_google_sign_in()
+
+func _proceed_google_sign_in() -> void:
 	if OS.get_name() == "Android":
 		_start_android_native_google_modal()
 	else:
@@ -244,8 +273,12 @@ func _fetch_supabase_user(access_token: String) -> void:
 	]
 	http_user.request(url, headers, HTTPClient.METHOD_GET)
 
-func _on_user_info_completed(_result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+func _on_user_info_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	_stop_loopback_server()
+	if result != HTTPRequest.RESULT_SUCCESS or response_code <= 0:
+		_bring_game_window_to_front()
+		auth_failed.emit("OFFLINE")
+		return
 	if response_code == 200:
 		var parsed = JSON.parse_string(body.get_string_from_utf8())
 		if parsed is Dictionary and parsed.has("email"):

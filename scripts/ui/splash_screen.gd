@@ -1,5 +1,7 @@
 extends Control
 
+const OfflineOverlayScript := preload("res://scripts/ui/offline_overlay.gd")
+
 # Wrong Way - High-End Commercial Splash & Loading Screen
 # - Atmospheric Ken Burns background camera drift
 # - Volumetric vignette & glow-pulsing logo
@@ -35,6 +37,7 @@ var load_progress: float = 0.0
 var target_progress: float = 0.0
 var is_transitioning: bool = false
 var pulse_tween: Tween
+var offline_overlay: Control = null
 
 const HINTS := [
 	"Sozlamalar va saqlangan o'yinlar tekshirilmoqda...",
@@ -69,6 +72,7 @@ func _ready() -> void:
 		logo_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	_setup_buttons()
+	_setup_offline_overlay()
 	_start_background_drift()
 	_apply_safe_insets()
 	get_viewport().size_changed.connect(_apply_safe_insets)
@@ -92,6 +96,8 @@ func _apply_safe_insets() -> void:
 		start_box.offset_bottom = -25.0 - b_margin
 
 func _gui_input(event: InputEvent) -> void:
+	if offline_overlay and offline_overlay.visible:
+		return
 	if start_box and start_box.visible and not is_transitioning:
 		if (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) \
 				or (event is InputEventScreenTouch and event.pressed and event.index == 0):
@@ -99,6 +105,8 @@ func _gui_input(event: InputEvent) -> void:
 			accept_event()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if offline_overlay and offline_overlay.visible:
+		return
 	if start_box and start_box.visible and not is_transitioning:
 		if event is InputEventKey and event.pressed and not event.echo:
 			if event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
@@ -141,7 +149,24 @@ func _exit_tree() -> void:
 		if GoogleAuthService.auth_failed.is_connected(_on_google_auth_failed):
 			GoogleAuthService.auth_failed.disconnect(_on_google_auth_failed)
 
+func _setup_offline_overlay() -> void:
+	if offline_overlay != null:
+		return
+	offline_overlay = OfflineOverlayScript.new()
+	offline_overlay.name = "OfflineOverlay"
+	offline_overlay.show_close_button = true
+	add_child(offline_overlay)
+	offline_overlay.retry_pressed.connect(_on_offline_retry_pressed)
+
+func _on_offline_retry_pressed() -> void:
+	if start_box and start_box.visible:
+		_on_switch_account_pressed()
+	else:
+		_on_google_pressed()
+
 func _on_google_auth_succeeded(_u: Dictionary) -> void:
+	if offline_overlay:
+		offline_overlay.hide_overlay()
 	ProfileManager.has_chosen_auth = true
 	ProfileManager.save_profile()
 	if greeting_label:
@@ -152,6 +177,10 @@ func _on_google_auth_succeeded(_u: Dictionary) -> void:
 
 func _on_google_auth_failed(err: String) -> void:
 	print("SplashScreen: Google kirish xatosi: ", err)
+	if OfflineOverlayScript.is_network_error(err):
+		if offline_overlay:
+			offline_overlay.show_overlay()
+		return
 	if auth_hint and auth_box and auth_box.visible:
 		auth_hint.text = "Google: " + str(err)
 		auth_hint.add_theme_color_override("font_color", Color(1.0, 0.55, 0.45))

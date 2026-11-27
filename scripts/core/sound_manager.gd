@@ -138,6 +138,7 @@ func _create_procedural_sounds() -> void:
 	players["thunder"] = _create_player(_generate_thunder_sound())
 	players["portal"] = _create_player(_generate_tone(290.0, 840.0, 0.26, "sine", 0.12))
 	players["reverse_chime"] = _create_player(_generate_reverse_chime())
+	players["mirror_shatter"] = _create_player(_generate_mirror_shatter())
 	# Biome-specific procedural trap SFX (lightweight, crisp, anti-click ramped, balanced RMS)
 	players["biome_stone_shatter"] = _create_player(_generate_noise_impact(0.24, 130.0, 48.0, 0.22, 0.27, 101))
 	players["biome_snow_burst"] = _create_player(_generate_noise_impact(0.26, 175.0, 85.0, 0.45, 0.24, 202))
@@ -535,6 +536,75 @@ func _generate_lava_burst() -> AudioStreamWAV:
 		var val := clampi(int(s * 32767.0), -32768, 32767)
 		data[i * 2] = val & 0xFF
 		data[i * 2 + 1] = (val >> 8) & 0xFF
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = rate
+	wav.data = data
+	return wav
+
+func _generate_mirror_shatter() -> AudioStreamWAV:
+	var rate := 22050
+	var duration := 0.78
+	var samples_count := int(rate * duration)
+	var data := PackedByteArray()
+	data.resize(samples_count * 2)
+
+	# 12 staggered crystalline mirror/glass resonance partials
+	var shard_freqs: Array[float] = [
+		2180.0, 2690.0, 3140.0, 3780.0, 4290.0, 4870.0,
+		5420.0, 6150.0, 2930.0, 3510.0, 4610.0, 5890.0
+	]
+	var shard_delays: Array[float] = [
+		0.000, 0.012, 0.025, 0.042, 0.065, 0.095,
+		0.135, 0.185, 0.245, 0.315, 0.395, 0.485
+	]
+	var shard_decays: Array[float] = [
+		0.14, 0.16, 0.19, 0.15, 0.21, 0.18,
+		0.22, 0.17, 0.20, 0.18, 0.19, 0.21
+	]
+	var shard_phases: Array[float] = []
+	shard_phases.resize(shard_freqs.size())
+	shard_phases.fill(0.0)
+
+	var seed_val: int = 8421
+	var prev_noise := 0.0
+	var attack_samples := 28.0
+
+	for i in range(samples_count):
+		var t := float(i) / float(rate)
+		var prog := t / duration
+		seed_val = (seed_val * 1103515245 + 12345) & 0x7FFFFFFF
+		var white := (float(seed_val) / 1073741824.0) - 1.0
+		# High-pass noise gives crisp glass crackle & fracture snap
+		var hp_noise := white - prev_noise * 0.72
+		prev_noise = white
+
+		# Layer 1: Immediate sharp mirror impact crack (0..0.11s)
+		var impact_env := pow(maxf(0.0, 1.0 - t / 0.11), 2.1)
+		var impact := hp_noise * impact_env * 0.58
+
+		# Layer 2: Secondary glass scatter hiss (0.04..0.52s)
+		var scatter_t := maxf(0.0, t - 0.04)
+		var scatter_env := (1.0 if t >= 0.04 else 0.0) * pow(maxf(0.0, 1.0 - scatter_t / 0.48), 1.9)
+		var scatter := hp_noise * scatter_env * 0.22
+
+		# Layer 3: Sparkling glass shard tinkles & ringing partials
+		var glass_ring := 0.0
+		for j in range(shard_freqs.size()):
+			var local_t := t - shard_delays[j]
+			if local_t >= 0.0 and local_t <= shard_decays[j]:
+				var local_prog := local_t / shard_decays[j]
+				shard_phases[j] += TAU * shard_freqs[j] / float(rate)
+				var env := pow(1.0 - local_prog, 2.2) * (1.0 if j < 6 else 0.65)
+				glass_ring += sin(shard_phases[j]) * env * 0.12
+
+		var atk := minf(1.0, float(i) / attack_samples)
+		var tail_fade := 1.0 - maxf(0.0, (prog - 0.88) / 0.12)
+		var sample := clampf((impact + scatter + glass_ring) * atk * tail_fade * 0.72, -0.95, 0.95)
+		var val := clampi(int(sample * 32767.0), -32768, 32767)
+		data[i * 2] = val & 0xFF
+		data[i * 2 + 1] = (val >> 8) & 0xFF
+
 	var wav := AudioStreamWAV.new()
 	wav.format = AudioStreamWAV.FORMAT_16_BITS
 	wav.mix_rate = rate

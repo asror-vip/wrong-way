@@ -53,7 +53,10 @@ var _ghost_cycle: float = 0.0
 var _ghost_pos: Vector2 = Vector2(90.0, 380.0)
 var _ghost_trail: Array[Vector2] = []
 var _ghost_trail_accum: float = 0.0
+const FakeWinShatterOverlayScript := preload("res://scripts/paranormal/fake_win_shatter_overlay.gd")
+
 var _fake_door_area: Area2D = null
+var _fake_win_overlay: CanvasLayer = null
 var _fake_win_phase: int = 0
 var _fake_win_timer: float = 0.0
 var _dark_rect: ColorRect = null
@@ -374,6 +377,11 @@ func _setup_event() -> void:
 				_fake_door_area.draw.connect(_draw_fake_win_door)
 				_fake_door_area.body_entered.connect(_on_fake_win_entered)
 				add_child(_fake_door_area)
+			if _fake_win_overlay == null:
+				_fake_win_overlay = FakeWinShatterOverlayScript.new()
+				_fake_win_overlay.name = "FakeWinShatterOverlay"
+				_fake_win_overlay.shatter_started.connect(_on_fake_win_shatter_started)
+				add_child(_fake_win_overlay)
 		"lightning_darkness":
 			if _dark_rect == null:
 				_dark_rect = ColorRect.new()
@@ -677,6 +685,8 @@ func reset_event() -> void:
 				(aux as CanvasItem).visible = false
 				_set_subtree_collision(aux, false)
 		"fake_win_glitch":
+			if _fake_win_overlay:
+				_fake_win_overlay.reset_overlay()
 			if player_ref and is_instance_valid(player_ref) and "is_entering_door" in player_ref:
 				player_ref.is_entering_door = false
 			if exit_door_ref:
@@ -938,29 +948,9 @@ func _physics_process(delta: float) -> void:
 		"fake_win_glitch":
 			if _fake_door_area and _fake_door_area.visible:
 				_fake_door_area.queue_redraw()
-			if _fake_win_phase == 1:
-				_fake_win_timer += delta
-				if _fake_win_timer >= 0.55:
+			if _fake_win_overlay:
+				if _fake_win_overlay.state == FakeWinShatterOverlayScript.State.CRACKING:
 					_fake_win_phase = 2
-					_fake_win_timer = 0.0
-					_play_sfx("glitch")
-					_shake(9.0)
-			elif _fake_win_phase == 2:
-				_fake_win_timer += delta
-				if _fake_win_timer >= 0.44:
-					_fake_win_phase = 3
-					if _fake_door_area:
-						_fake_door_area.visible = false
-						_fake_door_area.set_deferred("monitoring", false)
-					if p_valid and "is_entering_door" in p:
-						p.is_entering_door = false
-					elif player_ref and is_instance_valid(player_ref) and "is_entering_door" in player_ref:
-						player_ref.is_entering_door = false
-					if exit_door_ref:
-						exit_door_ref.visible = true
-						exit_door_ref.set_deferred("monitoring", true)
-						exit_door_ref.queue_redraw()
-					_play_sfx("whisper_boom")
 		"lightning_darkness":
 			_lightning_cycle += delta
 			if _lightning_cycle >= 3.0:
@@ -1624,7 +1614,31 @@ func _on_fake_win_entered(body: Node2D) -> void:
 		_fake_win_timer = 0.0
 		body.is_entering_door = true
 		body.velocity = Vector2.ZERO
-		_play_sfx("win")
+		if _fake_win_overlay:
+			var elapsed_sec := 1
+			var deaths := 0
+			var gm = get_node_or_null("/root/GameManager")
+			if gm:
+				elapsed_sec = maxi(1, int(round((float(Time.get_ticks_msec()) - float(gm.level_start_time)) / 1000.0)))
+				deaths = int(gm.level_deaths)
+			_fake_win_overlay.open_fake_win(elapsed_sec, deaths)
+		else:
+			_play_sfx("win")
+
+func _on_fake_win_shatter_started(_impact_pos: Vector2) -> void:
+	_fake_win_phase = 3
+	if _fake_door_area:
+		_fake_door_area.visible = false
+		_fake_door_area.set_deferred("monitoring", false)
+	var p := player_ref
+	if (p == null or not is_instance_valid(p)) and is_inside_tree():
+		p = get_tree().get_first_node_in_group("player") as Node2D
+	if p and is_instance_valid(p) and "is_entering_door" in p:
+		p.is_entering_door = false
+	if exit_door_ref:
+		exit_door_ref.visible = true
+		exit_door_ref.set_deferred("monitoring", true)
+		exit_door_ref.queue_redraw()
 
 func _draw_fake_win_door() -> void:
 	if _fake_door_area == null or not _fake_door_area.visible:
@@ -1770,7 +1784,8 @@ func _draw_fg() -> void:
 		"haunted_gust":
 			ParanormalArt.draw_haunted_gust(_fg_layer, timer, _wind_active)
 		"fake_win_glitch":
-			ParanormalArt.draw_fake_win_glitch_fg(_fg_layer, _fake_win_phase, timer, font)
+			# Handled full-screen by FakeWinShatterOverlay CanvasLayer
+			pass
 		"room_tilt_vertigo":
 			if absf(_cam_tilt_rad) > 0.001:
 				# Outer wall-colored overscan borders prevent non-rotating backdrop from peeking at tilted corners on 16:9 mobile

@@ -19,6 +19,7 @@ var shake_enabled: bool = true
 var current_language: String = "uz"
 var custom_touch_layout: Dictionary = {}
 var touch_button_scale: float = 1.0
+var tutorial_completed: bool = false
 
 # Developer / Test rejimi: barcha daraja va boblarni sinov uchun ochiq qilish.
 # Relizda doim false bo'lishi shart; F10 bilan vaqtinchalik yoqiladi va saqlanadi.
@@ -51,6 +52,9 @@ func load_data() -> void:
 		ad_unlocked_levels = Array(config.get_value("progress", "ad_unlocked_levels", []), TYPE_INT, "", null)
 		attempted_levels = Array(config.get_value("progress", "attempted_levels", []), TYPE_INT, "", null)
 		last_ad_unlocked_level = config.get_value("progress", "last_ad_unlocked_level", 0)
+		tutorial_completed = bool(config.get_value("progress", "tutorial_completed", false))
+		if not tutorial_completed and is_level_completed(1):
+			tutorial_completed = true
 		sfx_enabled = config.get_value("settings", "sfx_enabled", true)
 		music_enabled = config.get_value("settings", "music_enabled", true)
 		music_volume = config.get_value("settings", "music_volume", 0.8)
@@ -96,6 +100,7 @@ func save_data() -> void:
 	config.set_value("progress", "ad_unlocked_levels", ad_unlocked_levels)
 	config.set_value("progress", "attempted_levels", attempted_levels)
 	config.set_value("progress", "last_ad_unlocked_level", last_ad_unlocked_level)
+	config.set_value("progress", "tutorial_completed", tutorial_completed)
 	config.set_value("settings", "sfx_enabled", sfx_enabled)
 	config.set_value("settings", "music_enabled", music_enabled)
 	config.set_value("settings", "music_volume", music_volume)
@@ -150,6 +155,15 @@ func reset_touch_layout() -> void:
 	save_data()
 	touch_layout_changed.emit()
 
+func save_touch_layout(positions: Dictionary, sc: float) -> void:
+	touch_button_scale = clampf(sc, 0.65, 1.45)
+	for btn_name in positions.keys():
+		var pos = positions[btn_name]
+		if pos is Vector2:
+			custom_touch_layout[str(btn_name)] = [pos.x, pos.y]
+	save_data()
+	touch_layout_changed.emit()
+
 func is_level_unlocked(lvl: int) -> bool:
 	if debug_unlock_all:
 		return true
@@ -201,6 +215,9 @@ func record_result(lvl: int, time_ms: float, deaths: int) -> int:
 	if not attempted_levels.has(lvl):
 		attempted_levels.append(lvl)
 
+	if lvl == 1:
+		tutorial_completed = true
+
 	if stars >= 2:
 		var next_lvl := lvl + 1
 		var can_unlock_next := next_lvl <= 60
@@ -234,6 +251,7 @@ func get_save_payload() -> Dictionary:
 		"overall_best_ms": overall_best_ms,
 		"overall_best_text": overall_best_text,
 		"ad_unlocked_levels": ad_unlocked_levels,
+		"tutorial_completed": tutorial_completed,
 		"total_stars": get_total_stars(),
 		"highest_level": get_highest_unlocked_level()
 	}
@@ -338,6 +356,11 @@ func merge_cloud_save(cloud_data: Dictionary) -> void:
 			
 	if not unlocked_levels.has(1):
 		unlocked_levels.push_front(1)
+
+	if bool(cloud_data.get("tutorial_completed", false)) or is_level_completed(1):
+		if not tutorial_completed:
+			tutorial_completed = true
+			changed = true
 		
 	if changed:
 		save_data()
@@ -594,6 +617,7 @@ func reset_progress() -> void:
 	ad_unlocked_levels.clear()
 	attempted_levels.clear()
 	last_ad_unlocked_level = 0
+	tutorial_completed = false
 	level_stars.clear()
 	level_best_times.clear()
 	level_best_deaths.clear()
